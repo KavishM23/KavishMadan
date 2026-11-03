@@ -7,7 +7,7 @@
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Kavish Madan</title>
 <script>/* intro plays on a fresh load of the home page; a timer clears it if anything goes wrong */
-(function(){var h=location.hash,r=document.documentElement;if((!h||h==='#home')&&!matchMedia('(prefers-reduced-motion: reduce)').matches){r.classList.add('intro','intro-head','intro-hold');setTimeout(function(){r.classList.remove('intro','intro-head','intro-hold')},7000)}})();</script>
+(function(){var h=location.hash,r=document.documentElement;if((!h||h==='#home')&&!matchMedia('(prefers-reduced-motion: reduce)').matches){r.classList.add('intro','intro-head','intro-hold');setTimeout(function(){r.classList.remove('intro','intro-head','intro-hold','intro-run')},10000)}})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;600;700;800;900&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Caveat:wght@600;700&display=swap">
@@ -215,12 +215,12 @@ html.cur-on,html.cur-on *{cursor:none!important}
 .also li b{font-family:var(--f-d);font-weight:700}
 
 /* ---------- intro ---------- */
-.intro{padding-block:clamp(20px,4vw,50px) clamp(70px,10vw,140px)}
+section.intro{padding-block:clamp(20px,4vw,50px) clamp(70px,10vw,140px)}
 .intro-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:clamp(30px,5vw,70px);align-items:center;max-width:1100px;margin-inline:auto}
 @media (max-width:820px){.intro-grid{grid-template-columns:1fr}}
 .kick{font-family:var(--f-d);font-weight:700;font-size:clamp(1.1rem,1.6vw,1.35rem);color:var(--accent);margin:0 0 .6rem}
-.intro h2{font-family:var(--f-d);font-weight:700;font-size:clamp(2.1rem,4.6vw,3.9rem);line-height:1;letter-spacing:-.035em;margin:0;text-wrap:balance}
-.intro .lede{color:#C4D3D9;font-size:clamp(1.02rem,1.4vw,1.2rem);max-width:44ch;margin:1.1rem 0 1.7rem}
+section.intro h2{font-family:var(--f-d);font-weight:700;font-size:clamp(2.1rem,4.6vw,3.9rem);line-height:1;letter-spacing:-.035em;margin:0;text-wrap:balance}
+section.intro .lede{color:#C4D3D9;font-size:clamp(1.02rem,1.4vw,1.2rem);max-width:44ch;margin:1.1rem 0 1.7rem}
 .btns{display:flex;flex-wrap:wrap;gap:12px}
 .btn{display:inline-flex;align-items:center;gap:.6rem;text-decoration:none;font-weight:700;font-size:.98rem;padding:.78rem 1.15rem .78rem 1.3rem;border-radius:14px;border:2px solid var(--navy-deep);
   background:var(--accent);color:var(--navy);box-shadow:4px 4px 0 rgba(0,0,0,.35);transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s}
@@ -427,7 +427,7 @@ html.cur-on,html.cur-on *{cursor:none!important}
   --grain-d:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .08 0 0 0 0 .09 0 0 0 0 .2 0 0 0 .55 -.2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 @supports ((-webkit-background-clip:text) or (background-clip:text)){
-  .name,.hd span,.b-title,.talk,.intro h2,.strip-hd,.menu-l a,.menu-l button{
+  .name,.hd span,.b-title,.talk,section.intro h2,.strip-hd,.menu-l a,.menu-l button{
     background-image:var(--grain-w),var(--grain-d),linear-gradient(var(--tc,currentColor),var(--tc,currentColor));
     background-size:180px 180px,160px 160px,100% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
   .name{--tc:var(--paper)}
@@ -435,7 +435,7 @@ html.cur-on,html.cur-on *{cursor:none!important}
   .b-paper .hd span{--tc:var(--ink)}.b-paper .hd .pk{--tc:var(--hot)}
   .b-title{--tc:var(--fg)}
   .talk{--tc:var(--white)}
-  .intro h2{--tc:var(--white)}
+  section.intro h2{--tc:var(--white)}
   .strip-hd{--tc:var(--fg)}
   .menu-l a,.menu-l button{--tc:var(--white)}
   .menu-l a:hover,.menu-l button:hover{--tc:var(--accent)}
@@ -531,7 +531,7 @@ html.cur-on,html.cur-on *{cursor:none!important}
 html.intro-head .head{opacity:0}
 .head-full{position:absolute;z-index:4;height:auto;transform:translateX(-50%);pointer-events:none;user-select:none}
 html.intro-head .head-full{display:block;visibility:hidden}
-html.intro-head .head-full.go{visibility:visible}
+html.intro-head .head-full.go,.head-full.go{display:block;visibility:visible}
 .scalp{position:absolute;inset:0;width:100%;height:100%;z-index:4;pointer-events:none}
 .scalp.on{display:block}
 .name .wi{display:inline-block}
@@ -1596,20 +1596,23 @@ html.intro-hold .obj-labs{visibility:hidden}
     const TEAR=[-0.02,0.1023,0.0101,0.1023,0.0207,0.103,0.0313,0.1045,0.0419,0.1025,0.0526,0.099,0.0632,0.0981,0.0738,0.0998,0.0845,0.1005,0.0951,0.1003,0.1057,0.1007,0.1163,0.0995,0.127,0.1001,0.1376,0.1002,0.1482,0.1014,0.1588,0.1014,0.1695,0.1026,0.1801,0.1053,0.1907,0.1064,0.2013,0.1076,0.212,0.1045,0.2226,0.1045,0.2332,0.1067,0.2438,0.1077,0.2545,0.1086,0.2651,0.1077,0.2757,0.1053,0.2864,0.1041,0.297,0.1022,0.3076,0.1066,0.3182,0.11,0.3289,0.1139,0.3395,0.1147,0.3501,0.118,0.3607,0.1195,0.3714,0.1201,0.382,0.1174,0.3926,0.1153,0.4032,0.1146,0.4139,0.1173,0.4245,0.1202,0.4351,0.1176,0.4457,0.1149,0.4564,0.1122,0.467,0.1107,0.4776,0.1096,0.4883,0.1115,0.4989,0.1137,0.5095,0.1133,0.5201,0.1106,0.5308,0.1104,0.5414,0.1088,0.552,0.1098,0.5626,0.1084,0.5733,0.1089,0.5839,0.108,0.5945,0.1094,0.6051,0.1118,0.6158,0.1142,0.6264,0.1144,0.637,0.1139,0.6477,0.1131,0.6583,0.1145,0.6689,0.116,0.6795,0.1174,0.6902,0.1188,0.7008,0.115,0.7114,0.1121,0.722,0.109,0.7327,0.1096,0.7433,0.1128,0.7539,0.1162,0.7645,0.1158,0.7752,0.1162,0.7858,0.1152,0.7964,0.115,0.807,0.116,0.8177,0.1165,0.8283,0.117,0.8389,0.117,0.8496,0.1159,0.8602,0.1148,0.8708,0.117,0.8814,0.1204,0.8921,0.1229,0.9027,0.1238,0.9133,0.1238,0.9239,0.1248,0.9346,0.1232,0.9452,0.1214,0.9558,0.1215,0.9664,0.1212,1.02,0.1212];
     let done=false;const anims=[];R.classList.add('intro-run');
     function finish(){if(done)return;done=true;anims.forEach(a=>{try{a.finish()}catch(e){}});R.classList.remove('intro','intro-head','intro-hold','intro-run');full.remove();cv.remove();
-      removeEventListener('wheel',finish);removeEventListener('keydown',finish);removeEventListener('pointerdown',finish);removeEventListener('touchmove',finish)}
+      removeEventListener('wheel',finish);removeEventListener('keydown',finish);removeEventListener('pointerdown',finish);removeEventListener('touchmove',finish);removeEventListener('resize',finish)}
     addEventListener('wheel',finish,{passive:true});addEventListener('keydown',finish);addEventListener('pointerdown',finish);addEventListener('touchmove',finish,{passive:true});
+    addEventListener('resize',finish);
     const later=(ms,f)=>setTimeout(()=>{if(!done)f()},ms);
     // animation frame with a timer backup, for windows that throttle frames
     const frame=f=>{let ran=false;const go=()=>{if(!ran){ran=true;f(performance.now())}};requestAnimationFrame(go);setTimeout(go,40)};
     if(document.hidden){finish();return}
     const loaded=i=>i.complete&&i.naturalWidth?Promise.resolve():new Promise(r=>{i.addEventListener('load',r,{once:true});i.addEventListener('error',r,{once:true})});
-    Promise.race([Promise.all([full,headEl].map(loaded)).then(()=>true),new Promise(r=>setTimeout(()=>r(false),4000))]).then(ok=>{if(!ok||done||!full.naturalWidth||document.hidden){finish();return}Promise.race([full.decode?full.decode().catch(()=>{}):0,new Promise(r=>setTimeout(r,700))]).then(()=>frame(start))});
+    const ready=async i=>{await loaded(i);if(!i.naturalWidth)return false;try{if(i.decode)await i.decode();return true}catch(e){return false}};
+    Promise.race([Promise.all([full,headEl].map(ready)).then(results=>results.every(Boolean)),new Promise(r=>setTimeout(()=>r(false),4000))]).then(ok=>{if(!ok||done||document.hidden){finish();return}frame(start)});
     function start(){
+      if(done)return;
       placeHead();const cs=getComputedStyle(headEl);
       full.style.left=cs.left;full.style.top=headEl.style.top;full.style.width=headEl.getBoundingClientRect().width+'px';
       const H=heroEl.clientHeight;full.classList.add('go');
-      anims.push(full.animate([{translate:`0 ${Math.round(H*.95)}px`,rotate:'-5deg'},{translate:'0 0',rotate:'0deg'}],{duration:1000,easing:'cubic-bezier(.3,1.28,.5,1)',fill:'backwards'}));
-      later(1250,peel);
+      anims.push(full.animate([{translate:`0 ${Math.round(H*.95)}px`,rotate:'-5deg'},{translate:'0 0',rotate:'0deg'}],{duration:1200,easing:'cubic-bezier(.22,1,.36,1)',fill:'backwards'}));
+      later(1500,peel);
     }
     function peel(){
       const hr=heroEl.getBoundingClientRect(),r=headEl.getBoundingClientRect();
@@ -1629,7 +1632,6 @@ html.intro-hold .obj-labs{visibility:hidden}
       const scalp=c=>{c.beginPath();c.moveTo(hx-hw*.05,hy-hh*.06);c.lineTo(hx+hw*1.05,hy-hh*.06);for(let i=TEAR.length-2;i>=0;i-=2)c.lineTo(hx+TEAR[i]*hw,hy+TEAR[i+1]*hh);c.closePath()};
       w.setTransform(dpr,0,0,dpr,ox,oy);scalp(w);w.clip();w.drawImage(full,hx,hy,hw,hh);w.globalCompositeOperation='source-in';
       const pg=w.createLinearGradient(hx,hy,hx+hw,hy+hh*.12);pg.addColorStop(0,'#F7F3EB');pg.addColorStop(1,'#E4DCCD');w.fillStyle=pg;w.fillRect(bx,by,CW,CH);
-      R.classList.remove('intro-head');
       const half=(c,d,side)=>{const qx=nx*d,qy=ny*d,tx=-ny*4000,ty=nx*4000,ox=nx*4000*side,oy=ny*4000*side;c.beginPath();c.moveTo(qx+tx,qy+ty);c.lineTo(qx-tx,qy-ty);c.lineTo(qx-tx+ox,qy-ty+oy);c.lineTo(qx+tx+ox,qy+ty+oy);c.closePath()};
       function draw(d){
         g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,cv.width,cv.height);g.setTransform(dpr,0,0,dpr,ox,oy);
@@ -1641,17 +1643,20 @@ html.intro-hold .obj-labs{visibility:hidden}
         const qx=nx*d,qy=ny*d,sg=tg.createLinearGradient(qx,qy,qx+nx*110,qy+ny*110);sg.addColorStop(0,'rgba(110,92,64,.34)');sg.addColorStop(.3,'rgba(255,255,255,.05)');sg.addColorStop(1,'rgba(20,30,50,.08)');tg.fillStyle=sg;tg.fillRect(bx,by,CW,CH);
         g.save();g.setTransform(1,0,0,1,0,0);g.shadowColor='rgba(4,12,24,.42)';g.shadowBlur=14*dpr;g.shadowOffsetY=6*dpr;g.drawImage(tc,0,0);g.restore();
       }
-      const T0=performance.now(),DUR=720,ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
-      later(140,()=>R.classList.remove('intro-hold'));
-      later(380,reveal);
-      // the fold runs about two thirds of the way, then the whole torn piece rips free and flies off
+      // Paint the complete scalp before exchanging the two portraits in the same frame.
+      // The decoded torn portrait stays visible underneath for the entire peel and fly-off.
+      draw(dmin-2);R.classList.remove('intro-head');full.style.visibility='hidden';
+      const T0=performance.now(),DUR=1350,ease=t=>t*t*(3-2*t);
+      later(360,()=>R.classList.remove('intro-hold'));
+      later(720,reveal);
+      // Most of the fold completes before the whole torn piece rips free and flies off.
       let flown=false;
-      (function step(now){if(done)return;const t=Math.min(1,(now-T0)/DUR);draw(dmin-2+(DEND-dmin)*ease(t));if(t>.6&&!flown){flown=true;fly()}if(t<1)frame(step)})(T0);
+      (function step(now){if(done)return;const t=Math.min(1,(now-T0)/DUR);draw(dmin-2+(DEND-dmin)*ease(t));if(t>.78&&!flown){flown=true;fly()}if(t<1)frame(step)})(T0);
       function fly(){
         cv.style.transformOrigin=`${hx+hw*.55-bx}px ${hy+hh*.06-by}px`;
-        anims.push(cv.animate([{transform:'none'},{transform:`translate(${hw*.55}px,${-hh*.42}px) rotate(32deg) scale(.85)`}],{duration:680,easing:'cubic-bezier(.45,.05,.75,.6)',fill:'forwards'}));
-        anims.push(cv.animate([{opacity:1},{opacity:0}],{duration:380,delay:300,easing:'ease-in',fill:'both'}));
-        later(900,finish);
+        anims.push(cv.animate([{transform:'none'},{transform:`translate(${hw*.55}px,${-hh*.42}px) rotate(32deg) scale(.85)`}],{duration:1050,easing:'cubic-bezier(.32,.05,.65,.8)',fill:'forwards'}));
+        anims.push(cv.animate([{opacity:1},{opacity:0}],{duration:500,delay:550,easing:'ease-in',fill:'both'}));
+        later(1200,finish);
       }
     }
     function reveal(){
@@ -1789,7 +1794,7 @@ html.intro-hold .obj-labs{visibility:hidden}
   let curView=document.querySelector('.view:not([hidden])')||views[0];
   function markTabs(){document.querySelectorAll('[data-tab]').forEach(a=>{if(a.dataset.tab===curView.id)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')})}
   function afterShow(target){
-    const go=()=>{const y=target&&target!==curView?target.getBoundingClientRect().top+scrollY:0;scrollTo({top:y,behavior:'instant'});window.lenis&&lenis.scrollTo(y,{immediate:true,force:true});
+    const go=()=>{const y=target&&target!==curView?target.getBoundingClientRect().top+scrollY:0;if(window.resetPortfolioScroll)resetPortfolioScroll(y);else{scrollTo({top:y,behavior:'instant'});window.lenis&&lenis.scrollTo(y,{immediate:true,force:true})}
       if(curView.id==='home'){fitName();placeHead()}
       onScroll();updateTears();cutAll();if(window.ScrollTrigger)ScrollTrigger.refresh();markTabs()};
     requestAnimationFrame(()=>requestAnimationFrame(go));setTimeout(go,120);
@@ -1834,7 +1839,7 @@ html.intro-hold .obj-labs{visibility:hidden}
     gsap.fromTo(p,{'--p':big+'px'},{'--p':'22px',ease:'none',scrollTrigger:{trigger:p,start:'top bottom',end:'top 62%',scrub:.5}});
   });
 
-  gsap.from('.from .drop',{y:90,rotation:i=>i?14:-12,ease:'power2.out',stagger:.1,scrollTrigger:{trigger:'.intro',start:'top 90%',end:'top 40%',scrub:.8}});
+  gsap.from('.from .drop',{y:90,rotation:i=>i?14:-12,ease:'power2.out',stagger:.1,scrollTrigger:{trigger:'section.intro',start:'top 90%',end:'top 40%',scrub:.8}});
 
   document.querySelectorAll('.band[id^="b-"]').forEach(b=>{
     const flip=b.classList.contains('flip');

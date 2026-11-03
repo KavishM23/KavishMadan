@@ -1,11 +1,10 @@
 /* Smooth, eased scrolling (Lenis, as on the reference site) with committed transitions.
    Each transition (a paper tear, a cabinet move, a staircase move) is a gate: the page glides up to its edge and holds.
-   Scrolling on past the edge only nudges it, until you have scrolled far enough to mean it; then the whole transition
-   plays as one eased move. Let go early and it settles back. */
+   A deliberate push at the edge commits one complete eased move. Small gestures stay at a finished frame. */
 (function(){
  if(!window.Lenis||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
  const root=document.documentElement;
- const COMMIT=120,NUDGE=26,GAP=220;   // px of scrolling to commit, max give at the edge, ms of quiet that ends a gesture
+ const COMMIT=180,GAP=260;   // px of deliberate scrolling to commit; ms of quiet that ends a gesture
  let lenis;
 
  // scroll ranges that only ever play as a whole
@@ -17,22 +16,23 @@
    for(let i=0;i<N-1;i++)z.push([T+D*(i+.38)/(N-1),T+D*(i+1)/(N-1)])}
   const cj=document.getElementById('code-journey');
   if(root.classList.contains('spiral-ready')&&cj&&cj.offsetParent){const T=top(cj),D=cj.offsetHeight-vh;[[.02,.15],[.36,.54],[.76,.995]].forEach(([a,b])=>z.push([T+D*a,T+D*b]))}
-  return z.map(([a,b])=>[Math.round(Math.max(0,a)),Math.round(b)]).filter(([a,b])=>b-a>40).sort((p,q)=>p[0]-q[0]);
+  const limit=Math.max(0,root.scrollHeight-vh);
+  return z.map(([a,b])=>[Math.round(Math.max(0,Math.min(limit,a))),Math.round(Math.max(0,Math.min(limit,b)))]).filter(([a,b])=>b-a>40).sort((p,q)=>p[0]-q[0]);
  }
  let zcache=null,zstamp=0;
  const getZones=()=>{const now=performance.now();if(!zcache||now-zstamp>500){zcache=zones();zstamp=now}return zcache};
 
  const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
- let gate=null,acc=0,lastWheel=0,spent=false,playing=false,releaseT=0;
+ let gate=null,acc=0,lastWheel=0,spent=false,playing=false,releaseT=0,motion=0;
  function play(target){
   playing=true;gate=null;acc=0;clearTimeout(releaseT);
-  const dist=Math.abs(target-lenis.animatedScroll);
-  lenis.scrollTo(target,{duration:Math.min(1.35,.7+dist/1100),easing:ease,lock:true,force:true,onComplete:()=>{playing=false;spent=true;zcache=null}});
+  const id=++motion,dist=Math.abs(target-lenis.animatedScroll);
+  lenis.scrollTo(target,{duration:Math.min(1.65,.95+dist/1400),easing:ease,lock:true,force:true,onComplete:()=>{if(id!==motion)return;playing=false;spent=true;zcache=null}});
  }
- function hold(edge,dir){
-  // the edge gives a little as you push, so it feels like resistance, not a wall
-  lenis.scrollTo(edge+dir*Math.min(NUDGE,acc*.12),{lerp:.18,force:true});
-  clearTimeout(releaseT);releaseT=setTimeout(()=>{if(gate&&!playing){lenis.scrollTo(gate.edge,{duration:.45,easing:ease,force:true});gate=null;acc=0}},GAP+60);
+ function hold(){
+  // Never expose a partial tear while waiting for commitment.
+  lenis.scrollTo(gate.edge,{lerp:.18,force:true});
+  clearTimeout(releaseT);releaseT=setTimeout(()=>{if(!playing){gate=null;acc=0}},GAP+60);
  }
  function onVirtual({deltaY,event}){
   if(!event||!event.type.includes('wheel')||event.ctrlKey)return true;   // touch and pinch-zoom stay native
@@ -44,12 +44,12 @@
   const dir=Math.sign(deltaY);if(!dir)return true;
   const y=lenis.targetScroll,next=y+deltaY;
   if(gate&&gate.dir!==dir){lenis.scrollTo(gate.edge,{duration:.35,easing:ease,force:true});gate=null;acc=0;return block()}
-  if(gate){if(spent)return block();acc+=Math.abs(deltaY);if(acc>=COMMIT)play(gate.to);else hold(gate.edge,dir);return block()}
+  if(gate){if(spent)return block();acc+=Math.abs(deltaY);if(acc>=COMMIT)play(gate.to);else hold();return block()}
   for(const [a,b] of getZones()){
    const inside=y>a+2&&y<b-2;
    if(inside){play(dir>0?b:a);return block()}                        // already mid-transition: finish it the way you're going
-   if(dir>0&&y<=a+2&&next>a){gate={edge:a,to:b,dir};acc=spent?0:next-a;lenis.scrollTo(a,{force:true});if(!spent&&acc>=COMMIT)play(b);return block()}
-   if(dir<0&&y>=b-2&&next<b){gate={edge:b,to:a,dir};acc=spent?0:b-next;lenis.scrollTo(b,{force:true});if(!spent&&acc>=COMMIT)play(a);return block()}
+   if(dir>0&&y<=a+2&&next>a){gate={edge:a,to:b,dir};acc=spent?0:next-a;if(!spent&&acc>=COMMIT)play(b);else hold();return block()}
+   if(dir<0&&y>=b-2&&next<b){gate={edge:b,to:a,dir};acc=spent?0:b-next;if(!spent&&acc>=COMMIT)play(a);else hold();return block()}
   }
   return true;
  }
@@ -61,8 +61,20 @@
  addEventListener('resize',()=>{zcache=null});
 
  // overlays lock the page by setting overflow:hidden on <html>; pause smoothing while they are open
- new MutationObserver(()=>{root.style.overflow==='hidden'?lenis.stop():lenis.start()}).observe(root,{attributes:true,attributeFilter:['style']});
- window.smoothTo=(target,opts={})=>{gate=null;acc=0;return lenis.scrollTo(target,{duration:1.1,easing:t=>1-Math.pow(1-t,3),force:true,...opts})};
+ let overlayLocked=root.style.overflow==='hidden';
+ new MutationObserver(()=>{
+  const locked=root.style.overflow==='hidden';if(locked===overlayLocked)return;overlayLocked=locked;reset();
+  if(locked)lenis.stop();else{lenis.start();idle=setTimeout(settle,200)}
+ }).observe(root,{attributes:true,attributeFilter:['style']});
+ function reset(){++motion;playing=false;gate=null;acc=0;spent=false;zcache=null;clearTimeout(releaseT);clearTimeout(idle)}
+ window.resetPortfolioScroll=y=>{reset();lenis.resize();lenis.scrollTo(y,{immediate:true,force:true})};
+ window.smoothTo=(target,opts={})=>{
+  reset();const id=motion;
+  const y=typeof target==='number'?target:target.getBoundingClientRect().top+scrollY;
+  const destination=Math.max(0,Math.min(root.scrollHeight-innerHeight,y+(opts.offset||0)));
+  playing=Math.abs(destination-lenis.animatedScroll)>.5;
+  return lenis.scrollTo(target,{duration:1.2,easing:ease,force:true,...opts,onComplete:l=>{if(id!==motion)return;playing=false;zcache=null;opts.onComplete?.(l)}});
+ };
 
  // touch, keys and the scrollbar scroll natively; if they leave the page mid-transition, finish it once they stop
  let dirN=1,lastY=scrollY,idle=0;

@@ -109,3 +109,12 @@ Later explicit user decisions take precedence over earlier recommendations in re
 1. **Bug:** The quadcopter accent was clipped by its small stage, especially when dragged.
 2. **Fix:** Every small 3D stage (the quadcopter and orbit accents, the Awards trophy, the About collection) now fits its camera each frame. It projects the object's bounds and backs the camera off until they sit inside about 84% of the frame. It never moves closer than the authored distance.
 3. **Checked:** At five drag angles, with pitch, on desktop and phone, the tightest projected extent stays 0.61–0.81 of the frame. The staircase and cabinet scenes have their own cameras and were not affected.
+
+## 3 November 2026 — continuous intro and deliberate, complete transitions
+
+1. **Latest source:** GitHub main at b5c7955 matched the clean local checkout before this round.
+2. **Portrait handoff:** Both portraits are decoded before the animation. The complete scalp is painted before revealing the torn portrait and hiding the full portrait in the same frame. The full image remains available to the canvas through the peel. Section intro styles and its ScrollTrigger now explicitly target `section.intro`, so the animation class on `<html>` cannot add padding to the document or restyle other headings.
+3. **Timing:** Rise 1.2 s, a short pause, peel 1.35 s (previously 0.72 s), then a 1.05 s fly-off. The flap detaches later in the peel, with a delayed fade. The intro finishes in about 3.8 s once the portraits are ready. Click, scroll, key and touch still skip; resize also finishes safely. The load fail-safe is now 10 s to allow the longer sequence on a cold image load.
+4. **Confirmed preference:** The user chose a firm, deliberate swipe. The wheel threshold is 180 px, with no partial-tear nudge. Small gestures hold at the finished edge; committing plays the full transition in 0.95–1.65 s. Momentum cannot spill into a second gate. Native input still settles any unfinished transition.
+5. **Navigation and overlays:** Page swaps refresh Lenis measurements and clear old gesture state. Navigation and modal locks cancel stale completion callbacks, preventing a previous animation from blocking later scrolling. Transition endpoints clamp to the document's reachable end.
+6. **Validation:** Eleven deterministic scroll-controller regression cases, inline JavaScript syntax checks, and browser checks of portrait continuity and real wheel input. Source backup: `versions/pre-smooth-tear/`. Preview: `research/opening-animation-preview.gif`.
