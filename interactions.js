@@ -2,7 +2,7 @@
 (()=>{
 const fine=matchMedia('(hover:hover) and (pointer:fine)').matches;
 const reduced=matchMedia('(prefers-reduced-motion:reduce)');
-const viewer=document.createElement('dialog');viewer.className='media-dialog';viewer.setAttribute('aria-label','Full-size image');viewer.innerHTML='<button class="media-close" type="button" aria-label="Close full-size image">Close ×</button><figure><img alt=""><figcaption></figcaption></figure>';document.body.append(viewer);
+const viewer=document.createElement('dialog');viewer.className='media-dialog';viewer.setAttribute('data-lenis-prevent','');viewer.setAttribute('aria-label','Full-size image');viewer.innerHTML='<button class="media-close" type="button" aria-label="Close full-size image">Close ×</button><figure><img alt=""><figcaption></figcaption></figure>';document.body.append(viewer);
 const viewerImage=viewer.querySelector('img'),viewerCaption=viewer.querySelector('figcaption');let imageReturn=null,previousOverflow='';
 function openImage(image){if(!image?.src)return;imageReturn=document.activeElement;previousOverflow=document.documentElement.style.overflow;viewerImage.src=image.currentSrc||image.src;viewerImage.alt=image.alt;viewerCaption.textContent=image.alt;viewer.showModal();document.documentElement.style.overflow='hidden';viewer.querySelector('button').focus()}
 viewer.querySelector('button').addEventListener('click',()=>viewer.close());

@@ -41,6 +41,9 @@
 *{box-sizing:border-box}
 html,body{overflow-x:clip}
 html{scroll-behavior:smooth}
+html.lenis,html.lenis body{height:auto}
+html.lenis{scroll-behavior:auto!important}
+.lenis.lenis-stopped{overflow:hidden}
 body{margin:0;background:var(--navy);color:var(--white);font-family:var(--f-b);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--navy)}
 ::selection{background:var(--accent);color:var(--navy)}
@@ -778,7 +781,7 @@ html.intro-hold .obj-labs{visibility:hidden}
   </nav>
 </header>
 
-<div class="menu" id="menu" hidden>
+<div class="menu" id="menu" hidden data-lenis-prevent>
   <button class="menu-x" type="button" data-mclose aria-label="Close menu"><span></span><span></span></button>
   <ul class="menu-l">
     <li><a href="#home" data-mclose>Builds</a></li>
@@ -791,7 +794,7 @@ html.intro-hold .obj-labs{visibility:hidden}
   <p class="menu-f">Dubai College, applying to Stanford for Aero/Astro</p>
 </div>
 
-<div class="rb" id="rb" hidden role="dialog" aria-modal="true" aria-labelledby="rb-title">
+<div class="rb" id="rb" hidden data-lenis-prevent role="dialog" aria-modal="true" aria-labelledby="rb-title">
   <div class="rb-back" data-rclose></div>
   <div class="rb-book">
     <button class="rb-x" type="button" data-rclose aria-label="Close research papers"><span></span><span></span></button>
@@ -808,7 +811,7 @@ html.intro-hold .obj-labs{visibility:hidden}
   </div>
 </div>
 
-<div class="cs" id="cs" hidden role="dialog" aria-modal="true" aria-labelledby="cs-title">
+<div class="cs" id="cs" hidden data-lenis-prevent role="dialog" aria-modal="true" aria-labelledby="cs-title">
   <div class="cs-back" data-cclose></div>
   <div class="cs-panel">
     <button class="cs-x" type="button" data-cclose aria-label="Close"><span></span><span></span></button>
@@ -1428,6 +1431,8 @@ html.intro-hold .obj-labs{visibility:hidden}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
+<script src="smooth-scroll.js"></script>
 <script>
 (function(){
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1758,7 +1763,7 @@ html.intro-hold .obj-labs{visibility:hidden}
   let curView=document.querySelector('.view:not([hidden])')||views[0];
   function markTabs(){document.querySelectorAll('[data-tab]').forEach(a=>{if(a.dataset.tab===curView.id)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')})}
   function afterShow(target){
-    const go=()=>{const y=target&&target!==curView?target.getBoundingClientRect().top+scrollY:0;scrollTo({top:y,behavior:'instant'});
+    const go=()=>{const y=target&&target!==curView?target.getBoundingClientRect().top+scrollY:0;scrollTo({top:y,behavior:'instant'});window.lenis&&lenis.scrollTo(y,{immediate:true,force:true});
       if(curView.id==='home'){fitName();placeHead()}
       onScroll();updateTears();cutAll();if(window.ScrollTrigger)ScrollTrigger.refresh();markTabs()};
     requestAnimationFrame(()=>requestAnimationFrame(go));setTimeout(go,120);
@@ -1770,13 +1775,13 @@ html.intro-hold .obj-labs{visibility:hidden}
     wipeEl.addEventListener('animationend',half,{once:true});setTimeout(half,650);
   }
   function showView(v,target,instant){
-    if(v===curView){if(target&&target!==v)target.scrollIntoView({behavior:rmqView.matches?'auto':'smooth'});else scrollTo({top:0,behavior:rmqView.matches?'auto':'smooth'});return}
+    if(v===curView){if(target&&target!==v)(window.smoothTo?smoothTo(target):target.scrollIntoView({behavior:rmqView.matches?'auto':'smooth'}));else (window.smoothTo?smoothTo(0):scrollTo({top:0,behavior:rmqView.matches?'auto':'smooth'}));return}
     const swap=()=>{views.forEach(x=>{x.hidden=x!==v});curView=v;afterShow(target)};
     instant?swap():wipe(v.dataset.label||'',swap);
   }
   function route(instant){
     const id=decodeURIComponent(location.hash.slice(1));const t=id?document.getElementById(id):null;
-    if(t&&!t.closest('.view')){if(!instant)t.scrollIntoView({behavior:rmqView.matches?'auto':'smooth'});return}
+    if(t&&!t.closest('.view')){if(!instant)(window.smoothTo?smoothTo(t):t.scrollIntoView({behavior:rmqView.matches?'auto':'smooth'}));return}
     const v=(t&&t.closest('.view'))||document.getElementById('home');showView(v,t,instant);
   }
   document.addEventListener('click',e=>{const a=e.target.closest('a[href^="#"]');if(!a)return;if(a.getAttribute('href')===location.hash)setTimeout(()=>route(false),0)});
@@ -2192,7 +2197,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 <aside class="np" id="np" hidden aria-label="Music">
   <div class="np-player"><div id="spotp"></div></div>
   <button class="np-list-btn" type="button" aria-expanded="false" aria-controls="npList"><span>Playlist</span><b data-np-now></b><i aria-hidden="true"></i></button>
-  <ol class="np-list" id="npList" hidden></ol>
+  <ol class="np-list" id="npList" hidden data-lenis-prevent></ol>
   <button class="np-x" type="button" aria-label="Turn music off">×</button>
 </aside>
 <script>

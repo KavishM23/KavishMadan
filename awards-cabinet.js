@@ -153,7 +153,7 @@ window.createTrophyCabinet=function({THREE,Round,environment,reduced,el,anisotro
   card.querySelector('.cab-cat').textContent=it.cat;card.querySelector('.cab-fig').textContent=it.fig;card.querySelector('.cab-title').textContent=it.title;card.querySelector('.cab-text').textContent=it.text;card.querySelector('.cab-lvl').textContent=it.lvl;
   if(counter)counter.textContent=String(i+1).padStart(2,'0')+' / '+String(N).padStart(2,'0');
   dots.forEach((d,k)=>d.setAttribute('aria-current',String(k===i)));card.classList.add('in')}
- dots.forEach((d,k)=>d.addEventListener('click',()=>{const top=host.getBoundingClientRect().top+scrollY,dist=Math.max(1,host.offsetHeight-innerHeight);scrollTo({top:top+dist*(k/(N-1))+2,behavior:reduced?'auto':'smooth'})}));
+ dots.forEach((d,k)=>d.addEventListener('click',()=>{const top=host.getBoundingClientRect().top+scrollY,dist=Math.max(1,host.offsetHeight-innerHeight);(window.smoothTo?smoothTo(top+dist*(k/(N-1))+2):scrollTo({top:top+dist*(k/(N-1))+2,behavior:reduced?'auto':'smooth'}))}));
  slot.customUpdate=(dt,t)=>{
   if(!live)return;
   const r=host.getBoundingClientRect(),dist=Math.max(1,host.offsetHeight-innerHeight),p=clamp(-r.top/dist);

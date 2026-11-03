@@ -83,3 +83,10 @@ Later explicit user decisions take precedence over earlier recommendations in re
 1. **Why:** The user wanted a smaller footprint than YouTube's 200×200 minimum. The music is now Spotify's compact embed (80 px tall) inside a 320 px card. The header switch plays and pauses it through Spotify's embed API.
 2. **Playlist:** The card has a collapsible list: Lacrimosa (Mozart, Jordi Savall), Smooth Operator (Sade), jazz is for ordinary people (berlioz, the default), sea of cloud (Nujabes), Hells Bells (AC/DC), Rock Your Body (instrumental, Starlite Karaoke, since Spotify has no official instrumental) and Father Figure (George Michael). It moves to the next song when one ends.
 3. **Limits:** Peso (A$AP Rocky), Summer Wind (Frank Sinatra, studio) and No Me Platiques Más (Luis Miguel) complete the 10. Visitors not signed in to Spotify hear 30-second previews. Nothing loads from Spotify until the switch is pressed.
+
+## 3 November 2026 — smooth, committed scrolling
+
+1. **Reference check:** trevornoah.com uses Lenis smooth scrolling, which eases toward the scroll target (the slightly delayed feel), and its hero peel is tied to scroll. The user wants transitions never left half-done.
+2. **Smooth scrolling:** Lenis 1.1.13 from unpkg, driven by the GSAP ticker so ScrollTrigger stays in sync (smooth-scroll.js). It pauses whenever an overlay locks the page. The menu, research book, case studies, image viewer and playlist scroll natively (data-lenis-prevent). Nav links, page switches and cabinet dots scroll through it.
+3. **Commit rule:** About 0.18 s after scrolling stops, if the page is resting inside a transition it eases on to the end in the direction you were moving, or back if you were scrolling up. Transitions are each paper tear, each move between cabinet bays and each move between staircase landings. Resting points (the bays, the landings, and the space between tears) never snap.
+4. Off with reduced motion. Touch keeps native scrolling, and the commit rule applies once momentum ends.
