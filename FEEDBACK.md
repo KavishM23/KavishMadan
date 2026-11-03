@@ -97,3 +97,9 @@ Later explicit user decisions take precedence over earlier recommendations in re
 2. **Gates:** Each transition is now a gate on the wheel. Smooth scrolling glides you up to its edge and stops. Pushing past the edge gives up to 22 px of resistance and settles back if you let go. About 120 px of further scrolling (one firm mouse-wheel notch or a short trackpad swipe) commits; it was 190 px before the user asked for it to be a little easier, and the transition plays as one locked, eased move of 0.7–1.35 s.
 3. **Momentum:** Trackpad momentum from the same gesture can't open the next gate; that needs a fresh scroll after a 0.22 s pause. Scrolling the other way at an edge cancels.
 4. **Other input:** Touch, keys and the scrollbar stay native and finish any transition they stop inside. Overlays and pinch-zoom are untouched.
+
+## 3 November 2026 — breathing room and 3D quality
+
+1. **Less text:** Build stories fold behind "The full story" (nothing deleted). Strata's process notes appear on hover on desktop and stay visible on touch. More builds cards and About are cut to one or two lines, and the duplicate Awards card in About is removed. Section and row spacing are increased.
+2. **3D accents (two only):** a quadcopter under the quad stats and the orbit model under the Kessler stats, hidden below 900 px.
+3. **Quality:** Full pixel ratio, capped at 2, on every device. Guitar strings are thin cylinders instead of 1 px lines. The sketchbook has smoother rings and a pencil with a wooden tip, lead and eraser. The drone has twisted two-blade props, prop guards, motor caps, a battery and status LEDs. Backup: versions/pre-declutter/.
