@@ -138,3 +138,7 @@ Later explicit user decisions take precedence over earlier recommendations in re
 ## 3 November 2026 — object clearance
 
 The research book waits for the neighbouring tyre, satellite, tablet and pick to move clear before opening; they return after it closes. The expanded group scales down on narrow screens to stay inside the viewport, and the research label avoids the navigation. The About objects have more room between them. Checked the book and About scene visually, reviewed the staircase and cabinet layouts, and ran the scrolling/rendering regressions and 120 camera-fit cases.
+
+## 3 November 2026 — more detailed trophy cabinet
+
+The cabinet now has recessed, softly lit backing panels, layered walnut and brass mouldings, shelf edges and light housings. Each award sits on a stepped veined-marble plinth with a framed plaque, small fasteners and a soft contact shadow. Awards still turn but stay seated on their stands. Repeated static details are batched to preserve the earlier performance work. Desktop and narrow previews, award navigation and 20 regression tests passed.

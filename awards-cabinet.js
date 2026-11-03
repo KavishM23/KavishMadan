@@ -23,7 +23,13 @@ window.createTrophyCabinet=function({THREE,Round,environment,reduced,el,anisotro
  const gold=new THREE.MeshPhysicalMaterial({color:0xf0c04c,metalness:1,roughness:.2});
  const silver=new THREE.MeshPhysicalMaterial({color:0xd9dde4,metalness:1,roughness:.2});
  const bronze=new THREE.MeshPhysicalMaterial({color:0xb86b3c,metalness:1,roughness:.3});
- const marble=new THREE.MeshPhysicalMaterial({color:0xf4efe6,roughness:.3,clearcoat:.8,clearcoatRoughness:.15});
+ const marbleC=canvasOf(512,512,(g,w,h)=>{g.fillStyle='#eee8dc';g.fillRect(0,0,w,h);for(let i=0;i<34;i++){const x=rng()*w,y=rng()*h;g.strokeStyle=`rgba(91,102,105,${.025+rng()*.09})`;g.lineWidth=.5+rng()*2;g.beginPath();g.moveTo(x,y);g.bezierCurveTo(x+40,y-50,x+105,y+65,x+190,y-25);g.stroke()}for(let i=0;i<7000;i++){const c=rng()<.5?'255,255,255':'94,85,72';g.fillStyle=`rgba(${c},${rng()*.04})`;g.fillRect(rng()*w,rng()*h,2,2)}});
+ const marble=new THREE.MeshPhysicalMaterial({map:tex(marbleC),roughness:.3,clearcoat:.8,clearcoatRoughness:.15});
+ const darkWood=new THREE.MeshPhysicalMaterial({color:0x281b16,roughness:.46,clearcoat:.3});
+ const insetC=canvasOf(512,512,(g,w,h)=>{g.fillStyle='#1d3347';g.fillRect(0,0,w,h);const gr=g.createRadialGradient(w/2,65,12,w/2,160,330);gr.addColorStop(0,'rgba(247,225,187,.45)');gr.addColorStop(.5,'rgba(185,184,164,.12)');gr.addColorStop(1,'rgba(185,184,164,0)');g.fillStyle=gr;g.fillRect(0,0,w,h);for(let i=0;i<8000;i++){g.fillStyle=`rgba(0,0,0,${rng()*.1})`;g.fillRect(rng()*w,rng()*h,1,1)}});
+ const insetMat=new THREE.MeshStandardMaterial({map:tex(insetC),roughness:.96});
+ const shadowC=canvasOf(256,256,(g,w,h)=>{const gr=g.createRadialGradient(w/2,h/2,6,w/2,h/2,w*.49);gr.addColorStop(0,'rgba(8,18,23,.42)');gr.addColorStop(.45,'rgba(8,18,23,.2)');gr.addColorStop(1,'rgba(8,18,23,0)');g.fillStyle=gr;g.fillRect(0,0,w,h)});
+ const contactShadow=new THREE.MeshBasicMaterial({map:tex(shadowC),transparent:true,depthWrite:false,opacity:.72});
  // the felt back wall carries a soft pool of light above every bay
  const backC=canvasOf(256*N,256,(g,w,h)=>{g.fillStyle='#1d3347';g.fillRect(0,0,w,h);for(let i=0;i<N;i++){const cx=(i+.5)*256,gr=g.createRadialGradient(cx,40,6,cx,120,170);gr.addColorStop(0,'rgba(255,236,200,.55)');gr.addColorStop(.45,'rgba(255,226,180,.18)');gr.addColorStop(1,'rgba(255,226,180,0)');g.fillStyle=gr;g.fillRect(cx-128,0,256,h)}for(let i=0;i<9000;i++){g.fillStyle=`rgba(0,0,0,${rng()*.08})`;g.fillRect(rng()*w,rng()*h,1.5,1.5)}});
  const felt=new THREE.MeshStandardMaterial({map:tex(backC),roughness:.95});
@@ -38,6 +44,16 @@ window.createTrophyCabinet=function({THREE,Round,environment,reduced,el,anisotro
  add(new Round(.3,H+.7,D+.3,2,.04),woodEnd,world,-.15,0,0);add(new Round(.3,H+.7,D+.3,2,.04),woodEnd,world,L+.15,0,0);
  const lampMat=new THREE.MeshBasicMaterial({color:0xfff3d6,toneMapped:false});
  for(let i=0;i<N;i++){const cx=(i+.5)*BW;
+  // Layered recess, shelf and mouldings give each bay physical depth without extra lights.
+  const trim=new THREE.Group();trim.position.x=cx;world.add(trim);
+  add(new Round(BW-.22,H-.24,.08,2,.025),darkWood,trim,0,0,-D/2+.08);
+  add(new Round(BW-.4,H-.42,.04,2,.018),insetMat,trim,0,0,-D/2+.13);
+  [-1,1].forEach(s=>{add(new Round(.07,H-.14,.13,2,.018),woodEnd,trim,s*(BW/2-.13),0,-D/2+.18);add(new Round(.018,H-.23,.03,1,.006),brass,trim,s*(BW/2-.2),0,-D/2+.26)});
+  add(new Round(BW-.14,.1,D-.12,2,.025),wood,trim,0,-H/2+.06,0);
+  add(new Round(BW-.18,.045,.065,2,.012),brass,trim,0,-H/2+.12,D/2-.04);
+  add(new Round(BW-.18,.11,.16,2,.025),woodEnd,trim,0,H/2-.09,-D/2+.18);
+  batch(trim);
+  const housing=add(new THREE.CylinderGeometry(.22,.18,.11,32),darkWood,world,cx,H/2-.09,.2);housing.rotation.z=Math.PI;
   add(new THREE.CylinderGeometry(.13,.13,.04,28),lampMat,world,cx,H/2-.02,.2);
   const ring=add(new THREE.TorusGeometry(.14,.02,8,28),brass,world,cx,H/2-.03,.2);ring.rotation.x=Math.PI/2;
   if(i>0){add(new Round(.05,H,.06,1,.015),brass,world,i*BW,0,D/2+.02);add(new Round(.12,H,.12,1,.02),woodEnd,world,i*BW,0,-D/2+.06)}
@@ -133,9 +149,18 @@ window.createTrophyCabinet=function({THREE,Round,environment,reduced,el,anisotro
   ()=>hungMedal(silver,faceTex('DofE','SILVER',SILV),['#4E5C3C','#F1E6D2'])
  ];
  const bays=items.map((it,i)=>{const cx=(i+.5)*BW,bay=new THREE.Group();bay.position.set(cx,-H/2,0);world.add(bay);
-  add(new Round(1.7,.55,1.15,3,.05),marble,bay,0,.275,.1);
-  add(new THREE.PlaneGeometry(1.05,.33),new THREE.MeshPhysicalMaterial({map:plaqueTex(it),metalness:.85,roughness:.3}),bay,0,.29,.68);
-  const holder=new THREE.Group();holder.position.set(0,.55,.05);bay.add(holder);const obj=batch((kinds[i]||kinds[0])());holder.add(obj);
+  const plinth=new THREE.Group();bay.add(plinth);
+  const shade=add(new THREE.PlaneGeometry(2.25,1.55),contactShadow,plinth,0,.115,.1);shade.rotation.x=-Math.PI/2;
+  add(new Round(1.84,.09,1.29,3,.025),darkWood,plinth,0,.165,.1);
+  add(new Round(1.76,.055,1.21,3,.014),brass,plinth,0,.235,.1);
+  add(new Round(1.7,.42,1.15,3,.05),marble,plinth,0,.46,.1);
+  add(new Round(1.78,.045,1.23,3,.012),brass,plinth,0,.685,.1);
+  add(new Round(1.86,.08,1.31,3,.025),marble,plinth,0,.745,.1);
+  add(new Round(1.13,.38,.035,3,.018),darkWood,plinth,0,.46,.69);
+  add(new THREE.PlaneGeometry(1.05,.33),new THREE.MeshPhysicalMaterial({map:plaqueTex(it),metalness:.85,roughness:.3}),plinth,0,.46,.711);
+  const screwGeo=new THREE.SphereGeometry(.018,10,8);[-.51,.51].forEach(x=>{const screw=add(screwGeo,brass,plinth,x,.46,.735);screw.scale.z=.4});
+  batch(plinth);
+  const holder=new THREE.Group();holder.position.set(0,.79,.05);bay.add(holder);const obj=batch((kinds[i]||kinds[0])());holder.add(obj);
   return{bay,holder,obj,emph:0,spin:0}});
  world.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=false}});
 
@@ -163,7 +188,7 @@ window.createTrophyCabinet=function({THREE,Round,environment,reduced,el,anisotro
   spot.position.set(cx,H/2+.6,2.6);spot.target.position.set(cx,-H/2+.9,0);
   const reach=Math.max(2.5,Math.ceil(Math.tan(camera.fov*Math.PI/360)*camera.position.z*stage.width/Math.max(1,stage.height)/BW)+1.5);
   bays.forEach((b,i)=>{b.bay.visible=Math.abs(q-i)<reach;if(!b.bay.visible)return;const on=Math.max(0,1-Math.abs(q-i));b.emph=damp(b.emph,on,6,dt);b.spin+=dt*(.25+b.emph*.35);
-   b.holder.rotation.y=Math.sin(b.spin)*.35*b.emph+(1-b.emph)*-.25;b.holder.position.y=.55+b.emph*.08+Math.sin(t*1.3+i)*.02*b.emph;
+   b.holder.rotation.y=Math.sin(b.spin)*.35*b.emph+(1-b.emph)*-.25;
    const sw=b.obj.userData.swing;if(sw)sw.rotation.z=Math.sin(t*1.6+i)*.05*b.emph;b.obj.userData.wave?.(t)});
  };
  addEventListener('resize',measure);measure();if(live)show(0);
