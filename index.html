@@ -2249,7 +2249,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
       const tgt=(k2===hoverKey||k2===focusKey)?1:0;ud.h=damp(ud.h,tgt,9,dt);
       if(ud.intro<1&&!document.documentElement.classList.contains('intro-hold')){ud.delay-=dt;if(ud.delay<0)ud.intro=Math.min(1,ud.intro+dt/1.1)}
       const e=1-Math.pow(1-ud.intro,3),bob=reduce?0:Math.sin(t*.9+ud.phase)*.035;
-      const dx=({builds:-.70,research:.48,linkedin:.62,about:.45,kessler:-.28})[k2]||0;
+      const dx=({builds:-.45,research:.48,linkedin:.62,about:.45,kessler:-.28})[k2]||0;
       const dy=k2==='kessler'?1.05*bookClearance:0;
       o.position.set(ud.base.x+dx*bookClearance,ud.base.y+dy+bob+ud.h*.13-(1-e)*2.4,ud.base.z+ud.h*.1);
       o.rotation.set(ud.rot.x-ud.h*.05,ud.rot.y-ud.h*ud.rot.y*.3,ud.rot.z+(reduce?0:Math.sin(t*.6+ud.phase)*.02));
