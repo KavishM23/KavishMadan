@@ -17,3 +17,7 @@ One static page, no build step. The hero's 3D objects are modelled in [three.js]
 `models.js` supplies the additional About, Code and Awards objects; they share the hero's WebGL renderer. `interactions.js` and `interactions.css` provide the contextual cursor, pointer lenses, touch/keyboard reveal controls and collection layout. The blue palette is retained with a provisional mineral accent pending colour selection. Design decisions are recorded in `FEEDBACK.md`.
 
 `code-journey.js` and `code-journey.css` turn the Code page into a scroll-driven spiral staircase with LastBite and TutorTime landings and a following drone. Short-screen, reduced-motion and WebGL fallbacks retain a normal project layout. The final code-behind-the-builds section is preserved.
+
+`render-performance.js` batches static model details, manages a single cancellable render loop and adapts framebuffer density under sustained load. The 3D loop targets 60 fps and pauses offscreen, in background tabs and behind open overlays. Static camera bounds are cached; the staircase steps and posts use instancing. Geometry detail, the book notes and the page grain are retained.
+
+Run the controller and scroll regression tests with `node --test tests/*.test.cjs`. For local profiling, append `?profile=1` before the page hash; the canvas's `data-performance` attribute reports rolling frame intervals, update/render CPU time and draw counts. Detailed profiling is disabled on ordinary visits. Timing varies with the browser, GPU and other work on the device.

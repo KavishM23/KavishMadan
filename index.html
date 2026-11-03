@@ -1863,16 +1863,19 @@ html.intro-hold .obj-labs{visibility:hidden}
 })();
 </script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script src="render-performance.js"></script>
 <script type="module">
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 (async function(){
   const hero=document.getElementById('hero'), canvas=document.getElementById('hero3d'), head=document.querySelector('.head');
   if(!hero||!canvas||!head)return;
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   const fine=matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const batch=root=>PortfolioRender.batchStatic(root,THREE,mergeGeometries);
 
   let renderer;
   try{renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,powerPreference:'high-performance'})}catch(e){return}
@@ -1889,6 +1892,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
   scene.add(new THREE.HemisphereLight(0xf1e6d2,0x244b63,0.6));
   const key=new THREE.DirectionalLight(0xffffff,2.3);key.castShadow=true;
   key.shadow.mapSize.set(2048,2048);key.shadow.bias=-0.0004;key.shadow.normalBias=0.025;key.shadow.radius=4;
+  key.shadow.autoUpdate=false;key.shadow.needsUpdate=true;
   scene.add(key,key.target);
   const rim=new THREE.DirectionalLight(0xd6a44a,1.3);rim.position.set(8,4,-8);scene.add(rim);
   const fill=new THREE.DirectionalLight(0xb4cfda,.55);fill.position.set(7,-2,8);scene.add(fill);
@@ -2076,7 +2080,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
     const valve=new THREE.Group();valve.position.set(0,-.4,.24);spin.add(valve);
     const vs=new THREE.Mesh(new THREE.CylinderGeometry(.018,.022,.1,14),M.steel);vs.rotation.x=Math.PI/2;vs.position.z=.05;valve.add(vs);
     const vc=new THREE.Mesh(new THREE.CylinderGeometry(.026,.026,.045,16),new THREE.MeshPhysicalMaterial({color:0x111114,roughness:.5}));vc.rotation.x=Math.PI/2;vc.position.z=.11;valve.add(vc);
-    root.userData.labelY=1.15;root.userData.vel=.25;
+    batch(spin);root.userData.labelY=1.15;root.userData.vel=.25;
     root.userData.tick=(dt,h)=>{const ud=root.userData;ud.vel=damp(ud.vel,reduce?0:(.25+h*4.5),4,dt);spin.rotation.z-=ud.vel*dt};
     return root;
   }
@@ -2161,25 +2165,34 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
     l.addEventListener('focus',()=>{focusKey=l.dataset.key});l.addEventListener('blur',()=>{if(focusKey===l.dataset.key)focusKey=null})});
   hero.classList.add('has3d');
 
-  const atelier=window.createPortfolioAtelier({THREE,Round:RoundedBoxGeometry,environment:scene.environment,reduced:reduce,anisotropy:ANISO});
-  function renderPortfolios(){
+  const atelier=window.createPortfolioAtelier({THREE,Round:RoundedBoxGeometry,environment:scene.environment,reduced:reduce,anisotropy:ANISO,batch});
+  renderer.info.autoReset=false;const probe=PortfolioRender.createProbe(canvas,renderer);
+  function measureScenes(){
+    const draws=[];
+    function measure(el,world,view,slot){
+      if(el.closest('[hidden]'))return;const rect=el.getBoundingClientRect();if(!rect.width||!rect.height||rect.bottom<=0||rect.top>=innerHeight)return;
+      if(slot)slot.rect=rect;draws.push({el,world,view,rect});
+    }
+    if(heroVisible)measure(hero,scene,camera);for(const slot of atelier.slots)if(slot.visible)measure(slot.el,slot.scene,slot.camera,slot);
+    return draws;
+  }
+  function renderPortfolios(draws=measureScenes()){
+    renderer.info.reset();
     const width=innerWidth,height=innerHeight;renderer.setScissorTest(false);renderer.setViewport(0,0,width,height);renderer.clear();renderer.setScissorTest(true);
-    function draw(el,world,view){
-      if(el.closest('[hidden]'))return;const r=el.getBoundingClientRect();if(!r.width||!r.height||r.bottom<=0||r.top>=height)return;
-      const left=Math.max(0,r.left),right=Math.min(width,r.right),top=Math.max(0,r.top),bottom=Math.min(height,r.bottom);if(right<=left||bottom<=top)return;
+    for(const {world,view,rect:r} of draws){
+      const left=Math.max(0,r.left),right=Math.min(width,r.right),top=Math.max(0,r.top),bottom=Math.min(height,r.bottom);if(right<=left||bottom<=top)continue;
       renderer.setViewport(r.left,height-r.bottom,r.width,r.height);renderer.setScissor(left,height-bottom,right-left,bottom-top);view.aspect=r.width/r.height;view.updateProjectionMatrix();renderer.clearDepth();renderer.render(world,view);
     }
-    draw(hero,scene,camera);for(const slot of atelier.slots)if(slot.visible)draw(slot.el,slot.scene,slot.camera);renderer.setScissorTest(false);
+    renderer.setScissorTest(false);
   }
 
   /* ---------- sizing: cluster is pinned to the torn edge of the head ---------- */
-  let W=1,H=1,unit=1;
+  let W=1,H=1,unit=1,quality=null,viewportKey='';
   /* the cluster is drawn about as wide as the head opening, as in the reference, not twice as wide */
   const CLUSTER=.86;
   function layout(){
-    // Preserve native detail; add budgeted supersampling on ordinary-density displays.
-    const density=Math.min(devicePixelRatio||1,2),extra=Math.min(1.5,Math.sqrt(8000000/(innerWidth*innerHeight)));
-    renderer.setPixelRatio(Math.max(density,extra));renderer.setSize(innerWidth,innerHeight,false);
+    const sizeKey=[innerWidth,innerHeight,devicePixelRatio].join(':');
+    if(sizeKey!==viewportKey){viewportKey=sizeKey;const ceiling=Math.max(1,Math.min(devicePixelRatio||1,2,Math.sqrt(6000000/(innerWidth*innerHeight))));quality=PortfolioRender.createQuality(ceiling);renderer.setPixelRatio(ceiling);renderer.setSize(innerWidth,innerHeight,false)}
     const r=hero.getBoundingClientRect();if(!r.width||!r.height)return;W=r.width;H=r.height;
     camera.aspect=W/H;camera.updateProjectionMatrix();
     const hw=head.offsetWidth,hh=hw*2247/1800,ht=head.offsetTop;
@@ -2189,39 +2202,42 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
     unit=(.228*hw*k)/1.3*(W>620?CLUSTER:1);cluster.scale.setScalar(unit);
     const sc=key.shadow.camera,ext=3.2*unit;sc.left=-ext;sc.right=ext;sc.top=ext;sc.bottom=-ext;sc.near=.1;sc.far=60;sc.updateProjectionMatrix();
     key.target.position.copy(cluster.position).add(new THREE.Vector3(0,unit,0));key.position.copy(key.target.position).add(new THREE.Vector3(-6,9,14));
+    key.shadow.needsUpdate=true;
   }
   new ResizeObserver(layout).observe(hero);
   head.complete?layout():head.addEventListener('load',layout);
   let rzT;addEventListener('resize',()=>{layout();clearTimeout(rzT);rzT=setTimeout(layout,320)});
 
   /* ---------- pointer ---------- */
-  const ray=new THREE.Raycaster(),ndc=new THREE.Vector2();let px=0,py=0,downAt=null;
+  const ray=new THREE.Raycaster(),ndc=new THREE.Vector2();let px=0,py=0,downAt=null,pendingPick=null;
   function pick(cx,cy){const r=hero.getBoundingClientRect();if(cx<r.left||cx>r.right||cy<r.top||cy>r.bottom)return null;
     ndc.set((cx-r.left)/r.width*2-1,-((cy-r.top)/r.height)*2+1);ray.setFromCamera(ndc,camera);const hit=ray.intersectObjects(pickables,false)[0];return hit?hit.object.userData.root.userData.key:null}
   const modelLabels={research:'Read',builds:'Builds',kessler:'Orbit',linkedin:'Visit',about:'About'};
   addEventListener('pointermove',e=>{px=e.clientX/innerWidth-.5;py=e.clientY/innerHeight-.5;
-    if(e.pointerType==='mouse'||!e.pointerType){const overHero=!hero.closest('[hidden]')&&hero.contains(e.target)&&!e.target.closest('a,button');const k2=overHero?pick(e.clientX,e.clientY):null;hoverKey=k2;window.portfolioCursor?.setModelLabel(modelLabels[k2]||'')}
+    if(e.pointerType==='mouse'||!e.pointerType){const overHero=!hero.closest('[hidden]')&&hero.contains(e.target)&&!e.target.closest('a,button');pendingPick=overHero?[e.clientX,e.clientY]:null;if(!overHero){hoverKey=null;window.portfolioCursor?.setModelLabel('')}}
   },{passive:true});
   hero.addEventListener('pointerdown',e=>{if(!e.target.closest('a,button'))downAt=[e.clientX,e.clientY]});
   hero.addEventListener('pointerup',e=>{if(!downAt)return;const moved=Math.hypot(e.clientX-downAt[0],e.clientY-downAt[1]);downAt=null;if(moved>8||e.target.closest('a,button'))return;const k2=pick(e.clientX,e.clientY);if(k2){act(k2);if(e.pointerType!=='mouse'){hoverKey=k2;setTimeout(()=>{if(hoverKey===k2)hoverKey=null},900)}}});
   hero.addEventListener('pointercancel',()=>{downAt=null});
-  hero.addEventListener('pointerleave',()=>{hoverKey=null;window.portfolioCursor?.setModelLabel('')});
+  hero.addEventListener('pointerleave',()=>{pendingPick=null;hoverKey=null;window.portfolioCursor?.setModelLabel('')});
 
   const v3=new THREE.Vector3();
-  function screenOf(o,y){v3.set(0,y,0);o.localToWorld(v3);v3.project(camera);const r=hero.getBoundingClientRect();return{x:(v3.x*.5+.5)*r.width+r.left,y:(-v3.y*.5+.5)*r.height+r.top}}
+  function screenOf(o,y,r=hero.getBoundingClientRect()){v3.set(0,y,0);o.localToWorld(v3);v3.project(camera);return{x:(v3.x*.5+.5)*r.width+r.left,y:(-v3.y*.5+.5)*r.height+r.top}}
   function openBook(){const b=roots.research;b.userData.openTarget=2.5;const p=screenOf(b,0);setTimeout(()=>{window.openResearch&&window.openResearch(p.x,p.y)},reduce?0:430)}
   function act(k2){if(k2==='research'){openBook();return}const l=labs[k2];if(l)l.click()}
   window.hero3d={openBook,closeBook(){roots.research.userData.openTarget=0}};
 
   /* ---------- loop: objects stay on the head; only gentle bob, hover and pointer tilt ---------- */
-  let running=false,visible=true,heroVisible=true,last=performance.now(),t=0,cpx=0,cpy=0,lastTop=-1,lastW=-1;
-  function update(dt){
+  let visible=true,heroVisible=true,last=performance.now(),nextPaint=last,t=0,cpx=0,cpy=0,lastTop=-1,lastW=-1,nextShadow=0;
+  const labelState=new Map();
+  function update(dt,hr=hero.getBoundingClientRect()){
     t+=dt;
+    if(pendingPick){hoverKey=pick(...pendingPick);pendingPick=null;window.portfolioCursor?.setModelLabel(modelLabels[hoverKey]||'')}
+    if(t>=nextShadow){key.shadow.needsUpdate=true;nextShadow=t+1/30}
     if(!reduce){cpx=damp(cpx,px,3,dt);cpy=damp(cpy,py,3,dt)}
     cluster.rotation.y=cpx*.16;cluster.rotation.x=cpy*.07;
     cluster.visible=!document.documentElement.classList.contains('intro-hold');
     if(head.offsetTop!==lastTop||head.offsetWidth!==lastW){lastTop=head.offsetTop;lastW=head.offsetWidth;layout()}
-    const hr=hero.getBoundingClientRect();
     for(const k2 in roots){const o=roots[k2],ud=o.userData;
       const tgt=(k2===hoverKey||k2===focusKey)?1:0;ud.h=damp(ud.h,tgt,9,dt);
       if(ud.intro<1&&!document.documentElement.classList.contains('intro-hold')){ud.delay-=dt;if(ud.delay<0)ud.intro=Math.min(1,ud.intro+dt/1.1)}
@@ -2230,18 +2246,29 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
       o.rotation.set(ud.rot.x-ud.h*.05,ud.rot.y-ud.h*ud.rot.y*.3,ud.rot.z+(reduce?0:Math.sin(t*.6+ud.phase)*.02));
       o.scale.setScalar(ud.s*(.55+.45*e)*(1+ud.h*.05));
       ud.tick(dt,ud.h,t);
-      const l=labs[k2];if(l){const p=screenOf(o,ud.labelY);l.style.setProperty('--lx',(p.x-hr.left).toFixed(1)+'px');l.style.setProperty('--ly',(p.y-hr.top).toFixed(1)+'px');l.classList.toggle('on',tgt===1)}
+      const l=labs[k2];if(l){let state=labelState.get(k2);if(!state){state={on:false,x:NaN,y:NaN};labelState.set(k2,state)}const on=tgt===1;if(state.on!==on){l.classList.toggle('on',on);state.on=on}if(on){const p=screenOf(o,ud.labelY,hr),x=p.x-hr.left,y=p.y-hr.top;if(!Number.isFinite(state.x)||Math.abs(x-state.x)>.5||Math.abs(y-state.y)>.5){l.style.setProperty('--lx',x.toFixed(1)+'px');l.style.setProperty('--ly',y.toFixed(1)+'px');state.x=x;state.y=y}}}
     }
   }
-  let rafSeen=false,useTimer=false;
-  const next=f=>useTimer?setTimeout(()=>f(performance.now()),16):requestAnimationFrame(n=>{rafSeen=true;f(n)});
-  function frame(now){if(!running)return;const dt=Math.min(.05,(now-last)/1000);last=now;if(heroVisible)update(dt);else t+=dt;atelier.update(dt,t);renderPortfolios();next(frame)}
-  function start(){if(running||!visible||document.hidden)return;running=true;last=performance.now();next(frame);setTimeout(()=>{if(running&&!rafSeen&&!useTimer){useTimer=true;next(frame)}},500)}
-  function stop(){running=false;renderer.setScissorTest(false);renderer.clear()}
+  const loop=PortfolioRender.createLoop(frame);
+  function frame(now){
+    if(now<nextPaint-1)return;const interval=now-last,dt=Math.min(.05,interval/1000);last=now;const budget=1000/60;nextPaint=now+budget-(Math.max(0,now-nextPaint)%budget);
+    const begin=probe?performance.now():0,draws=measureScenes(),heroDraw=draws.find(d=>d.el===hero);
+    if(heroDraw)update(dt,heroDraw.rect);else t+=dt;atelier.update(dt,t);const updated=probe?performance.now():0;renderPortfolios(draws);if(probe)probe.record(now,updated-begin,performance.now()-updated);
+    const density=quality?.sample(interval,now);if(density!==null&&density!==undefined)renderer.setPixelRatio(density);
+  }
+  function start(){if(loop.running||!visible||document.hidden||document.documentElement.style.overflow==='hidden')return;last=performance.now();nextPaint=last;probe?.resume();loop.start()}
+  function stop(){loop.stop();renderer.setScissorTest(false);renderer.clear()}
   const sceneObserver=new IntersectionObserver(entries=>{for(const entry of entries){if(entry.target===hero)heroVisible=entry.isIntersecting;else{const slot=atelier.slots.find(s=>s.el===entry.target);if(slot)slot.visible=entry.isIntersecting}}visible=heroVisible||atelier.slots.some(s=>s.visible);visible?start():stop()});
   sceneObserver.observe(hero);atelier.slots.forEach(s=>sceneObserver.observe(s.el));
-  addEventListener('scroll',()=>{if(visible&&!running)start()},{passive:true});
-  document.addEventListener('visibilitychange',()=>{document.hidden?stop():start()});
+  addEventListener('scroll',()=>{if(visible&&!loop.running)start()},{passive:true});
+  document.addEventListener('visibilitychange',()=>{document.hidden?loop.stop():start()});
+  new MutationObserver(()=>{document.documentElement.style.overflow==='hidden'?loop.stop():start()}).observe(document.documentElement,{attributes:true,attributeFilter:['style']});
+  // Prepare shaders between interactions, using the driver's non-blocking compiler when available.
+  if(renderer.extensions.has('KHR_parallel_shader_compile')){
+    const queue=atelier.slots.slice(),idle=fn=>window.requestIdleCallback?requestIdleCallback(fn,{timeout:2000}):setTimeout(fn,400);
+    const warm=()=>{if(!queue.length)return;if(document.hidden||document.documentElement.classList.contains('intro-run')||document.documentElement.style.overflow==='hidden'){setTimeout(()=>idle(warm),800);return}const slot=queue.shift();renderer.compileAsync(slot.scene,slot.camera).catch(()=>{}).finally(()=>idle(warm))};
+    setTimeout(()=>idle(warm),4500);
+  }
   layout();update(0);renderPortfolios();start();
 })();
 </script>

@@ -1,5 +1,5 @@
 /* Ten honours, one lit display cabinet. Scrolling glides the camera along the bays; each award turns under its spotlight. */
-window.createTrophyCabinet=function({THREE,Round,environment,reduced,el,anisotropy=4}){
+window.createTrophyCabinet=function({THREE,Round,environment,reduced,el,anisotropy=4,batch=root=>root}){
  const host=document.getElementById('cabinet');
  const items=[...document.querySelectorAll('#honors .aw-grid .peel.aw')].map(c=>({cat:c.querySelector('.cat')?.textContent||'',fig:c.querySelector('.fig')?.textContent||'',title:c.querySelector('h4')?.textContent||'',text:c.querySelector('p')?.textContent||'',lvl:c.querySelector('.lvl')?.textContent||''}));
  const N=items.length,BW=3.3,H=3.7,D=1.9,L=N*BW;
@@ -135,7 +135,7 @@ window.createTrophyCabinet=function({THREE,Round,environment,reduced,el,anisotro
  const bays=items.map((it,i)=>{const cx=(i+.5)*BW,bay=new THREE.Group();bay.position.set(cx,-H/2,0);world.add(bay);
   add(new Round(1.7,.55,1.15,3,.05),marble,bay,0,.275,.1);
   add(new THREE.PlaneGeometry(1.05,.33),new THREE.MeshPhysicalMaterial({map:plaqueTex(it),metalness:.85,roughness:.3}),bay,0,.29,.68);
-  const holder=new THREE.Group();holder.position.set(0,.55,.05);bay.add(holder);const obj=(kinds[i]||kinds[0])();holder.add(obj);
+  const holder=new THREE.Group();holder.position.set(0,.55,.05);bay.add(holder);const obj=batch((kinds[i]||kinds[0])());holder.add(obj);
   return{bay,holder,obj,emph:0,spin:0}});
  world.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=false}});
 
@@ -158,10 +158,11 @@ window.createTrophyCabinet=function({THREE,Round,environment,reduced,el,anisotro
   if(!live)return;
   const r=host.getBoundingClientRect(),dist=Math.max(1,host.offsetHeight-innerHeight),p=clamp(-r.top/dist);
   q=damp(q,mapped(p),7,dt);show(Math.round(q));
-  const narrow=el.clientWidth/Math.max(1,el.clientHeight)<1,cx=(q+.5)*BW;
+  const stage=slot.rect||el.getBoundingClientRect(),narrow=stage.width/Math.max(1,stage.height)<1,cx=(q+.5)*BW;
   camera.fov=narrow?44:36;camera.position.set(cx-(narrow?.3:1.05),narrow?.05:.35,narrow?6.3:7.4);camera.lookAt(cx+(narrow?0:.15),narrow?-.75:-.55,0);
   spot.position.set(cx,H/2+.6,2.6);spot.target.position.set(cx,-H/2+.9,0);
-  bays.forEach((b,i)=>{const on=Math.max(0,1-Math.abs(q-i));b.emph=damp(b.emph,on,6,dt);b.spin+=dt*(.25+b.emph*.35);
+  const reach=Math.max(2.5,Math.ceil(Math.tan(camera.fov*Math.PI/360)*camera.position.z*stage.width/Math.max(1,stage.height)/BW)+1.5);
+  bays.forEach((b,i)=>{b.bay.visible=Math.abs(q-i)<reach;if(!b.bay.visible)return;const on=Math.max(0,1-Math.abs(q-i));b.emph=damp(b.emph,on,6,dt);b.spin+=dt*(.25+b.emph*.35);
    b.holder.rotation.y=Math.sin(b.spin)*.35*b.emph+(1-b.emph)*-.25;b.holder.position.y=.55+b.emph*.08+Math.sin(t*1.3+i)*.02*b.emph;
    const sw=b.obj.userData.swing;if(sw)sw.rotation.z=Math.sin(t*1.6+i)*.05*b.emph;b.obj.userData.wave?.(t)});
  };

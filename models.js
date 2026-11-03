@@ -1,5 +1,5 @@
 /* Extra scenes share the hero's renderer, environment map and animation clock. */
-window.createPortfolioAtelier=function({THREE,Round,environment,reduced,anisotropy=4}){
+window.createPortfolioAtelier=function({THREE,Round,environment,reduced,anisotropy=4,batch=root=>root}){
  const surfaceCanvas=document.createElement('canvas');surfaceCanvas.width=surfaceCanvas.height=128;const surfaceContext=surfaceCanvas.getContext('2d');
  let surfaceSeed=41;for(let y=0;y<128;y++)for(let x=0;x<128;x++){surfaceSeed=surfaceSeed*16807%2147483647;const shade=205+Math.floor(surfaceSeed/2147483647*50);surfaceContext.fillStyle=`rgb(${shade},${shade},${shade})`;surfaceContext.fillRect(x,y,1,1)}
  const surface=new THREE.CanvasTexture(surfaceCanvas);surface.wrapS=surface.wrapT=THREE.RepeatWrapping;surface.repeat.set(3,3);surface.anisotropy=anisotropy;
@@ -52,11 +52,11 @@ window.createPortfolioAtelier=function({THREE,Round,environment,reduced,anisotro
  const factories={guitar,sketch:sketchbook,orbit,drone,trophy};
  const descriptions={guitar:'Guitar / Trinity Grade 8',sketch:'Sketchbook / Project Strata body studies',orbit:'Orbit / 450, 550 and 850 km',drone:'Anti-drone quadcopter study',trophy:'Awards & olympiads'};
  const slots=[...document.querySelectorAll('[data-scene]')].map(el=>{
-  if(el.dataset.scene==='staircase')return window.createCodeStaircase({THREE,Round,environment,makeDrone:drone,reduced,el,anisotropy});
-  if(el.dataset.scene==='cabinet')return window.createTrophyCabinet({THREE,Round,environment,reduced,el,anisotropy});
+  if(el.dataset.scene==='staircase')return window.createCodeStaircase({THREE,Round,environment,makeDrone:()=>batch(drone()),reduced,el,anisotropy});
+  if(el.dataset.scene==='cabinet')return window.createTrophyCabinet({THREE,Round,environment,reduced,el,anisotropy,batch});
   const scene=new THREE.Scene();scene.environment=environment;scene.add(new THREE.HemisphereLight(0xf1e6d2,0x244b63,1.8));const key=new THREE.DirectionalLight(0xffffff,3.5);key.position.set(-4,6,8);scene.add(key);const rim=new THREE.DirectionalLight(0xb5d2de,1.9);rim.position.set(5,2,-5);scene.add(rim);
   const camera=new THREE.PerspectiveCamera(32,1,.1,100);camera.position.set(0,.15,el.dataset.scene==='about'?13.6:el.classList.contains('accent-model')?(el.dataset.scene==='drone'?6.6:6.2):9.8);camera.lookAt(0,0,0);const group=new THREE.Group();scene.add(group);const keys=el.dataset.scene==='about'?['guitar','sketch','orbit']:[el.dataset.scene];
-  const models=keys.map((k,i)=>{const obj=factories[k]();group.add(obj);let base=keys.length===1?new THREE.Vector3(0,0,0):[new THREE.Vector3(-1.1,-.45,.4),new THREE.Vector3(1.36,-.85,-.25),new THREE.Vector3(1.5,1.5,-.8)][i];const scale=keys.length===1?(k==='drone'?1.28:1.35):[.83,.92,.74][i];const rotation=keys.length===1?new THREE.Euler(.05,-.3,-.15):[new THREE.Euler(.08,.12,-.22),new THREE.Euler(-.32,-.32,.21),new THREE.Euler(.2,0,-.2)][i];return{key:k,obj,base,scale,rotation,emphasis:0}});
+  const models=keys.map((k,i)=>{const obj=batch(factories[k]());const bounds=PortfolioRender.localBounds(obj,THREE);bounds.expandByScalar(k==='orbit'?.24:k==='drone'?.04:.01);group.add(obj);let base=keys.length===1?new THREE.Vector3(0,0,0):[new THREE.Vector3(-1.1,-.45,.4),new THREE.Vector3(1.36,-.85,-.25),new THREE.Vector3(1.5,1.5,-.8)][i];const scale=keys.length===1?(k==='drone'?1.28:1.35):[.83,.92,.74][i];const rotation=keys.length===1?new THREE.Euler(.05,-.3,-.15):[new THREE.Euler(.08,.12,-.22),new THREE.Euler(-.32,-.32,.21),new THREE.Euler(.2,0,-.2)][i];return{key:k,obj,bounds,base,scale,rotation,emphasis:0}});
   const slot={el,scene,camera,group,models,selected:null,visible:false,rotation:0,targetRotation:0,pitch:0,targetPitch:0,hover:false,dragging:false};el.classList.add('ready');
   const select=k=>{slot.selected=k;el.querySelectorAll('[data-model]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.model===k)));document.querySelectorAll(`.interest-row[data-model]`).forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.model===k)));const status=el.querySelector('[data-model-status]');if(status)status.textContent=descriptions[k]||'A few things from the workbench.'};
   el.querySelectorAll('[data-model]').forEach(b=>b.addEventListener('click',()=>select(slot.selected===b.dataset.model?null:b.dataset.model)));
@@ -72,15 +72,16 @@ window.createPortfolioAtelier=function({THREE,Round,environment,reduced,anisotro
  const damp=(a,b,k,dt)=>a+(b-a)*(1-Math.exp(-k*dt));
  // keep every object whole inside its stage: whatever the drag angle, hover lift or stage shape, the camera backs off
  // until the object's projected bounds sit inside the frame (it never moves closer than the authored distance)
- const fitBox=new THREE.Box3(),fitV=new THREE.Vector3();
+ const fitBox=new THREE.Box3(),modelBox=new THREE.Box3(),fitV=new THREE.Vector3();
  function fit(slot,dt){
-  const cam=slot.camera,r=slot.el.getBoundingClientRect();if(!r.width||!r.height)return;
+  const cam=slot.camera,r=slot.rect||slot.el.getBoundingClientRect();if(!r.width||!r.height)return;
   if(!slot.fit)slot.fit={base:cam.position.z,ready:false};
   cam.aspect=r.width/r.height;cam.updateProjectionMatrix();cam.updateMatrixWorld();
-  slot.group.updateMatrixWorld(true);fitBox.setFromObject(slot.group);if(fitBox.isEmpty())return;
+  slot.group.updateWorldMatrix(true,false);fitBox.makeEmpty();for(const model of slot.models){model.obj.updateWorldMatrix(false,false);fitBox.union(modelBox.copy(model.bounds).applyMatrix4(model.obj.matrixWorld))}if(fitBox.isEmpty())return;
   let m=0;for(let i=0;i<8;i++){fitV.set(i&1?fitBox.max.x:fitBox.min.x,i&2?fitBox.max.y:fitBox.min.y,i&4?fitBox.max.z:fitBox.min.z).project(cam);m=Math.max(m,Math.abs(fitV.x),Math.abs(fitV.y))}
   const want=Math.max(slot.fit.base,cam.position.z*m/.84);
-  cam.position.z=slot.fit.ready?damp(cam.position.z,want,6,dt):want;slot.fit.ready=true;cam.lookAt(0,0,0);
+  // Back off immediately when rotation or a narrower viewport needs room; ease back in afterward.
+  cam.position.z=slot.fit.ready&&want<cam.position.z?damp(cam.position.z,want,6,dt):want;slot.fit.ready=true;cam.lookAt(0,0,0);
  }
  return{slots,update(dt,t){for(const slot of slots){if(!slot.visible)continue;if(slot.customUpdate){slot.customUpdate(dt,t);continue}slot.rotation=damp(slot.rotation,slot.targetRotation,10,dt);slot.pitch=damp(slot.pitch,slot.targetPitch,10,dt);slot.group.rotation.y=slot.rotation+(reduced?0:Math.sin(t*.28)*.08);slot.group.rotation.x=slot.pitch;for(const [i,m] of slot.models.entries()){m.emphasis=damp(m.emphasis,slot.selected===m.key?1:0,7,dt);m.obj.position.copy(m.base);m.obj.position.z+=m.emphasis*.85;m.obj.position.y+=(reduced?0:Math.sin(t*.8+i*1.4)*.055)+m.emphasis*.12;m.obj.rotation.copy(m.rotation);m.obj.rotation.y+=m.emphasis*.15;m.obj.scale.setScalar(m.scale*(1+m.emphasis*.13));m.obj.userData.tick?.(t,slot.hover?1:0)}fit(slot,dt)}}};
 };
