@@ -657,6 +657,7 @@ html.intro-hold .obj-labs{visibility:hidden}
 </style>
 <link rel="stylesheet" href="interactions.css">
 <link rel="stylesheet" href="code-journey.css">
+<link rel="stylesheet" href="awards-cabinet.css">
 </head>
 <body>
 <!-- sticker art (reused below) -->
@@ -771,6 +772,7 @@ html.intro-hold .obj-labs{visibility:hidden}
   <a class="brand" href="#top">Kavish Madan</a>
   <nav aria-label="Primary navigation">
     <div class="tabs"><a href="#home" data-tab="home">Builds</a><a href="#code" data-tab="code">Code</a><a href="#awards" data-tab="awards">Awards</a></div>
+    <button class="snd" id="sndBtn" type="button" aria-pressed="false" aria-label="Background music: berlioz, jazz is for ordinary people"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17.5V6l10-2v11.5"/><circle cx="6.5" cy="17.5" r="2.5"/><circle cx="16.5" cy="15.5" r="2.5"/></svg><span class="snd-sw" aria-hidden="true"><i></i></span></button>
     <button class="circ" id="menuBtn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="menu"><span></span><span></span></button>
     <a class="pill" href="#contact">Get in touch</a>
   </nav>
@@ -1320,6 +1322,19 @@ html.intro-hold .obj-labs{visibility:hidden}
         <div class="drop"><div class="tilt" style="--r:1.5deg"><div class="peel aw"><span class="cat">Computing</span><div class="fig">Top 7</div><h4>UAE InnovAIte Hackathon</h4><p>Finalist out of 60+ teams, with LastBite.</p><span class="lvl">HACKATHON</span></div></div></div>
         <div class="drop"><div class="tilt" style="--r:-1deg"><div class="peel aw pk"><span class="cat">Selection</span><div class="fig">1 of 1,800</div><h4>Yale Young Global Scholars</h4><p>Picked from 14,000+ applicants.</p><span class="lvl">SELECTIVE PROGRAMME</span></div></div></div>
         <div class="drop"><div class="tilt" style="--r:2deg"><div class="peel aw"><span class="cat">Other</span><div class="fig">Silver</div><h4>Duke of Edinburgh's Award</h4><p>Bronze, then Silver.</p><span class="lvl">AWARD</span></div></div></div>
+      </div>
+    </div>
+    <div class="cabinet" id="cabinet" aria-label="Honors in a trophy cabinet">
+      <div class="cab-sticky">
+        <div class="cab-scene" data-scene="cabinet" aria-hidden="true"></div>
+        <div class="cab-card" aria-live="polite">
+          <p class="cab-meta"><span class="cab-cat"></span><span class="cab-count" data-cab-count></span></p>
+          <div class="cab-fig"></div>
+          <h3 class="cab-title"></h3>
+          <p class="cab-text"></p>
+          <span class="cab-lvl"></span>
+        </div>
+        <div class="cab-foot"><div class="cab-dots" role="group" aria-label="Jump to an honour"></div><p class="cab-hint">Scroll along the shelves</p></div>
       </div>
     </div>
   </section>
@@ -2174,8 +2189,33 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
   layout();update(0);renderPortfolios();start();
 })();
 </script>
+<aside class="np" id="np" hidden aria-label="Now playing">
+  <div class="np-player"><div id="ytp"></div></div>
+  <div class="np-meta"><span class="np-k">Now playing</span><b>jazz is for ordinary people</b><span>berlioz</span></div>
+  <button class="np-x" type="button" aria-label="Turn music off">×</button>
+</aside>
+<script>
+/* background music: the official berlioz upload, played through YouTube's own player, which stays visible while it plays */
+(function(){
+  const btn=document.getElementById('sndBtn'),card=document.getElementById('np'),ID='CJkGGslFneE';
+  if(!btn||!card)return;
+  let player=null,ready=false,on=false,loading=false;
+  const mark=v=>{btn.setAttribute('aria-pressed',String(v));btn.classList.toggle('on',v)};
+  function setOn(v){on=v;mark(v);card.hidden=!v;if(v){ready?player.playVideo():load()}else if(ready)player.pauseVideo()}
+  function load(){if(loading)return;loading=true;
+    const make=()=>{player=new YT.Player('ytp',{host:'https://www.youtube-nocookie.com',videoId:ID,width:'100%',height:'100%',
+      playerVars:{autoplay:1,loop:1,playlist:ID,playsinline:1,rel:0,modestbranding:1},
+      events:{onReady:e=>{ready=true;e.target.setVolume(45);on?e.target.playVideo():e.target.pauseVideo()},
+              onStateChange:e=>{if(!on)return;if(e.data===YT.PlayerState.PLAYING)mark(true);else if(e.data===YT.PlayerState.PAUSED)mark(false)}}})};
+    if(window.YT&&YT.Player)make();
+    else{const prev=window.onYouTubeIframeAPIReady;window.onYouTubeIframeAPIReady=()=>{prev&&prev();make()};const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';s.async=true;document.head.append(s)}}
+  btn.addEventListener('click',()=>setOn(!(on&&btn.classList.contains('on'))));
+  card.querySelector('.np-x').addEventListener('click',()=>setOn(false));
+})();
+</script>
 <script src="interactions.js"></script>
 <script src="code-journey.js"></script>
+<script src="awards-cabinet.js"></script>
 <script src="models.js"></script>
 </body>
 </html>

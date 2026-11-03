@@ -1,0 +1,34 @@
+/* Honours as a lit trophy cabinet. Without WebGL, on short screens or with reduced motion the card grid stays. */
+.cabinet{display:none}
+html.cabinet-ready #honors .aw-grid{display:none}
+html.cabinet-ready #honors{padding-bottom:0}
+html.cabinet-ready .cabinet{display:block;position:relative;height:640svh;min-height:3800px;margin-top:clamp(10px,2vw,24px)}
+.cab-sticky{position:sticky;top:0;height:100svh;min-height:560px;overflow:hidden}
+.cab-scene{position:absolute;left:31%;right:0;top:78px;bottom:0;pointer-events:none}
+.cab-card{position:absolute;z-index:2;left:max(28px,4vw);top:52%;translate:0 -50%;width:min(29%,410px);color:var(--fg)}
+.cab-card.in{animation:cabIn .55s cubic-bezier(.2,.8,.2,1) both}
+@keyframes cabIn{from{opacity:0;translate:0 calc(-50% + 22px)}}
+.cab-meta{display:flex;justify-content:space-between;gap:12px;margin:0 0 14px;font:600 .72rem var(--f-m);letter-spacing:.08em;text-transform:uppercase;color:var(--acc)}
+.cab-count{color:var(--fg2)}
+.cab-fig{font:800 clamp(3rem,6.2vw,5.6rem)/.88 var(--f-d);letter-spacing:-.05em;text-wrap:balance}
+.cab-title{font:700 clamp(1.2rem,1.8vw,1.6rem)/1.15 var(--f-d);letter-spacing:-.02em;margin:18px 0 10px;text-wrap:balance}
+.cab-text{margin:0 0 16px;max-width:34ch;line-height:1.45;color:var(--fg2)}
+.cab-lvl{display:inline-block;font:600 .68rem var(--f-m);letter-spacing:.08em;background:var(--fg);color:var(--bg);padding:.4rem .65rem;border-radius:999px}
+.cab-foot{position:absolute;z-index:2;left:max(28px,4vw);bottom:22px;display:flex;flex-direction:column-reverse;align-items:flex-start;gap:2px}
+.cab-dots{display:flex;gap:2px}
+.cab-dots button{width:26px;height:44px;border:0;background:none;padding:0;cursor:pointer;display:grid;place-items:center}
+.cab-dots button::before{content:'';width:8px;height:8px;border-radius:50%;border:1.5px solid var(--fg);transition:transform .25s,background .25s}
+.cab-dots button[aria-current="true"]::before{background:var(--acc);border-color:var(--acc);transform:scale(1.35)}
+.cab-hint{margin:0;font:500 .72rem var(--f-m);letter-spacing:.06em;text-transform:uppercase;color:var(--fg2)}
+@media (max-width:760px){
+  .cab-scene{left:0;top:64px;bottom:42%}
+  .cab-card{top:auto;bottom:92px;translate:none;width:auto;right:max(16px,env(safe-area-inset-right,0px));left:max(16px,env(safe-area-inset-left,0px))}
+  .cab-card.in{animation-name:cabInM}
+  @keyframes cabInM{from{opacity:0;translate:0 18px}}
+  .cab-fig{font-size:clamp(2.4rem,11vw,3.4rem)}
+  .cab-title{margin:10px 0 6px}
+  .cab-text{font-size:.92rem;margin-bottom:10px}
+  .cab-foot{left:max(10px,env(safe-area-inset-left,0px));bottom:18px}
+  .cab-hint{display:none}
+  .cab-dots button{width:22px}
+}
