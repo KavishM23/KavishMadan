@@ -1916,6 +1916,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
   };
 
   /* ================= BOOK : research papers ================= */
+  let bookClearance=0;
   function makeBook(){
     const W=1.5,H=2.32,ct=.06,pt=.32,r=(pt+2*ct)/2;
     const root=new THREE.Group(),inner=new THREE.Group();inner.position.x=-W/2+.08;root.add(inner);
@@ -1994,7 +1995,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
     const clip=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(cp,false,'catmullrom',.1),120,.0075,8,false),M.steel);
     clip.position.set(.82,H/2+.08,pt/2-.018);clip.rotation.z=-.09;clip.scale.setScalar(1.35);inner.add(clip);
     root.userData.labelY=H/2+.3;root.userData.open=0;root.userData.openTarget=0;
-    root.userData.tick=(dt,h)=>{const ud=root.userData;const tg=Math.max(h*1.65,ud.openTarget);ud.open=damp(ud.open,tg,ud.openTarget>1?5:7,dt);hinge.rotation.y=-ud.open;leaves.forEach((l,i)=>l.rotation.y=-ud.open*(.1+i*.12))};
+    root.userData.tick=(dt,h)=>{const ud=root.userData;const clearance=THREE.MathUtils.smoothstep(bookClearance,.65,.95);const tg=Math.max(h*1.65,ud.openTarget)*clearance;ud.open=damp(ud.open,tg,ud.openTarget>1?5:7,dt);hinge.rotation.y=-ud.open;leaves.forEach((l,i)=>l.rotation.y=-ud.open*(.1+i*.12))};
     return root;
   }
 
@@ -2160,7 +2161,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
   });
 
   /* ---------- labels ---------- */
-  const labs={};let focusKey=null,hoverKey=null;
+  const labs={},heroNav=document.querySelector('.top nav');let focusKey=null,hoverKey=null;
   document.querySelectorAll('.obj-lab').forEach(l=>{labs[l.dataset.key]=l;
     l.addEventListener('focus',()=>{focusKey=l.dataset.key});l.addEventListener('blur',()=>{if(focusKey===l.dataset.key)focusKey=null})});
   hero.classList.add('has3d');
@@ -2233,6 +2234,12 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
   function update(dt,hr=hero.getBoundingClientRect()){
     t+=dt;
     if(pendingPick){hoverKey=pick(...pendingPick);pendingPick=null;window.portfolioCursor?.setModelLabel(modelLabels[hoverKey]||'')}
+    const opening=hoverKey==='research'||focusKey==='research'||roots.research.userData.openTarget>0;
+    // Clear the swinging cover before it opens; close it before the neighbours return.
+    const targetClearance=opening||roots.research.userData.open>.08?1:0;
+    bookClearance=reduce?targetClearance:damp(bookClearance,targetClearance,opening?10:5,dt);
+    // The expanded arrangement needs a little more room on narrow screens.
+    cluster.scale.setScalar(unit*(innerWidth<=620?1-.28*bookClearance:1));
     if(t>=nextShadow){key.shadow.needsUpdate=true;nextShadow=t+1/30}
     if(!reduce){cpx=damp(cpx,px,3,dt);cpy=damp(cpy,py,3,dt)}
     cluster.rotation.y=cpx*.16;cluster.rotation.x=cpy*.07;
@@ -2242,11 +2249,13 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
       const tgt=(k2===hoverKey||k2===focusKey)?1:0;ud.h=damp(ud.h,tgt,9,dt);
       if(ud.intro<1&&!document.documentElement.classList.contains('intro-hold')){ud.delay-=dt;if(ud.delay<0)ud.intro=Math.min(1,ud.intro+dt/1.1)}
       const e=1-Math.pow(1-ud.intro,3),bob=reduce?0:Math.sin(t*.9+ud.phase)*.035;
-      o.position.set(ud.base.x,ud.base.y+bob+ud.h*.13-(1-e)*2.4,ud.base.z+ud.h*.1);
+      const dx=({builds:-1.55,research:.48,linkedin:.62,about:.45,kessler:-.28})[k2]||0;
+      const dy=k2==='kessler'?1.05*bookClearance:0;
+      o.position.set(ud.base.x+dx*bookClearance,ud.base.y+dy+bob+ud.h*.13-(1-e)*2.4,ud.base.z+ud.h*.1);
       o.rotation.set(ud.rot.x-ud.h*.05,ud.rot.y-ud.h*ud.rot.y*.3,ud.rot.z+(reduce?0:Math.sin(t*.6+ud.phase)*.02));
       o.scale.setScalar(ud.s*(.55+.45*e)*(1+ud.h*.05));
       ud.tick(dt,ud.h,t);
-      const l=labs[k2];if(l){let state=labelState.get(k2);if(!state){state={on:false,x:NaN,y:NaN};labelState.set(k2,state)}const on=tgt===1;if(state.on!==on){l.classList.toggle('on',on);state.on=on}if(on){const p=screenOf(o,ud.labelY,hr),x=p.x-hr.left,y=p.y-hr.top;if(!Number.isFinite(state.x)||Math.abs(x-state.x)>.5||Math.abs(y-state.y)>.5){l.style.setProperty('--lx',x.toFixed(1)+'px');l.style.setProperty('--ly',y.toFixed(1)+'px');state.x=x;state.y=y}}}
+      const l=labs[k2];if(l){let state=labelState.get(k2);if(!state){state={on:false,x:NaN,y:NaN};labelState.set(k2,state)}const on=tgt===1;if(state.on!==on){l.classList.toggle('on',on);state.on=on}if(on){const p=screenOf(o,ud.labelY,hr),nav=heroNav.getBoundingClientRect(),half=l.offsetWidth/2;let x=p.x-hr.left;const y=p.y-hr.top;if(p.y>nav.top&&p.y-l.offsetHeight<nav.bottom&&p.x+half>nav.left)x=Math.min(x,nav.left-hr.left-half-12);if(!Number.isFinite(state.x)||Math.abs(x-state.x)>.5||Math.abs(y-state.y)>.5){l.style.setProperty('--lx',x.toFixed(1)+'px');l.style.setProperty('--ly',y.toFixed(1)+'px');state.x=x;state.y=y}}}
     }
   }
   const loop=PortfolioRender.createLoop(frame);
