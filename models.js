@@ -1,6 +1,9 @@
 /* Extra scenes share the hero's renderer, environment map and animation clock. */
 window.createPortfolioAtelier=function({THREE,Round,environment,reduced,anisotropy=4}){
- const mat=(colour,roughness=.4,metalness=0)=>new THREE.MeshPhysicalMaterial({color:colour,roughness,metalness,clearcoat:metalness?0:.45});
+ const surfaceCanvas=document.createElement('canvas');surfaceCanvas.width=surfaceCanvas.height=128;const surfaceContext=surfaceCanvas.getContext('2d');
+ let surfaceSeed=41;for(let y=0;y<128;y++)for(let x=0;x<128;x++){surfaceSeed=surfaceSeed*16807%2147483647;const shade=205+Math.floor(surfaceSeed/2147483647*50);surfaceContext.fillStyle=`rgb(${shade},${shade},${shade})`;surfaceContext.fillRect(x,y,1,1)}
+ const surface=new THREE.CanvasTexture(surfaceCanvas);surface.wrapS=surface.wrapT=THREE.RepeatWrapping;surface.repeat.set(3,3);surface.anisotropy=anisotropy;
+ const mat=(colour,roughness=.4,metalness=0)=>new THREE.MeshPhysicalMaterial({color:colour,roughness,metalness,roughnessMap:surface,bumpMap:metalness?null:surface,bumpScale:.002,clearcoat:metalness?0:.45,clearcoatRoughness:.22});
  const ink=mat(0x142d43),paper=mat(0xf1e6d2,.7),copper=mat(0xa86e51,.27,.65),blue=mat(0x537e9a,.27,.5),silver=mat(0xcbd7dc,.24,.85),wood=mat(0x55382c,.47),dark=mat(0x121c22,.55),glass=mat(0xb5d2de,.14,.35);
  const mesh=(g,m,parent,pos=[0,0,0])=>{const o=new THREE.Mesh(g,m);o.position.set(...pos);parent.add(o);return o};
  const box=(parent,w,h,d,m,pos,r=.04)=>mesh(new Round(w,h,d,3,r),m,parent,pos);
@@ -27,14 +30,14 @@ window.createPortfolioAtelier=function({THREE,Round,environment,reduced,anisotro
   const pencil=new THREE.Group();const shaft=mesh(new THREE.CylinderGeometry(.055,.055,2.5,6),blue,pencil);const tip=mesh(new THREE.ConeGeometry(.055,.25,6),mat(0xd9b48a,.7),pencil,[0,-1.375,0]);tip.rotation.z=Math.PI;const lead=mesh(new THREE.ConeGeometry(.018,.08,10),dark,pencil,[0,-1.47,0]);lead.rotation.z=Math.PI;mesh(new THREE.CylinderGeometry(.06,.06,.14,24),silver,pencil,[0,1.24,0]);mesh(new THREE.CylinderGeometry(.058,.058,.12,24),mat(0xe8a0a0,.8),pencil,[0,1.37,0]);pencil.rotation.z=-.16;pencil.position.set(1.27,.08,.1);g.add(pencil);return g;
  }
  function orbit(){
-  const g=new THREE.Group(),globe=mesh(new THREE.SphereGeometry(.72,48,32),blue,g);const longitude=new THREE.LineBasicMaterial({color:0xb5d2de,transparent:true,opacity:.55});
+  const g=new THREE.Group(),globe=mesh(new THREE.SphereGeometry(.72,64,48),blue,g);const longitude=new THREE.LineBasicMaterial({color:0xb5d2de,transparent:true,opacity:.55});
   for(let i=0;i<6;i++){const ring=mesh(new THREE.TorusGeometry(.728,.007,4,80),glass,g);ring.rotation.y=i*Math.PI/6}
   [-.4,0,.4].forEach(y=>{const rr=Math.sqrt(.73*.73-y*y),ring=mesh(new THREE.TorusGeometry(rr,.008,5,80),glass,g,[0,y,0]);ring.rotation.x=Math.PI/2});
   const tracks=[];for(let i=0;i<3;i++){const track=new THREE.Group();track.rotation.set(.7+i*.35,.2+i*.4,i*.55);mesh(new THREE.TorusGeometry(1.05+i*.21,.018,8,100),i===1?copper:silver,track);const satellite=box(track,.15,.15,.15,paper,[1.05+i*.21,0,0],.025);box(satellite,.47,.12,.025,blue,[0,0,.1],.01);g.add(track);tracks.push(track)}
   g.userData.tick=(t,h)=>tracks.forEach((o,i)=>o.rotation.z=i*.55+(reduced?0:t*(.07+i*.03)));return g;
  }
  function drone(){
-  const g=new THREE.Group();box(g,1.0,.34,1.4,paper,[0,0,0],.16);box(g,.74,.12,.84,ink,[0,.21,0],.08);const lens=mesh(new THREE.CylinderGeometry(.2,.2,.27,32),dark,g,[0,-.02,.76]);lens.rotation.x=Math.PI/2;const lensGlass=mesh(new THREE.SphereGeometry(.16,24,16),glass,g,[0,-.02,.88]);lensGlass.scale.z=.35;const props=[];
+  const g=new THREE.Group();box(g,1.0,.34,1.4,paper,[0,0,0],.16);box(g,.74,.12,.84,ink,[0,.21,0],.08);const lens=mesh(new THREE.CylinderGeometry(.2,.2,.27,48),dark,g,[0,-.02,.76]);lens.rotation.x=Math.PI/2;const lensGlass=mesh(new THREE.SphereGeometry(.16,48,32),glass,g,[0,-.02,.88]);lensGlass.scale.z=.35;const props=[];
   for(const x of [-1,1])for(const z of [-1,1]){const arm=box(g,.13,.13,1.7,blue,[x*.65,-.02,z*.57]);arm.rotation.y=x*z*.8;const motor=mesh(new THREE.CylinderGeometry(.17,.17,.25,24),dark,g,[x*1.23,.04,z*1.12]);const rotor=new THREE.Group();rotor.position.set(x*1.23,.21,z*1.12);[0,Math.PI].forEach(r=>{const bl=box(rotor,.64,.025,.13,copper,[0,0,0],.02);bl.geometry.translate(.33,0,0);bl.rotation.y=r;bl.rotation.x=r?-.22:.22});mesh(new THREE.CylinderGeometry(.06,.06,.07,20),silver,rotor);g.add(rotor);props.push(rotor);const guard=mesh(new THREE.TorusGeometry(.72,.025,10,72),dark,g,[x*1.23,.2,z*1.12]);guard.rotation.x=Math.PI/2;mesh(new THREE.CylinderGeometry(.19,.19,.04,32),silver,g,[x*1.23,.18,z*1.12]);const leg=box(g,.07,.45,.07,silver,[x*.43,-.33,z*.5]);}
   box(g,.5,.16,.72,ink,[0,.36,-.05],.05);box(g,.56,.03,.08,copper,[0,.45,.12],.01);box(g,.56,.03,.08,copper,[0,.45,-.22],.01);
   const led=new THREE.MeshBasicMaterial({color:0x7fe3a5,toneMapped:false}),ledR=new THREE.MeshBasicMaterial({color:0xff6b5a,toneMapped:false});
@@ -42,7 +45,7 @@ window.createPortfolioAtelier=function({THREE,Round,environment,reduced,anisotro
   g.userData.tick=(t,h)=>props.forEach((p,i)=>p.rotation.y=reduced?i:t*(2+h*10)*(i%2?1:-1));g.rotation.x=.4;return g;
  }
  function trophy(){
-  const g=new THREE.Group();const pts=[[0,0],[.46,0],[.47,.1],[.18,.2],[.12,.32],[.12,.65],[.3,.78],[.55,1.05],[.69,1.48],[.72,1.8]].map(([x,y])=>new THREE.Vector2(x,y));mesh(new THREE.LatheGeometry(pts,64),copper,g,[0,-.7,0]);box(g,1.35,.28,1.15,ink,[0,-.86,0],.06);box(g,.76,.23,.035,paper,[0,-.82,.6],.02);
+  const g=new THREE.Group();const pts=[[0,0],[.46,0],[.47,.1],[.18,.2],[.12,.32],[.12,.65],[.3,.78],[.55,1.05],[.69,1.48],[.72,1.8]].map(([x,y])=>new THREE.Vector2(x,y));mesh(new THREE.LatheGeometry(pts,96),copper,g,[0,-.7,0]);box(g,1.35,.28,1.15,ink,[0,-.86,0],.06);box(g,.76,.23,.035,paper,[0,-.82,.6],.02);
   [-1,1].forEach(s=>{const handle=mesh(new THREE.TorusGeometry(.44,.055,12,48,Math.PI*1.6),copper,g,[s*.67,.5,0]);handle.rotation.z=s<0?Math.PI*.7:-Math.PI*.3});
   const star=new THREE.Shape();for(let i=0;i<10;i++){const a=i*Math.PI/5+Math.PI/2,r=i%2?.16:.35;i?star.lineTo(Math.cos(a)*r,Math.sin(a)*r):star.moveTo(Math.cos(a)*r,Math.sin(a)*r)}star.closePath();mesh(new THREE.ExtrudeGeometry(star,{depth:.05,bevelEnabled:true,bevelThickness:.02,bevelSize:.02,bevelSegments:2}),paper,g,[0,.54,.65]);return g;
  }

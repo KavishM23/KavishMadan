@@ -1,4 +1,8 @@
 /* A small optical cursor, tactile reveals and a personal 3D collection. */
+/* A static, fine paper grain over every view, with a gentle woven fibre underneath.
+   One small repeated tile keeps the texture still and cheap to composite. */
+body::after{content:"";position:fixed;inset:0;z-index:80;pointer-events:none;background:url("img/paper-grain.svg") repeat;background-size:256px 256px;opacity:.16;mix-blend-mode:soft-light}
+@media print{body::after{display:none}}
 #hero3d.scene-shared{position:fixed;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;touch-action:auto}
 .cur .cur-dot,.cur .cur-x,.cur .cur-xy{display:none}
 .cur{--cursor-scale:1;--cursor-rotate:0deg;--cursor-stretch:1;z-index:110;will-change:transform}

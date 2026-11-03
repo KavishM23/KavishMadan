@@ -1900,7 +1900,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
   const damp=(a,b,l,dt)=>a+(b-a)*(1-Math.exp(-l*dt));
   const ANISO=renderer.capabilities.getMaxAnisotropy();
   function canvasOf(w,h,draw){const c=document.createElement('canvas');c.width=w;c.height=h;draw(c.getContext('2d'),w,h);return c}
-  function tex(c,srgb=true){const t=new THREE.CanvasTexture(c);if(srgb)t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=ANISO;return t}
+  function tex(c,srgb=true){const t=new THREE.CanvasTexture(c);if(srgb)t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=ANISO;t.minFilter=THREE.LinearMipmapLinearFilter;t.magFilter=THREE.LinearFilter;return t}
   const T=(w,h,draw,srgb)=>tex(canvasOf(w,h,draw),srgb);
   function noise(g,w,h,n,a,col='110,90,60'){for(let i=0;i<n;i++){g.fillStyle=`rgba(${col},${Math.random()*a})`;g.fillRect(Math.random()*w,Math.random()*h,1.6,1.6)}}
   const M={
@@ -1930,15 +1930,31 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
     });
     const bumpC=canvasOf(1024,1584,(g,w,h)=>{g.fillStyle='#000';g.fillRect(0,0,w,h);g.save();g.translate(92,380);g.rotate(-.06);g.fillStyle='#fff';g.font='700 270px Caveat, cursive';g.fillText('Research',0,0);g.restore();g.filter='blur(2px)';});
     const coverMat=new THREE.MeshPhysicalMaterial({color:0xf3eee2,roughness:.62,clearcoat:.25,clearcoatRoughness:.5});
-    const frontMat=new THREE.MeshPhysicalMaterial({map:tex(coverC),bumpMap:tex(bumpC,false),bumpScale:2.2,roughness:.6,clearcoat:.3,clearcoatRoughness:.45});
-    const inside=new THREE.MeshStandardMaterial({color:0xd8b57d,roughness:.85});
-    const contents=T(1024,1616,(g,w,h)=>{
-      g.fillStyle='#FCF9F1';g.fillRect(0,0,w,h);noise(g,w,h,4000,.04);
-      g.strokeStyle='rgba(83,126,154,.22)';g.lineWidth=3;for(let y=330;y<h-60;y+=96){g.beginPath();g.moveTo(60,y);g.lineTo(w-40,y);g.stroke()}
-      g.strokeStyle='rgba(165,79,54,.5)';g.beginPath();g.moveTo(150,0);g.lineTo(150,h);g.stroke();
-      g.fillStyle='#142D43';g.font='700 168px Caveat, cursive';g.fillText('Contents',180,250);g.font='600 92px Caveat, cursive';
-      ['1  Kessler model','2  AR training','3  Dragonfly wing','4  Superstrings','5  Air taxi EPQ'].forEach((t,i)=>g.fillText(t,180,410+i*192));
-    });
+    const frontMat=new THREE.MeshPhysicalMaterial({map:tex(coverC),bumpMap:tex(bumpC,false),bumpScale:.012,roughness:.6,clearcoat:.3,clearcoatRoughness:.45});
+    // Abstract pen marks: irregular handwritten strokes and engineering sketches, no words.
+    function notes(seed){return T(1024,1536,(g,w,h)=>{
+      let state=seed;const rand=()=>((state=(state*16807)%2147483647)-1)/2147483646;
+      g.fillStyle='#FCF9F1';g.fillRect(0,0,w,h);noise(g,w,h,5000,.035);
+      const shade=g.createLinearGradient(0,0,w,0);shade.addColorStop(0,'rgba(100,82,60,.17)');shade.addColorStop(.14,'rgba(100,82,60,0)');shade.addColorStop(1,'rgba(100,82,60,.035)');g.fillStyle=shade;g.fillRect(0,0,w,h);
+      g.strokeStyle='rgba(83,126,154,.14)';g.lineWidth=1.5;for(let y=200;y<h-60;y+=54){g.beginPath();g.moveTo(85,y);g.lineTo(w-80,y);g.stroke()}
+      g.strokeStyle='rgba(165,79,54,.22)';g.beginPath();g.moveTo(108,80);g.lineTo(108,h-70);g.stroke();
+      function stroke(x,y,length,weight=5.5){g.lineWidth=weight;g.beginPath();g.moveTo(x,y);for(let p=0;p<length;p+=12){const q=Math.min(p+12,length);g.bezierCurveTo(x+p+3,y-8-rand()*10,x+p+7,y+6+rand()*9,x+q,y+(rand()-.5)*5)}g.stroke()}
+      g.lineCap='round';g.lineJoin='round';g.strokeStyle='rgba(20,45,67,.76)';stroke(152,133,360+rand()*180,8);g.strokeStyle='rgba(165,79,54,.6)';stroke(153,160,260+rand()*160,3);
+      for(let row=0;row<21;row++){
+        if(row===6||row===14)continue;const y=240+row*54;
+        const diagram=row>=8&&row<=13;let x=150,end=diagram?460:880-rand()*140;
+        g.strokeStyle=`rgba(20,45,67,${.65+rand()*.18})`;
+        while(x<end-30){const length=Math.min(end-x,45+rand()*100);stroke(x,y,length);x+=length+14+rand()*20}
+      }
+      g.save();g.translate(702,830);g.rotate(-.16+rand()*.22);g.strokeStyle='rgba(20,45,67,.7)';g.lineWidth=3;
+      [-.55,.4].forEach(a=>{g.beginPath();g.ellipse(0,0,132,48,a,0,Math.PI*2);g.stroke()});g.beginPath();g.arc(0,0,20,0,Math.PI*2);g.stroke();
+      g.strokeStyle='rgba(165,79,54,.62)';g.beginPath();g.moveTo(-130,115);g.lineTo(132,115);g.moveTo(-125,120);g.lineTo(-125,-130);g.stroke();g.beginPath();g.moveTo(-120,100);g.bezierCurveTo(-35,95,20,-15,120,-95);g.stroke();
+      g.restore();
+      g.strokeStyle='rgba(165,79,54,.42)';g.lineWidth=2.5;g.beginPath();g.ellipse(430,480,220,31,-.025,0,Math.PI*2);g.stroke();
+    })}
+    const noteMaps=[notes(17),notes(53),notes(97)];
+    const inside=new THREE.MeshStandardMaterial({map:noteMaps[2],color:0xf4eedf,roughness:.9});
+    const contents=noteMaps[0];
     const edgeV=T(512,64,(g,w,h)=>{const gr=g.createLinearGradient(0,0,w,0);gr.addColorStop(0,'#efe6d2');gr.addColorStop(.5,'#faf4e6');gr.addColorStop(1,'#ece2cc');g.fillStyle=gr;g.fillRect(0,0,w,h);g.strokeStyle='rgba(120,100,70,.28)';for(let x=0;x<w;x+=2.5){g.beginPath();g.moveTo(x+.5,0);g.lineTo(x+.5,h);g.stroke()}});
     const edgeH=T(64,512,(g,w,h)=>{const gr=g.createLinearGradient(0,0,0,h);gr.addColorStop(0,'#efe6d2');gr.addColorStop(.5,'#faf4e6');gr.addColorStop(1,'#ece2cc');g.fillStyle=gr;g.fillRect(0,0,w,h);g.strokeStyle='rgba(120,100,70,.28)';for(let y=0;y<h;y+=2.5){g.beginPath();g.moveTo(0,y+.5);g.lineTo(w,y+.5);g.stroke()}});
     const pageMat=new THREE.MeshStandardMaterial({color:0xfbf7ec,roughness:.92});
@@ -1950,8 +1966,10 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
     [-.86,-.72,.72,.86].forEach(y=>{const b=new THREE.Mesh(new THREE.TorusGeometry(r+.004,.012,8,48,Math.PI),M.gold);b.rotation.set(Math.PI/2,0,Math.PI/2);b.position.y=y;inner.add(b)});
     const ribbon=new THREE.Mesh(new THREE.BoxGeometry(.09,.55,.006),new THREE.MeshPhysicalMaterial({color:0xa54f36,roughness:.35,sheen:1,sheenColor:new THREE.Color(0xd6a44a)}));
     ribbon.position.set(W*.55,-H/2-.2,pt/2-.02);ribbon.rotation.z=.12;inner.add(ribbon);
-    const leafMat=new THREE.MeshStandardMaterial({color:0xfdfaf2,roughness:.88,side:THREE.DoubleSide});
-    const leaves=[];for(let i=0;i<5;i++){const lh=new THREE.Group();lh.position.set(.014,0,pt/2-.006-i*.004);const lm=new THREE.Mesh(new THREE.PlaneGeometry(W-.14,H-.15,1,1),leafMat);lm.position.x=(W-.14)/2+.03;lh.add(lm);inner.add(lh);leaves.push(lh)}
+    const leafMats=noteMaps.map(map=>new THREE.MeshStandardMaterial({map,color:0xffffff,roughness:.88,side:THREE.DoubleSide}));
+    const leafGeo=new THREE.PlaneGeometry(W-.14,H-.15,24,1),lp=leafGeo.attributes.position;
+    for(let i=0;i<lp.count;i++){const u=(lp.getX(i)+(W-.14)/2)/(W-.14);lp.setZ(i,Math.sin(u*Math.PI)*.018)}leafGeo.computeVertexNormals();
+    const leaves=[];for(let i=0;i<5;i++){const lh=new THREE.Group();lh.position.set(.014,0,pt/2+.004+i*.004);const lm=new THREE.Mesh(leafGeo,leafMats[i%leafMats.length]);lm.position.x=(W-.14)/2+.03;lh.add(lm);inner.add(lh);leaves.push(lh)}
     const hinge=new THREE.Group();hinge.position.set(0,0,pt/2+ct/2);inner.add(hinge);
     const cover=new THREE.Mesh(new RoundedBoxGeometry(W,H,ct,4,.028),[coverMat,coverMat,coverMat,coverMat,frontMat,inside]);cover.position.x=W/2;hinge.add(cover);
     // brass corner guards on the two outer corners of the front cover
@@ -1972,7 +1990,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
     const clip=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(cp,false,'catmullrom',.1),120,.0075,8,false),M.steel);
     clip.position.set(.82,H/2+.08,pt/2-.018);clip.rotation.z=-.09;clip.scale.setScalar(1.35);inner.add(clip);
     root.userData.labelY=H/2+.3;root.userData.open=0;root.userData.openTarget=0;
-    root.userData.tick=(dt,h)=>{const ud=root.userData;const tg=Math.max(h*1.05,ud.openTarget);ud.open=damp(ud.open,tg,ud.openTarget>1?5:7,dt);hinge.rotation.y=-ud.open;leaves.forEach((l,i)=>l.rotation.y=-ud.open*(.1+i*.12))};
+    root.userData.tick=(dt,h)=>{const ud=root.userData;const tg=Math.max(h*1.65,ud.openTarget);ud.open=damp(ud.open,tg,ud.openTarget>1?5:7,dt);hinge.rotation.y=-ud.open;leaves.forEach((l,i)=>l.rotation.y=-ud.open*(.1+i*.12))};
     return root;
   }
 
@@ -2026,7 +2044,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
     [[ro-rc,w/2-rc,0],[ri+rc*.6,w/2-rc*.6,Math.PI/2],[ri+rc*.6,-w/2+rc*.6,Math.PI],[ro-rc,-w/2+rc,1.5*Math.PI]].forEach(([cx,cy,a0],ci)=>{const rr=ci===1||ci===2?rc*.6:rc;for(let i=0;i<=10;i++){const a=a0+i/10*Math.PI/2;pts.push(new THREE.Vector2(cx+Math.cos(a)*rr,cy+Math.sin(a)*rr))}});
     pts.push(pts[0].clone());
     const sideBump=T(1024,128,(g,w,h)=>{g.fillStyle='#808080';g.fillRect(0,0,w,h);g.strokeStyle='#9a9a9a';g.lineWidth=2;for(let y=4;y<h;y+=9){g.beginPath();g.moveTo(0,y);g.lineTo(w,y);g.stroke()}},false);
-    const rub=new THREE.MeshPhysicalMaterial({color:0x18181c,roughness:.74,sheen:.5,sheenColor:new THREE.Color(0x5a5a66),bumpMap:sideBump,bumpScale:.6,side:THREE.DoubleSide});
+    const rub=new THREE.MeshPhysicalMaterial({color:0x18181c,roughness:.74,sheen:.5,sheenColor:new THREE.Color(0x5a5a66),bumpMap:sideBump,bumpScale:.008,side:THREE.DoubleSide});
     const carcass=new THREE.LatheGeometry(pts,128);carcass.rotateX(Math.PI/2);spin.add(new THREE.Mesh(carcass,rub));
     const lugMat=new THREE.MeshPhysicalMaterial({color:0x1c1c21,roughness:.7,sheen:.4,sheenColor:new THREE.Color(0x55555f)});
     const d=new THREE.Object3D();
@@ -2050,7 +2068,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
       const R=w/2*.8,txt='STRATA · 4×4 IN SCHOOLS · ALL TERRAIN · STRATA · 2ND IN THE UAE · ';g.font='800 50px "Schibsted Grotesk", sans-serif';g.fillStyle=ink;g.textAlign='center';g.textBaseline='middle';
       const ch=[...txt],ws=ch.map(c2=>g.measureText(c2).width),sc=2*Math.PI*R/ws.reduce((a,b)=>a+b,0);let a=0;
       ch.forEach((c2,i)=>{const da=ws[i]*sc/R;g.save();g.rotate(a+da/2);g.translate(0,-R);g.fillText(c2,0,0);g.restore();a+=da})});
-    const swMat=new THREE.MeshPhysicalMaterial({map:tex(swDraw('#1b1b20','#4a4a55','#2a2a31')),bumpMap:tex(swDraw('#000','#fff','#888'),false),bumpScale:1.4,roughness:.72,sheen:.4,sheenColor:new THREE.Color(0x5a5a66),polygonOffset:true,polygonOffsetFactor:-2});
+    const swMat=new THREE.MeshPhysicalMaterial({map:tex(swDraw('#1b1b20','#4a4a55','#2a2a31')),bumpMap:tex(swDraw('#000','#fff','#888'),false),bumpScale:.014,roughness:.72,sheen:.4,sheenColor:new THREE.Color(0x5a5a66),polygonOffset:true,polygonOffsetFactor:-2});
     [1,-1].forEach(sd=>{const sw=new THREE.Mesh(new THREE.RingGeometry(ri+.03,ro-.03,128,1),swMat);sw.position.z=sd*(w/2+.002);if(sd<0)sw.rotation.y=Math.PI;spin.add(sw)});
     const rivet=new THREE.InstancedMesh(new THREE.SphereGeometry(.018,12,8),M.steel,14);
     for(let i=0;i<14;i++){const a=i/14*Math.PI*2;d.position.set(Math.cos(a)*(ri-.02),Math.sin(a)*(ri-.02),.29);d.rotation.set(0,0,0);d.scale.set(1,1,.6);d.updateMatrix();rivet.setMatrixAt(i,d.matrix)}
@@ -2067,7 +2085,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
   function makeSat(){
     const root=new THREE.Group();
     const foil=T(512,512,(g,w,h)=>{g.fillStyle='#808080';g.fillRect(0,0,w,h);for(let i=0;i<900;i++){const x=Math.random()*w,y=Math.random()*h,r=6+Math.random()*26;const v=100+Math.random()*120|0;g.fillStyle=`rgb(${v},${v},${v})`;g.beginPath();for(let k=0;k<6;k++){const a=k/6*Math.PI*2+Math.random()*.5,rr=r*(.6+Math.random()*.6);k?g.lineTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr):g.moveTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr)}g.closePath();g.fill()}},false);
-    const foilMat=new THREE.MeshPhysicalMaterial({color:0xf2c14e,metalness:1,roughness:.28,bumpMap:foil,bumpScale:3});
+    const foilMat=new THREE.MeshPhysicalMaterial({color:0xf2c14e,metalness:1,roughness:.28,bumpMap:foil,bumpScale:.025});
     root.add(new THREE.Mesh(new RoundedBoxGeometry(.52,.64,.52,4,.05),foilMat));
     const band=new THREE.Mesh(new RoundedBoxGeometry(.56,.08,.56,2,.02),M.steel);band.position.y=.18;root.add(band);
     const cells=T(512,256,(g,w,h)=>{const gr=g.createLinearGradient(0,0,w,h);gr.addColorStop(0,'#537E9A');gr.addColorStop(1,'#254D69');g.fillStyle=gr;g.fillRect(0,0,w,h);g.strokeStyle='rgba(190,205,255,.7)';g.lineWidth=3;for(let x=0;x<=w;x+=64){g.beginPath();g.moveTo(x,0);g.lineTo(x,h);g.stroke()}for(let y=0;y<=h;y+=64){g.beginPath();g.moveTo(0,y);g.lineTo(w,y);g.stroke()}g.fillStyle='rgba(255,255,255,.08)';for(let x=0;x<w;x+=64)for(let y=0;y<h;y+=64)g.fillRect(x+6,y+6,22,22)});
@@ -2159,7 +2177,9 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
   /* the cluster is drawn about as wide as the head opening, as in the reference, not twice as wide */
   const CLUSTER=.86;
   function layout(){
-    renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.setSize(innerWidth,innerHeight,false);
+    // Preserve native detail; add budgeted supersampling on ordinary-density displays.
+    const density=Math.min(devicePixelRatio||1,2),extra=Math.min(1.5,Math.sqrt(8000000/(innerWidth*innerHeight)));
+    renderer.setPixelRatio(Math.max(density,extra));renderer.setSize(innerWidth,innerHeight,false);
     const r=hero.getBoundingClientRect();if(!r.width||!r.height)return;W=r.width;H=r.height;
     camera.aspect=W/H;camera.updateProjectionMatrix();
     const hw=head.offsetWidth,hh=hw*2247/1800,ht=head.offsetTop;
