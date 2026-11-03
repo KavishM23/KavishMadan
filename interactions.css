@@ -115,4 +115,4 @@ img{image-rendering:auto}
 html.cur-on .media-dialog,html.cur-on .media-dialog *{cursor:auto!important}
 @media(min-width:621px) and (max-width:1100px){.head{left:53%;width:clamp(320px,52vw,570px)}}
 @media(max-width:1100px){.latest{left:12px;width:clamp(108px,13vw,150px)}}
-@media(max-width:620px){.head{left:52%;width:min(92vw,440px)}.cs-frame .photo-open{padding:6px}.photo-wrap .photo-enlarge,.photo-wrap .image-reveal-toggle{font-size:.68rem;padding:.5rem .65rem}}
+@media(max-width:620px){.head,.head-full{left:52%;width:min(103vw,495px)}.cs-frame .photo-open{padding:6px}.photo-wrap .photo-enlarge,.photo-wrap .image-reveal-toggle{font-size:.68rem;padding:.5rem .65rem}}

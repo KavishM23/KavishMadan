@@ -6,6 +6,8 @@
 <meta name="description" content="Kavish Madan: maker portfolio. Builds, code and awards.">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Kavish Madan</title>
+<script>/* intro plays on a fresh load of the home page; a timer clears it if anything goes wrong */
+(function(){var h=location.hash,r=document.documentElement;if((!h||h==='#home')&&!matchMedia('(prefers-reduced-motion: reduce)').matches){r.classList.add('intro','intro-head','intro-hold');setTimeout(function(){r.classList.remove('intro','intro-head','intro-hold')},7000)}})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;600;700;800;900&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Caveat:wght@600;700&display=swap">
@@ -502,6 +504,20 @@ html.cur-on,html.cur-on *{cursor:none!important}
 .head{width:clamp(340px,min(58vw,96svh),1000px)}
 @media (max-width:620px){.head{width:min(100vw,460px)}}
 
+/* ---------- intro: the whole head rises, the top tears off like a sticker, the objects pop out ---------- */
+.head-full,.scalp{display:none}
+html.intro-head .head{opacity:0}
+.head-full{position:absolute;z-index:4;height:auto;transform:translateX(-50%);pointer-events:none;user-select:none}
+html.intro-head .head-full{display:block;visibility:hidden}
+html.intro-head .head-full.go{visibility:visible}
+.scalp{position:absolute;inset:0;width:100%;height:100%;z-index:4;pointer-events:none}
+.scalp.on{display:block}
+.name .wi{display:inline-block}
+html.intro .name .w{clip-path:inset(-40% -8% 0 -8%)}
+html.intro .name .wi{translate:0 170%}
+html.intro .top,html.intro .latest,html.intro .socials{opacity:0}
+html.intro-hold .obj-labs{visibility:hidden}
+
 
 /* ---------- pages (views) ---------- */
 .view[hidden]{display:none!important}
@@ -813,7 +829,9 @@ html.cur-on,html.cur-on *{cursor:none!important}
       <h1 class="name" aria-label="Kavish Madan"><span class="w">Kavish</span><span class="sp"> </span><span class="w">Madan</span></h1>
     </div>
     <canvas id="hero3d" aria-hidden="true"></canvas>
-    <img class="head" src="img/kavish-head3.webp" alt="Kavish Madan" fetchpriority="high" decoding="async" width="894" height="996">
+    <img class="head" src="img/kavish-head4.webp" alt="Kavish Madan" fetchpriority="high" decoding="async" width="1800" height="2247">
+    <img class="head-full" src="img/kavish-full.webp" alt="" aria-hidden="true" fetchpriority="high" decoding="async" width="1800" height="2247">
+    <canvas class="scalp" aria-hidden="true"></canvas>
     <div class="obj-labs">
       <button class="obj-lab" type="button" data-key="research" data-research>Research papers</button>
       <a class="obj-lab" data-key="linkedin" id="lab-linkedin" href="#contact">LinkedIn</a>
@@ -1505,7 +1523,7 @@ html.cur-on,html.cur-on *{cursor:none!important}
   const heroEl=document.getElementById('hero'),headEl=document.querySelector('.head');
   /* The torn edge sits just under the name and the whole head, down to the chin, fits in the window,
      so the head grows with the window's height as well as its width. */
-  const HEAD_AR=996/894,TEAR_F=.048,CHIN_F=.6;
+  const HEAD_AR=2247/1800,TEAR_F=.0978,CHIN_F=.62;
   function placeHead(){
     const H=heroEl.clientHeight,W=heroEl.clientWidth;
     if(!H||!W)return;
@@ -1516,6 +1534,74 @@ html.cur-on,html.cur-on *{cursor:none!important}
     headEl.style.top=(tear-TEAR_F*hh).toFixed(1)+'px';headEl.style.bottom='auto';
   }
   placeHead();addEventListener('resize',placeHead);if(!headEl.complete)headEl.addEventListener('load',placeHead);
+
+  /* ---- intro ---- */
+  (function(){
+    const R=document.documentElement,full=document.querySelector('.head-full'),cv=document.querySelector('.scalp');
+    nameEl.querySelectorAll('.w').forEach(w=>{w.innerHTML=`<span class="wi">${w.textContent}</span>`});
+    if(!R.classList.contains('intro')||!full||!cv){full&&full.remove();cv&&cv.remove();return}
+    const TEAR=[-0.02,0.1023,0.0101,0.1023,0.0207,0.103,0.0313,0.1045,0.0419,0.1025,0.0526,0.099,0.0632,0.0981,0.0738,0.0998,0.0845,0.1005,0.0951,0.1003,0.1057,0.1007,0.1163,0.0995,0.127,0.1001,0.1376,0.1002,0.1482,0.1014,0.1588,0.1014,0.1695,0.1026,0.1801,0.1053,0.1907,0.1064,0.2013,0.1076,0.212,0.1045,0.2226,0.1045,0.2332,0.1067,0.2438,0.1077,0.2545,0.1086,0.2651,0.1077,0.2757,0.1053,0.2864,0.1041,0.297,0.1022,0.3076,0.1066,0.3182,0.11,0.3289,0.1139,0.3395,0.1147,0.3501,0.118,0.3607,0.1195,0.3714,0.1201,0.382,0.1174,0.3926,0.1153,0.4032,0.1146,0.4139,0.1173,0.4245,0.1202,0.4351,0.1176,0.4457,0.1149,0.4564,0.1122,0.467,0.1107,0.4776,0.1096,0.4883,0.1115,0.4989,0.1137,0.5095,0.1133,0.5201,0.1106,0.5308,0.1104,0.5414,0.1088,0.552,0.1098,0.5626,0.1084,0.5733,0.1089,0.5839,0.108,0.5945,0.1094,0.6051,0.1118,0.6158,0.1142,0.6264,0.1144,0.637,0.1139,0.6477,0.1131,0.6583,0.1145,0.6689,0.116,0.6795,0.1174,0.6902,0.1188,0.7008,0.115,0.7114,0.1121,0.722,0.109,0.7327,0.1096,0.7433,0.1128,0.7539,0.1162,0.7645,0.1158,0.7752,0.1162,0.7858,0.1152,0.7964,0.115,0.807,0.116,0.8177,0.1165,0.8283,0.117,0.8389,0.117,0.8496,0.1159,0.8602,0.1148,0.8708,0.117,0.8814,0.1204,0.8921,0.1229,0.9027,0.1238,0.9133,0.1238,0.9239,0.1248,0.9346,0.1232,0.9452,0.1214,0.9558,0.1215,0.9664,0.1212,1.02,0.1212];
+    let done=false;const anims=[];
+    function finish(){if(done)return;done=true;anims.forEach(a=>{try{a.finish()}catch(e){}});R.classList.remove('intro','intro-head','intro-hold');full.remove();cv.remove();
+      removeEventListener('wheel',finish);removeEventListener('keydown',finish);removeEventListener('pointerdown',finish);removeEventListener('touchmove',finish)}
+    addEventListener('wheel',finish,{passive:true});addEventListener('keydown',finish);addEventListener('pointerdown',finish);addEventListener('touchmove',finish,{passive:true});
+    const later=(ms,f)=>setTimeout(()=>{if(!done)f()},ms);
+    // animation frame with a timer backup, for windows that throttle frames
+    const frame=f=>{let ran=false;const go=()=>{if(!ran){ran=true;f(performance.now())}};requestAnimationFrame(go);setTimeout(go,40)};
+    if(document.hidden){finish();return}
+    const loaded=i=>i.complete&&i.naturalWidth?Promise.resolve():new Promise(r=>{i.addEventListener('load',r,{once:true});i.addEventListener('error',r,{once:true})});
+    Promise.race([Promise.all([full,headEl].map(loaded)).then(()=>true),new Promise(r=>setTimeout(()=>r(false),4000))]).then(ok=>{if(!ok||done||!full.naturalWidth||document.hidden){finish();return}frame(start)});
+    function start(){
+      placeHead();const cs=getComputedStyle(headEl);
+      full.style.left=cs.left;full.style.top=headEl.style.top;full.style.width=headEl.getBoundingClientRect().width+'px';
+      const H=heroEl.clientHeight;full.classList.add('go');
+      anims.push(full.animate([{translate:`0 ${Math.round(H*.95)}px`,rotate:'-5deg'},{translate:'0 -14px',rotate:'1.5deg',offset:.72},{translate:'0 0',rotate:'0deg'}],{duration:950,easing:'cubic-bezier(.22,.9,.3,1)',fill:'backwards'}));
+      later(1250,peel);
+    }
+    function peel(){
+      const hr=heroEl.getBoundingClientRect(),r=headEl.getBoundingClientRect();
+      const hx=r.left-hr.left,hy=r.top-hr.top,hw=r.width,hh=r.height,CW=hr.width,CH=hr.height,dpr=Math.min(2,devicePixelRatio||1);
+      const mk=()=>{const c=document.createElement('canvas');c.width=Math.round(CW*dpr);c.height=Math.round(CH*dpr);return c};
+      cv.width=Math.round(CW*dpr);cv.height=Math.round(CH*dpr);cv.classList.add('on');const g=cv.getContext('2d');
+      const wc=mk(),w=wc.getContext('2d'),tc=mk(),tg=tc.getContext('2d');
+      const scalp=c=>{c.beginPath();c.moveTo(hx-hw*.05,hy-hh*.06);c.lineTo(hx+hw*1.05,hy-hh*.06);for(let i=TEAR.length-2;i>=0;i-=2)c.lineTo(hx+TEAR[i]*hw,hy+TEAR[i+1]*hh);c.closePath()};
+      w.setTransform(dpr,0,0,dpr,0,0);scalp(w);w.clip();w.drawImage(full,hx,hy,hw,hh);w.globalCompositeOperation='source-in';
+      const pg=w.createLinearGradient(hx,hy,hx+hw,hy+hh*.12);pg.addColorStop(0,'#F7F3EB');pg.addColorStop(1,'#E4DCCD');w.fillStyle=pg;w.fillRect(0,0,CW,CH);
+      R.classList.remove('intro-head');
+      const ph=.62,nx=Math.cos(ph),ny=Math.sin(ph);
+      const xs=[hx+hw*.15,hx+hw*.85],ys=[hy-hh*.02,hy+hh*.13];let dmin=1e9,dmax=-1e9;
+      xs.forEach(x=>ys.forEach(y=>{const v=x*nx+y*ny;dmin=Math.min(dmin,v);dmax=Math.max(dmax,v)}));
+      const half=(c,d,side)=>{const qx=nx*d,qy=ny*d,tx=-ny*4000,ty=nx*4000,ox=nx*4000*side,oy=ny*4000*side;c.beginPath();c.moveTo(qx+tx,qy+ty);c.lineTo(qx-tx,qy-ty);c.lineTo(qx-tx+ox,qy-ty+oy);c.lineTo(qx+tx+ox,qy+ty+oy);c.closePath()};
+      function draw(d){
+        g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,cv.width,cv.height);g.setTransform(dpr,0,0,dpr,0,0);
+        g.save();half(g,d,1);g.clip();scalp(g);g.clip();g.drawImage(full,hx,hy,hw,hh);g.restore();
+        tg.setTransform(1,0,0,1,0,0);tg.globalCompositeOperation='source-over';tg.clearRect(0,0,tc.width,tc.height);
+        tg.setTransform(dpr*(1-2*nx*nx),dpr*(-2*nx*ny),dpr*(-2*nx*ny),dpr*(1-2*ny*ny),dpr*2*d*nx,dpr*2*d*ny);
+        tg.save();half(tg,d,-1);tg.clip();tg.drawImage(wc,0,0,CW,CH);tg.restore();
+        tg.setTransform(dpr,0,0,dpr,0,0);tg.globalCompositeOperation='source-atop';
+        const qx=nx*d,qy=ny*d,sg=tg.createLinearGradient(qx,qy,qx+nx*110,qy+ny*110);sg.addColorStop(0,'rgba(110,92,64,.34)');sg.addColorStop(.3,'rgba(255,255,255,.05)');sg.addColorStop(1,'rgba(20,30,50,.08)');tg.fillStyle=sg;tg.fillRect(0,0,CW,CH);
+        g.save();g.setTransform(1,0,0,1,0,0);g.shadowColor='rgba(4,12,24,.45)';g.shadowBlur=20*dpr;g.shadowOffsetY=8*dpr;g.drawImage(tc,0,0);g.restore();
+      }
+      const T0=performance.now(),DUR=720,ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+      later(140,()=>R.classList.remove('intro-hold'));
+      later(380,reveal);
+      // the fold runs about two thirds of the way, then the whole torn piece rips free and flies off
+      let flown=false;
+      (function step(now){if(done)return;const t=Math.min(1,(now-T0)/DUR);draw(dmin-2+(dmax-dmin)*.78*ease(t));if(t>.6&&!flown){flown=true;fly()}if(t<1)frame(step)})(T0);
+      function fly(){
+        cv.style.transformOrigin=`${hx+hw*.55}px ${hy+hh*.06}px`;
+        const a=cv.animate([{transform:'none',opacity:1},{transform:`translate(${hw*.16}px,${-hh*.1}px) rotate(9deg)`,opacity:1,offset:.35},{transform:`translate(${hw*.55}px,${-hh*.42}px) rotate(32deg) scale(.85)`,opacity:0}],{duration:640,easing:'cubic-bezier(.4,.1,.7,.5)',fill:'forwards'});anims.push(a);
+        later(900,finish);
+      }
+    }
+    function reveal(){
+      R.classList.remove('intro');
+      const ws=[...nameEl.querySelectorAll('.wi')],out='cubic-bezier(.2,.9,.25,1)';
+      ws.forEach((el,i)=>anims.push(el.animate([{translate:'0 170%'},{translate:'0 0'}],{duration:760,delay:(i*110),easing:out,fill:'backwards'})));
+      const ui=(el,dy,dl)=>{if(el)anims.push(el.animate([{opacity:0,translate:`0 ${dy}px`},{opacity:1,translate:'0 0'}],{duration:620,delay:(dl),easing:out,fill:'backwards'}))};
+      ui(document.querySelector('.top'),-22,280);ui(document.querySelector('.latest'),28,420);ui(document.querySelector('.socials'),28,480);
+    }
+  })();
 
   /* ---- header colour responds to the hero; navigation stays anchored at the top ---- */
   const topBar=document.querySelector('.top');
@@ -2010,11 +2096,11 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
     renderer.setPixelRatio(Math.min(devicePixelRatio||1,innerWidth<700?1.75:2));renderer.setSize(innerWidth,innerHeight,false);
     const r=hero.getBoundingClientRect();if(!r.width||!r.height)return;W=r.width;H=r.height;
     camera.aspect=W/H;camera.updateProjectionMatrix();
-    const hw=head.offsetWidth,hh=hw*996/894,ht=head.offsetTop;
-    const ax=head.offsetLeft+(.502-.5)*hw,ay=ht+.048*hh;
+    const hw=head.offsetWidth,hh=hw*2247/1800,ht=head.offsetTop;
+    const ax=head.offsetLeft+(.4975-.5)*hw,ay=ht+.0978*hh;
     const k=2*Math.tan(THREE.MathUtils.degToRad(camera.fov/2))*camera.position.z/H;
     cluster.position.set((ax-W/2)*k,(H/2-ay)*k,0);
-    unit=(.255*hw*k)/1.3*(W>620?CLUSTER:1);cluster.scale.setScalar(unit);
+    unit=(.228*hw*k)/1.3*(W>620?CLUSTER:1);cluster.scale.setScalar(unit);
     const sc=key.shadow.camera,ext=3.2*unit;sc.left=-ext;sc.right=ext;sc.top=ext;sc.bottom=-ext;sc.near=.1;sc.far=60;sc.updateProjectionMatrix();
     key.target.position.copy(cluster.position).add(new THREE.Vector3(0,unit,0));key.position.copy(key.target.position).add(new THREE.Vector3(-6,9,14));
   }
@@ -2047,11 +2133,12 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
     t+=dt;
     if(!reduce){cpx=damp(cpx,px,3,dt);cpy=damp(cpy,py,3,dt)}
     cluster.rotation.y=cpx*.16;cluster.rotation.x=cpy*.07;
+    cluster.visible=!document.documentElement.classList.contains('intro-hold');
     if(head.offsetTop!==lastTop||head.offsetWidth!==lastW){lastTop=head.offsetTop;lastW=head.offsetWidth;layout()}
     const hr=hero.getBoundingClientRect();
     for(const k2 in roots){const o=roots[k2],ud=o.userData;
       const tgt=(k2===hoverKey||k2===focusKey)?1:0;ud.h=damp(ud.h,tgt,9,dt);
-      if(ud.intro<1){ud.delay-=dt;if(ud.delay<0)ud.intro=Math.min(1,ud.intro+dt/1.1)}
+      if(ud.intro<1&&!document.documentElement.classList.contains('intro-hold')){ud.delay-=dt;if(ud.delay<0)ud.intro=Math.min(1,ud.intro+dt/1.1)}
       const e=1-Math.pow(1-ud.intro,3),bob=reduce?0:Math.sin(t*.9+ud.phase)*.035;
       o.position.set(ud.base.x,ud.base.y+bob+ud.h*.13-(1-e)*2.4,ud.base.z+ud.h*.1);
       o.rotation.set(ud.rot.x-ud.h*.05,ud.rot.y-ud.h*ud.rot.y*.3,ud.rot.z+(reduce?0:Math.sin(t*.6+ud.phase)*.02));
