@@ -67,5 +67,17 @@ window.createPortfolioAtelier=function({THREE,Round,environment,reduced,anisotro
   return slot;
  });
  const damp=(a,b,k,dt)=>a+(b-a)*(1-Math.exp(-k*dt));
- return{slots,update(dt,t){for(const slot of slots){if(!slot.visible)continue;if(slot.customUpdate){slot.customUpdate(dt,t);continue}slot.rotation=damp(slot.rotation,slot.targetRotation,10,dt);slot.pitch=damp(slot.pitch,slot.targetPitch,10,dt);slot.group.rotation.y=slot.rotation+(reduced?0:Math.sin(t*.28)*.08);slot.group.rotation.x=slot.pitch;for(const [i,m] of slot.models.entries()){m.emphasis=damp(m.emphasis,slot.selected===m.key?1:0,7,dt);m.obj.position.copy(m.base);m.obj.position.z+=m.emphasis*.85;m.obj.position.y+=(reduced?0:Math.sin(t*.8+i*1.4)*.055)+m.emphasis*.12;m.obj.rotation.copy(m.rotation);m.obj.rotation.y+=m.emphasis*.15;m.obj.scale.setScalar(m.scale*(1+m.emphasis*.13));m.obj.userData.tick?.(t,slot.hover?1:0)}}}};
+ // keep every object whole inside its stage: whatever the drag angle, hover lift or stage shape, the camera backs off
+ // until the object's projected bounds sit inside the frame (it never moves closer than the authored distance)
+ const fitBox=new THREE.Box3(),fitV=new THREE.Vector3();
+ function fit(slot,dt){
+  const cam=slot.camera,r=slot.el.getBoundingClientRect();if(!r.width||!r.height)return;
+  if(!slot.fit)slot.fit={base:cam.position.z,ready:false};
+  cam.aspect=r.width/r.height;cam.updateProjectionMatrix();cam.updateMatrixWorld();
+  slot.group.updateMatrixWorld(true);fitBox.setFromObject(slot.group);if(fitBox.isEmpty())return;
+  let m=0;for(let i=0;i<8;i++){fitV.set(i&1?fitBox.max.x:fitBox.min.x,i&2?fitBox.max.y:fitBox.min.y,i&4?fitBox.max.z:fitBox.min.z).project(cam);m=Math.max(m,Math.abs(fitV.x),Math.abs(fitV.y))}
+  const want=Math.max(slot.fit.base,cam.position.z*m/.84);
+  cam.position.z=slot.fit.ready?damp(cam.position.z,want,6,dt):want;slot.fit.ready=true;cam.lookAt(0,0,0);
+ }
+ return{slots,update(dt,t){for(const slot of slots){if(!slot.visible)continue;if(slot.customUpdate){slot.customUpdate(dt,t);continue}slot.rotation=damp(slot.rotation,slot.targetRotation,10,dt);slot.pitch=damp(slot.pitch,slot.targetPitch,10,dt);slot.group.rotation.y=slot.rotation+(reduced?0:Math.sin(t*.28)*.08);slot.group.rotation.x=slot.pitch;for(const [i,m] of slot.models.entries()){m.emphasis=damp(m.emphasis,slot.selected===m.key?1:0,7,dt);m.obj.position.copy(m.base);m.obj.position.z+=m.emphasis*.85;m.obj.position.y+=(reduced?0:Math.sin(t*.8+i*1.4)*.055)+m.emphasis*.12;m.obj.rotation.copy(m.rotation);m.obj.rotation.y+=m.emphasis*.15;m.obj.scale.setScalar(m.scale*(1+m.emphasis*.13));m.obj.userData.tick?.(t,slot.hover?1:0)}fit(slot,dt)}}};
 };

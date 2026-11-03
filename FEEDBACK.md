@@ -103,3 +103,9 @@ Later explicit user decisions take precedence over earlier recommendations in re
 1. **Less text:** Build stories fold behind "The full story" (nothing deleted). Strata's process notes appear on hover on desktop and stay visible on touch. More builds cards and About are cut to one or two lines, and the duplicate Awards card in About is removed. Section and row spacing are increased.
 2. **3D accents (two only):** a quadcopter under the quad stats and the orbit model under the Kessler stats, hidden below 900 px.
 3. **Quality:** Full pixel ratio, capped at 2, on every device. Guitar strings are thin cylinders instead of 1 px lines. The sketchbook has smoother rings and a pencil with a wooden tip, lead and eraser. The drone has twisted two-blade props, prop guards, motor caps, a battery and status LEDs. Backup: versions/pre-declutter/.
+
+## 3 November 2026 — 3D objects never cut off
+
+1. **Bug:** The quadcopter accent was clipped by its small stage, especially when dragged.
+2. **Fix:** Every small 3D stage (the quadcopter and orbit accents, the Awards trophy, the About collection) now fits its camera each frame. It projects the object's bounds and backs the camera off until they sit inside about 84% of the frame. It never moves closer than the authored distance.
+3. **Checked:** At five drag angles, with pitch, on desktop and phone, the tightest projected extent stays 0.61–0.81 of the frame. The staircase and cabinet scenes have their own cameras and were not affected.
