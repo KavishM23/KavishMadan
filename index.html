@@ -772,7 +772,7 @@ html.intro-hold .obj-labs{visibility:hidden}
   <a class="brand" href="#top">Kavish Madan</a>
   <nav aria-label="Primary navigation">
     <div class="tabs"><a href="#home" data-tab="home">Builds</a><a href="#code" data-tab="code">Code</a><a href="#awards" data-tab="awards">Awards</a></div>
-    <button class="snd" id="sndBtn" type="button" aria-pressed="false" aria-label="Background music: berlioz, jazz is for ordinary people"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17.5V6l10-2v11.5"/><circle cx="6.5" cy="17.5" r="2.5"/><circle cx="16.5" cy="15.5" r="2.5"/></svg><span class="snd-sw" aria-hidden="true"><i></i></span></button>
+    <button class="snd" id="sndBtn" type="button" aria-pressed="false" aria-label="Background music"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17.5V6l10-2v11.5"/><circle cx="6.5" cy="17.5" r="2.5"/><circle cx="16.5" cy="15.5" r="2.5"/></svg><span class="snd-sw" aria-hidden="true"><i></i></span></button>
     <button class="circ" id="menuBtn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="menu"><span></span><span></span></button>
     <a class="pill" href="#contact">Get in touch</a>
   </nav>
@@ -2189,28 +2189,45 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
   layout();update(0);renderPortfolios();start();
 })();
 </script>
-<aside class="np" id="np" hidden aria-label="Now playing">
-  <div class="np-player"><div id="ytp"></div></div>
-  <div class="np-meta"><span class="np-k">Now playing</span><b>jazz is for ordinary people</b><span>berlioz</span></div>
+<aside class="np" id="np" hidden aria-label="Music">
+  <div class="np-player"><div id="spotp"></div></div>
+  <button class="np-list-btn" type="button" aria-expanded="false" aria-controls="npList"><span>Playlist</span><b data-np-now></b><i aria-hidden="true"></i></button>
+  <ol class="np-list" id="npList" hidden></ol>
   <button class="np-x" type="button" aria-label="Turn music off">×</button>
 </aside>
 <script>
-/* background music: the official berlioz upload, played through YouTube's own player, which stays visible while it plays */
+/* background music: a small Spotify player the header switch plays and pauses, with a short playlist to pick from.
+   Visitors signed in to Spotify hear full tracks; everyone else gets Spotify's 30-second previews. */
 (function(){
-  const btn=document.getElementById('sndBtn'),card=document.getElementById('np'),ID='CJkGGslFneE';
+  const btn=document.getElementById('sndBtn'),card=document.getElementById('np');
   if(!btn||!card)return;
-  let player=null,ready=false,on=false,loading=false;
+  const TRACKS=[
+    {id:'3hj6jHDmZfoQdukMi6bWF6',t:'Lacrimosa',a:'Mozart, Jordi Savall'},
+    {id:'2sSaJTkmnfF2GRxba9YOWp',t:'Smooth Operator',a:'Sade'},
+    {id:'12BaQt9aYdTlEtKreqB5V4',t:'jazz is for ordinary people',a:'berlioz'},
+    {id:'4rAcMik7N6LlIs61u5bzYo',t:'sea of cloud',a:'Nujabes'},
+    {id:'69QHm3pustz01CJRwdo20z',t:'Hells Bells',a:'AC/DC'},
+    {id:'2gzTugToa0polcHE5wX7Lk',t:'Rock Your Body (instrumental)',a:'Starlite Karaoke'},
+    {id:'44giiCLALEwefT01Jld5lv',t:'Father Figure',a:'George Michael'}
+  ];
+  const list=card.querySelector('.np-list'),listBtn=card.querySelector('.np-list-btn'),now=card.querySelector('[data-np-now]');
+  let ctrl=null,loading=false,on=false,cur=2,wantPlay=false,ended=false;
+  TRACKS.forEach((tr,i)=>{const li=document.createElement('li'),b=document.createElement('button');b.type='button';b.innerHTML=`<b></b><span></span>`;b.querySelector('b').textContent=tr.t;b.querySelector('span').textContent=tr.a;b.addEventListener('click',()=>pick(i,true));li.append(b);list.append(li)});
   const mark=v=>{btn.setAttribute('aria-pressed',String(v));btn.classList.toggle('on',v)};
-  function setOn(v){on=v;mark(v);card.hidden=!v;if(v){ready?player.playVideo():load()}else if(ready)player.pauseVideo()}
+  function label(){now.textContent=TRACKS[cur].t;list.querySelectorAll('button').forEach((b,i)=>b.setAttribute('aria-current',String(i===cur)))}
+  function pick(i,play){cur=(i+TRACKS.length)%TRACKS.length;label();if(ctrl){wantPlay=play;ctrl.loadUri('spotify:track:'+TRACKS[cur].id)}}
+  function setOn(v){on=v;mark(v);card.hidden=!v;if(v){if(ctrl)ctrl.play();else{wantPlay=true;load()}}else if(ctrl)ctrl.pause()}
   function load(){if(loading)return;loading=true;
-    const make=()=>{player=new YT.Player('ytp',{host:'https://www.youtube-nocookie.com',videoId:ID,width:'100%',height:'100%',
-      playerVars:{autoplay:1,loop:1,playlist:ID,playsinline:1,rel:0,modestbranding:1},
-      events:{onReady:e=>{ready=true;e.target.setVolume(45);on?e.target.playVideo():e.target.pauseVideo()},
-              onStateChange:e=>{if(!on)return;if(e.data===YT.PlayerState.PLAYING)mark(true);else if(e.data===YT.PlayerState.PAUSED)mark(false)}}})};
-    if(window.YT&&YT.Player)make();
-    else{const prev=window.onYouTubeIframeAPIReady;window.onYouTubeIframeAPIReady=()=>{prev&&prev();make()};const s=document.createElement('script');s.src='https://www.youtube.com/iframe_api';s.async=true;document.head.append(s)}}
+    window.onSpotifyIframeApiReady=api=>{api.createController(document.getElementById('spotp'),{uri:'spotify:track:'+TRACKS[cur].id,width:'100%',height:80},c=>{ctrl=c;
+      c.addListener('ready',()=>{if(wantPlay&&on){wantPlay=false;c.play()}});
+      c.addListener('playback_update',e=>{const d=e.data;if(!d)return;if(on)mark(!d.isPaused);
+        // move on to the next song when one finishes
+        if(d.duration>0&&d.position>=d.duration-400&&!ended){ended=true;if(on)pick(cur+1,true)}else if(d.position<d.duration-400)ended=false})})};
+    const s=document.createElement('script');s.src='https://open.spotify.com/embed/iframe-api/v1';s.async=true;document.head.append(s)}
+  listBtn.addEventListener('click',()=>{const open=list.hidden;list.hidden=!open;listBtn.setAttribute('aria-expanded',String(open))});
   btn.addEventListener('click',()=>setOn(!(on&&btn.classList.contains('on'))));
   card.querySelector('.np-x').addEventListener('click',()=>setOn(false));
+  label();
 })();
 </script>
 <script src="interactions.js"></script>

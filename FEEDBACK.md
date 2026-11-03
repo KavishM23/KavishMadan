@@ -77,3 +77,9 @@ Later explicit user decisions take precedence over earlier recommendations in re
 3. **Scroll and controls:** Scrolling glides bay to bay, holding at each one. The card on the left shows the honour and a counter, and the dots jump to any bay. The text is read from the existing grid (awards-cabinet.js), so the grid stays the single source and is the fallback for reduced motion, screens under 560 px tall or no WebGL.
 4. **Music:** The user asked for berlioz (the jazz-house artist), "jazz is for ordinary people". It's copyrighted, so it isn't hosted on the site. It plays through YouTube's official embed of the artist's own upload (video CJkGGslFneE, youtube-nocookie host). The user chose this over a licensed sound-alike or a Spotify card.
 5. **Switch:** The header switch turns it on and off. While it plays, YouTube's player stays visible as a 200×200 "now playing" card (YouTube's minimum size). Nothing loads from YouTube until the switch is pressed.
+
+## 3 November 2026 — Spotify player and playlist (replaces the YouTube card)
+
+1. **Why:** The user wanted a smaller footprint than YouTube's 200×200 minimum. The music is now Spotify's compact embed (80 px tall) inside a 320 px card. The header switch plays and pauses it through Spotify's embed API.
+2. **Playlist:** The card has a collapsible list: Lacrimosa (Mozart, Jordi Savall), Smooth Operator (Sade), jazz is for ordinary people (berlioz, the default), sea of cloud (Nujabes), Hells Bells (AC/DC), Rock Your Body (instrumental, Starlite Karaoke, since Spotify has no official instrumental) and Father Figure (George Michael). It moves to the next song when one ends.
+3. **Limits:** The user asked for 10 songs but named 7, so 3 slots are open. Visitors not signed in to Spotify hear 30-second previews. Nothing loads from Spotify until the switch is pressed.
