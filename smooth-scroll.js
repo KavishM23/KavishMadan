@@ -5,7 +5,7 @@
 (function(){
  if(!window.Lenis||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
  const root=document.documentElement;
- const COMMIT=190,NUDGE=22,GAP=220;   // px of scrolling to commit, max give at the edge, ms of quiet that ends a gesture
+ const COMMIT=120,NUDGE=26,GAP=220;   // px of scrolling to commit, max give at the edge, ms of quiet that ends a gesture
  let lenis;
 
  // scroll ranges that only ever play as a whole

@@ -94,6 +94,6 @@ Later explicit user decisions take precedence over earlier recommendations in re
 ## 3 November 2026 — transitions wait for a deliberate scroll
 
 1. **Feedback:** The page should not slide into a transition on the slightest scroll. It should hold until you scroll on deliberately, then play the whole move.
-2. **Gates:** Each transition is now a gate on the wheel. Smooth scrolling glides you up to its edge and stops. Pushing past the edge gives up to 22 px of resistance and settles back if you let go. About 190 px of further scrolling (two mouse-wheel notches or a firm trackpad swipe) commits, and the transition plays as one locked, eased move of 0.7–1.35 s.
+2. **Gates:** Each transition is now a gate on the wheel. Smooth scrolling glides you up to its edge and stops. Pushing past the edge gives up to 22 px of resistance and settles back if you let go. About 120 px of further scrolling (one firm mouse-wheel notch or a short trackpad swipe) commits; it was 190 px before the user asked for it to be a little easier, and the transition plays as one locked, eased move of 0.7–1.35 s.
 3. **Momentum:** Trackpad momentum from the same gesture can't open the next gate; that needs a fresh scroll after a 0.22 s pause. Scrolling the other way at an edge cancels.
 4. **Other input:** Touch, keys and the scrollbar stay native and finish any transition they stop inside. Overlays and pinch-zoom are untouched.
