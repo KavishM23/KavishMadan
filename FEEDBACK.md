@@ -90,3 +90,10 @@ Later explicit user decisions take precedence over earlier recommendations in re
 2. **Smooth scrolling:** Lenis 1.1.13 from unpkg, driven by the GSAP ticker so ScrollTrigger stays in sync (smooth-scroll.js). It pauses whenever an overlay locks the page. The menu, research book, case studies, image viewer and playlist scroll natively (data-lenis-prevent). Nav links, page switches and cabinet dots scroll through it.
 3. **Commit rule:** About 0.18 s after scrolling stops, if the page is resting inside a transition it eases on to the end in the direction you were moving, or back if you were scrolling up. Transitions are each paper tear, each move between cabinet bays and each move between staircase landings. Resting points (the bays, the landings, and the space between tears) never snap.
 4. Off with reduced motion. Touch keeps native scrolling, and the commit rule applies once momentum ends.
+
+## 3 November 2026 — transitions wait for a deliberate scroll
+
+1. **Feedback:** The page should not slide into a transition on the slightest scroll. It should hold until you scroll on deliberately, then play the whole move.
+2. **Gates:** Each transition is now a gate on the wheel. Smooth scrolling glides you up to its edge and stops. Pushing past the edge gives up to 22 px of resistance and settles back if you let go. About 190 px of further scrolling (two mouse-wheel notches or a firm trackpad swipe) commits, and the transition plays as one locked, eased move of 0.7–1.35 s.
+3. **Momentum:** Trackpad momentum from the same gesture can't open the next gate; that needs a fresh scroll after a 0.22 s pause. Scrolling the other way at an edge cancels.
+4. **Other input:** Touch, keys and the scrollbar stay native and finish any transition they stop inside. Overlays and pinch-zoom are untouched.
