@@ -121,10 +121,10 @@ html.cur-on,html.cur-on *{cursor:none!important}
 #hero3d{position:absolute;inset:0;width:100%;height:100%;z-index:2;display:block;touch-action:pan-y}
 .head{position:absolute;left:50%;bottom:-30%;top:auto;width:clamp(340px,58vw,940px);height:auto;transform:translateX(-50%);z-index:3;pointer-events:none;user-select:none;-webkit-user-select:none}
 @media (max-width:620px){.head{width:min(100vw,460px)}}
-.hero .bubble.hb{z-index:5;left:var(--bx,70%);top:var(--by,60%);--rot:-5deg}
-@media (max-width:760px){.hero .bubble.hb{display:none}}
 .obj-labs{position:absolute;left:0;right:0;top:46%;z-index:6;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;padding:0 16px}
 .obj-lab{font-family:var(--f-d);font-weight:600;font-size:clamp(.95rem,1.3vw,1.15rem);background:var(--white);color:var(--navy);border:0;border-radius:999px;padding:.72rem 1.25rem;text-decoration:none;cursor:pointer;white-space:nowrap;box-shadow:0 12px 24px -10px rgba(8,25,38,.6)}
+.hero:not(.has3d) .obj-labs{animation:labsLate .4s 3s both}
+@keyframes labsLate{from{opacity:0;visibility:hidden}}
 .has3d .obj-labs{inset:0;top:0;display:block;padding:0;pointer-events:none}
 .has3d .obj-lab{position:absolute;left:var(--lx,-999px);top:var(--ly,-999px);transform:translate(-50%,-100%) scale(.7);opacity:0;pointer-events:none;transition:opacity .2s,transform .35s cubic-bezier(.2,.9,.25,1.3)}
 .has3d .obj-lab.on,.has3d .obj-lab:focus-visible{opacity:1;transform:translate(-50%,-100%) scale(1)}
@@ -427,7 +427,6 @@ html.cur-on,html.cur-on *{cursor:none!important}
 .bubble::after{display:none!important}
 .bubble .bub-t{position:relative;z-index:1}
 .bubble .bub-s{position:absolute;z-index:0;overflow:visible;pointer-events:none;filter:drop-shadow(0 12px 18px rgba(8,25,38,.42))}
-.hero .bubble.hb{font-size:clamp(1.15rem,2.1vw,2.1rem);padding:.8em 1.5em .95em}
 
 /* ---------- ripping dividers ---------- */
 .torn{height:clamp(150px,24vw,340px)}
@@ -815,7 +814,6 @@ html.cur-on,html.cur-on *{cursor:none!important}
     </div>
     <canvas id="hero3d" aria-hidden="true"></canvas>
     <img class="head" src="img/kavish-head3.webp" alt="Kavish Madan" fetchpriority="high" decoding="async" width="894" height="996">
-    <div class="bubble hb">Stanford, do you copy?</div>
     <div class="obj-labs">
       <button class="obj-lab" type="button" data-key="research" data-research>Research papers</button>
       <a class="obj-lab" data-key="linkedin" id="lab-linkedin" href="#contact">LinkedIn</a>
@@ -1504,13 +1502,18 @@ html.cur-on,html.cur-on *{cursor:none!important}
   if(LINKEDIN_URL){['lab-linkedin','soc-linkedin','mail-linkedin'].forEach(id=>{const a=document.getElementById(id);if(a){a.href=LINKEDIN_URL;a.target='_blank';a.rel='noopener'}})}
 
   /* ---- place the head so its torn edge sits at a fixed height in the hero ---- */
-  const heroEl=document.getElementById('hero'),headEl=document.querySelector('.head'),bub=document.querySelector('.hero .bubble.hb');
+  const heroEl=document.getElementById('hero'),headEl=document.querySelector('.head');
+  /* Trevor-style framing: the torn edge sits just under the name and the face fills the rest of the window,
+     cropped by the bottom edge around the nose, so the head grows with the window's height as well as its width. */
+  const HEAD_AR=996/894,TEAR_F=.048,NOSE_F=.41;
   function placeHead(){
-    const H=heroEl.clientHeight,W=heroEl.clientWidth,hw=headEl.getBoundingClientRect().width||headEl.offsetWidth,hh=hw*996/894;
+    const H=heroEl.clientHeight,W=heroEl.clientWidth;
     if(!H||!W)return;
     const tear=(W<700?.56:.5)*H;
-    headEl.style.top=(tear-.048*hh).toFixed(1)+'px';headEl.style.bottom='auto';
-    if(bub){const center=headEl.offsetLeft,bx=Math.max(18,Math.min(W-bub.offsetWidth-24,center+hw*.3));bub.style.setProperty('--bx',bx.toFixed(0)+'px');bub.style.setProperty('--by',(tear+hh*.16).toFixed(0)+'px')}
+    if(W>620){let iw=(H-tear)/NOSE_F/HEAD_AR;iw=Math.min(iw,W*(W<=1100?1.05:1.2));headEl.style.width=iw.toFixed(1)+'px'}
+    else headEl.style.width='';
+    const hw=headEl.getBoundingClientRect().width||headEl.offsetWidth,hh=hw*HEAD_AR;
+    headEl.style.top=(tear-TEAR_F*hh).toFixed(1)+'px';headEl.style.bottom='auto';
   }
   placeHead();addEventListener('resize',placeHead);if(!headEl.complete)headEl.addEventListener('load',placeHead);
 
@@ -1799,6 +1802,23 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
     const leaves=[];for(let i=0;i<5;i++){const lh=new THREE.Group();lh.position.set(.014,0,pt/2-.006-i*.004);const lm=new THREE.Mesh(new THREE.PlaneGeometry(W-.14,H-.15,1,1),leafMat);lm.position.x=(W-.14)/2+.03;lh.add(lm);inner.add(lh);leaves.push(lh)}
     const hinge=new THREE.Group();hinge.position.set(0,0,pt/2+ct/2);inner.add(hinge);
     const cover=new THREE.Mesh(new RoundedBoxGeometry(W,H,ct,4,.028),[coverMat,coverMat,coverMat,coverMat,frontMat,inside]);cover.position.x=W/2;hinge.add(cover);
+    // brass corner guards on the two outer corners of the front cover
+    [1,-1].forEach(sy=>{const tri=new THREE.Shape();tri.moveTo(0,0);tri.lineTo(-.2,0);tri.lineTo(0,-.2);tri.closePath();
+      const cg=new THREE.Mesh(new THREE.ExtrudeGeometry(tri,{depth:ct+.014,bevelEnabled:true,bevelThickness:.006,bevelSize:.006,bevelSegments:2}),M.gold);
+      cg.position.set(W/2+.004,sy*(H/2+.004),-(ct+.014)/2);cg.scale.y=sy;cover.add(cg)});
+    // coloured index tabs poking out of the fore-edge, one per paper
+    const tabCols=[0xa54f36,0x8fb6c8,0xf2c14e,0xf4f2ee];
+    [.78,.42,.02,-.4].forEach((y,i)=>{const tb=new THREE.Mesh(new RoundedBoxGeometry(.2,.15,.006,2,.003),new THREE.MeshStandardMaterial({color:tabCols[i],roughness:.75}));
+      tb.position.set(W-.08+.06,y,pt/2-.05-i*.06);inner.add(tb)});
+    // a loose sheet held on with a paperclip, sticking out of the top
+    const sheetT=T(256,320,(g,w,h)=>{g.fillStyle='#FDFBF4';g.fillRect(0,0,w,h);g.strokeStyle='rgba(83,126,154,.35)';g.lineWidth=3;for(let y=60;y<h;y+=26){g.beginPath();g.moveTo(18,y);g.lineTo(w-18,y);g.stroke()}
+      g.strokeStyle='#142D43';g.lineWidth=4;g.beginPath();g.moveTo(30,40);g.bezierCurveTo(70,10,110,70,150,36);g.stroke();g.fillStyle='#A54F36';g.font='700 30px Caveat, cursive';g.fillText('v = sqrt(GM/r)',26,112)});
+    const sheet=new THREE.Mesh(new THREE.PlaneGeometry(.62,.78),new THREE.MeshStandardMaterial({map:sheetT,roughness:.9,side:THREE.DoubleSide}));
+    sheet.position.set(.95,H/2-.2,pt/2-.03);sheet.rotation.z=-.09;inner.add(sheet);
+    const cp=[],arc=(cx,cy,r,a0,a1)=>{for(let i=0;i<=10;i++){const a=a0+(a1-a0)*i/10;cp.push(new THREE.Vector3(cx+Math.cos(a)*r,cy+Math.sin(a)*r,0))}};
+    cp.push(new THREE.Vector3(.02,-.06,0));arc(0,.1,.02,0,Math.PI);arc(.0125,-.13,.0325,Math.PI,2*Math.PI);arc(0,.14,.045,0,Math.PI);cp.push(new THREE.Vector3(-.045,0,0));
+    const clip=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(cp,false,'catmullrom',.1),120,.0075,8,false),M.steel);
+    clip.position.set(.82,H/2+.08,pt/2-.018);clip.rotation.z=-.09;clip.scale.setScalar(1.35);inner.add(clip);
     root.userData.labelY=H/2+.3;root.userData.open=0;root.userData.openTarget=0;
     root.userData.tick=(dt,h)=>{const ud=root.userData;const tg=Math.max(h*1.05,ud.openTarget);ud.open=damp(ud.open,tg,ud.openTarget>1?5:7,dt);hinge.rotation.y=-ud.open;leaves.forEach((l,i)=>l.rotation.y=-ud.open*(.1+i*.12))};
     return root;
@@ -1812,9 +1832,19 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
     const ui=T(1600,1080,(g,w,h)=>{
       const gr=g.createLinearGradient(0,0,w,h);gr.addColorStop(0,'#244B63');gr.addColorStop(1,'#0C2233');g.fillStyle=gr;g.fillRect(0,0,w,h);
       g.strokeStyle='rgba(255,255,255,.05)';g.lineWidth=2;for(let x=0;x<w;x+=64){g.beginPath();g.moveTo(x,0);g.lineTo(x,h);g.stroke()}for(let y=0;y<h;y+=64){g.beginPath();g.moveTo(0,y);g.lineTo(w,y);g.stroke()}
-      g.fillStyle='#fff';g.font='800 74px "Schibsted Grotesk", sans-serif';g.fillText('Kavish Madan',90,150);
-      g.fillStyle='#B8CDD7';g.font='500 42px "IBM Plex Mono", monospace';g.fillText('Student maker, Dubai',94,214);
-      g.fillStyle='#B5D2DE';g.font='600 40px "IBM Plex Mono", monospace';g.textAlign='right';g.fillText('CONNECT  →',w-90,h-150);
+      // banner with an orbit doodle, then a profile card laid out around the big centre button
+      const bn=g.createLinearGradient(0,0,w,0);bn.addColorStop(0,'#A54F36');bn.addColorStop(1,'#D6A44A');g.fillStyle=bn;g.fillRect(0,0,w,250);
+      g.strokeStyle='rgba(255,255,255,.45)';g.lineWidth=5;g.beginPath();g.ellipse(w*.72,125,330,70,-.12,0,Math.PI*2);g.stroke();g.fillStyle='#fff';g.beginPath();g.arc(w*.72+300,98,14,0,Math.PI*2);g.fill();
+      g.fillStyle='#F1E6D2';g.beginPath();g.arc(190,260,112,0,Math.PI*2);g.fill();g.strokeStyle='#0C2233';g.lineWidth=12;g.stroke();
+      g.fillStyle='#142D43';g.font='800 96px "Schibsted Grotesk", sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('KM',190,266);
+      g.textAlign='left';g.textBaseline='alphabetic';
+      g.fillStyle='#fff';g.font='800 62px "Schibsted Grotesk", sans-serif';g.fillText('Kavish',70,470);g.fillText('Madan',70,540);
+      g.fillStyle='#B8CDD7';g.font='500 30px "IBM Plex Mono", monospace';['Aero/Astro','hopeful','Dubai, UAE'].forEach((t,i)=>g.fillText(t,72,610+i*44));
+      g.textAlign='right';g.fillStyle='#fff';g.font='800 64px "Schibsted Grotesk", sans-serif';g.fillText('500+',w-70,470);
+      g.fillStyle='#B8CDD7';g.font='500 30px "IBM Plex Mono", monospace';g.fillText('connections',w-70,520);
+      g.fillStyle='#B5D2DE';const pill=(x,y,pw,ph)=>{g.beginPath();g.roundRect(x,y,pw,ph,ph/2);g.fill()};pill(w-330,580,260,76);g.fillStyle='#0C2233';g.font='700 34px "Schibsted Grotesk", sans-serif';g.textAlign='center';g.fillText('Connect',w-200,630);
+      g.fillStyle='rgba(255,255,255,.1)';for(let i=0;i<3;i++){g.beginPath();g.roundRect(70+i*500,h-150,440,110,18);g.fill()}
+      g.fillStyle='rgba(255,255,255,.28)';for(let i=0;i<3;i++){g.fillRect(100+i*500,h-118,260,14);g.fillRect(100+i*500,h-88,180,14)}
     });
     const scr=new THREE.Mesh(new THREE.PlaneGeometry(1.8,1.2),new THREE.MeshBasicMaterial({map:ui,toneMapped:false}));scr.position.z=BD/2+.016;root.add(scr);
     const glass=new THREE.Mesh(new THREE.PlaneGeometry(1.8,1.2),new THREE.MeshPhysicalMaterial({color:0x000000,metalness:0,roughness:.04,transparent:true,opacity:.18,clearcoat:1,envMapIntensity:2}));glass.position.z=BD/2+.02;root.add(glass);
@@ -1826,6 +1856,10 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
     const fillBar=new THREE.Mesh(new RoundedBoxGeometry(.56,.055,.035,2,.017),new THREE.MeshPhysicalMaterial({color:0xa54f36,roughness:.3,clearcoat:1}));fillBar.position.set(-.42,-.43,BD/2+.034);root.add(fillBar);
     const knob=new THREE.Mesh(new THREE.SphereGeometry(.075,40,24),M.clay);knob.position.set(-.14,-.43,BD/2+.07);root.add(knob);
     const cam=new THREE.Mesh(new THREE.CircleGeometry(.018,20),new THREE.MeshBasicMaterial({color:0x284052}));cam.position.set(0,.69,BD/2+.002);root.add(cam);
+    const keyMat=new THREE.MeshPhysicalMaterial({color:0xc9ccd6,metalness:.6,roughness:.3});
+    [[.55,.2],[.8,.12]].forEach(([x,len])=>{const kb=new THREE.Mesh(new RoundedBoxGeometry(len,.035,.07,2,.016),keyMat);kb.position.set(x,BH/2+.008,0);root.add(kb)});
+    const spk=new THREE.InstancedMesh(new THREE.CylinderGeometry(.008,.008,.02,8),new THREE.MeshBasicMaterial({color:0x5b6070}),12);
+    for(let i=0;i<12;i++){const o=new THREE.Object3D();o.position.set(-BW/2-.001,-.25+i*.045,0);o.rotation.z=Math.PI/2;o.updateMatrix();spk.setMatrixAt(i,o.matrix)}root.add(spk);
     const ring=new THREE.Mesh(new THREE.TorusGeometry(.14,.036,20,56),M.gold);ring.position.set(BW/2+.08,.3,0);ring.rotation.y=Math.PI/2;root.add(ring);
     const tag=new THREE.Mesh(new RoundedBoxGeometry(.05,.34,.2,2,.02),M.gold);tag.position.set(BW/2+.1,.04,0);tag.rotation.x=.15;root.add(tag);
     root.userData.labelY=1.02;
@@ -1858,6 +1892,20 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
     const logoMat=new THREE.MeshPhysicalMaterial({color:0xc72f08,roughness:.35,clearcoat:.7});
     const logo=new THREE.Mesh(new THREE.ExtrudeGeometry(outer,{depth:.05,bevelEnabled:true,bevelThickness:.014,bevelSize:.014,bevelSegments:3,curveSegments:4}),logoMat);logo.position.z=.235;spin.add(logo);
     const bar=new THREE.Mesh(new RoundedBoxGeometry(.24,.055,.06,2,.014),logoMat);bar.position.set(.03,-.03,.27);bar.rotation.z=-.52;spin.add(bar);
+    const swDraw=(base,ink,ring)=>canvasOf(1024,1024,(g,w,h)=>{g.fillStyle=base;g.fillRect(0,0,w,h);g.translate(w/2,h/2);
+      g.strokeStyle=ring;g.lineWidth=5;[.66,.97].forEach(f=>{g.beginPath();g.arc(0,0,w/2*f,0,Math.PI*2);g.stroke()});
+      for(let i=0;i<60;i++){g.save();g.rotate(i/60*Math.PI*2);g.fillStyle=ring;g.fillRect(-2,-w/2*.95,4,18);g.restore()}
+      const R=w/2*.8,txt='STRATA · 4×4 IN SCHOOLS · ALL TERRAIN · STRATA · 2ND IN THE UAE · ';g.font='800 50px "Schibsted Grotesk", sans-serif';g.fillStyle=ink;g.textAlign='center';g.textBaseline='middle';
+      const ch=[...txt],ws=ch.map(c2=>g.measureText(c2).width),sc=2*Math.PI*R/ws.reduce((a,b)=>a+b,0);let a=0;
+      ch.forEach((c2,i)=>{const da=ws[i]*sc/R;g.save();g.rotate(a+da/2);g.translate(0,-R);g.fillText(c2,0,0);g.restore();a+=da})});
+    const swMat=new THREE.MeshPhysicalMaterial({map:tex(swDraw('#1b1b20','#4a4a55','#2a2a31')),bumpMap:tex(swDraw('#000','#fff','#888'),false),bumpScale:1.4,roughness:.72,sheen:.4,sheenColor:new THREE.Color(0x5a5a66),polygonOffset:true,polygonOffsetFactor:-2});
+    [1,-1].forEach(sd=>{const sw=new THREE.Mesh(new THREE.RingGeometry(ri+.03,ro-.03,128,1),swMat);sw.position.z=sd*(w/2+.002);if(sd<0)sw.rotation.y=Math.PI;spin.add(sw)});
+    const rivet=new THREE.InstancedMesh(new THREE.SphereGeometry(.018,12,8),M.steel,14);
+    for(let i=0;i<14;i++){const a=i/14*Math.PI*2;d.position.set(Math.cos(a)*(ri-.02),Math.sin(a)*(ri-.02),.29);d.rotation.set(0,0,0);d.scale.set(1,1,.6);d.updateMatrix();rivet.setMatrixAt(i,d.matrix)}
+    d.scale.set(1,1,1);spin.add(rivet);
+    const valve=new THREE.Group();valve.position.set(0,-.4,.24);spin.add(valve);
+    const vs=new THREE.Mesh(new THREE.CylinderGeometry(.018,.022,.1,14),M.steel);vs.rotation.x=Math.PI/2;vs.position.z=.05;valve.add(vs);
+    const vc=new THREE.Mesh(new THREE.CylinderGeometry(.026,.026,.045,16),new THREE.MeshPhysicalMaterial({color:0x111114,roughness:.5}));vc.rotation.x=Math.PI/2;vc.position.z=.11;valve.add(vc);
     root.userData.labelY=1.15;root.userData.vel=.25;
     root.userData.tick=(dt,h)=>{const ud=root.userData;ud.vel=damp(ud.vel,reduce?0:(.25+h*4.5),4,dt);spin.rotation.z-=ud.vel*dt};
     return root;
@@ -1885,6 +1933,14 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
     const fdot=new THREE.Mesh(new THREE.SphereGeometry(.03,16,12),M.clay);fdot.position.y=.2;dishG.add(fdot);
     const ant=new THREE.Mesh(new THREE.CylinderGeometry(.012,.012,.38,8),M.steel);ant.position.y=-.5;root.add(ant);
     const tip=new THREE.Mesh(new THREE.SphereGeometry(.05,20,14),M.clay);tip.position.y=-.7;root.add(tip);
+    const nozMat=new THREE.MeshPhysicalMaterial({color:0x3a3d47,metalness:.9,roughness:.35,side:THREE.DoubleSide});
+    [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz])=>{const nz=new THREE.Mesh(new THREE.CylinderGeometry(.022,.055,.09,24,1,true),nozMat);nz.position.set(sx*.17,-.37,sz*.17);root.add(nz);
+      const ring2=new THREE.Mesh(new THREE.TorusGeometry(.024,.008,8,20),M.steel);ring2.rotation.x=Math.PI/2;ring2.position.set(sx*.17,-.325,sz*.17);root.add(ring2)});
+    const trk=new THREE.Group();trk.position.set(.15,.05,.27);trk.rotation.x=-.4;root.add(trk);
+    trk.add(new THREE.Mesh(new RoundedBoxGeometry(.13,.13,.12,2,.02),M.white));
+    const baffle=new THREE.Mesh(new THREE.CylinderGeometry(.045,.035,.09,24,1,true),new THREE.MeshPhysicalMaterial({color:0x101218,roughness:.4,side:THREE.DoubleSide}));baffle.rotation.x=Math.PI/2;baffle.position.z=.1;trk.add(baffle);
+    const lens=new THREE.Mesh(new THREE.CircleGeometry(.034,24),new THREE.MeshPhysicalMaterial({color:0x223a66,metalness:.2,roughness:.05,clearcoat:1,iridescence:1}));lens.position.z=.075;trk.add(lens);
+    wings.forEach(arm=>{const sg=Math.sign(arm.position.x);[-.12,.12].forEach(y=>{const hg=new THREE.Mesh(new THREE.CylinderGeometry(.02,.02,.06,12),M.gold);hg.position.set(sg*.31,y,0);arm.add(hg)})});
     root.userData.labelY=.86;
     root.userData.tick=(dt,h,t)=>{wings.forEach((a,i)=>a.rotation.x=(reduce?0:Math.sin(t*.8)*.1)+h*(i?.8:-.8))};
     return root;
@@ -1895,7 +1951,10 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
     const root=new THREE.Group(),sh=new THREE.Shape();
     sh.moveTo(0,.62);sh.bezierCurveTo(.5,.66,.7,.42,.6,.06);sh.bezierCurveTo(.5,-.3,.2,-.62,0,-.76);sh.bezierCurveTo(-.2,-.62,-.5,-.3,-.6,.06);sh.bezierCurveTo(-.7,.42,-.5,.66,0,.62);
     const g=new THREE.ExtrudeGeometry(sh,{depth:.08,bevelEnabled:true,bevelThickness:.06,bevelSize:.06,bevelSegments:10,curveSegments:64});g.center();
-    const body=new THREE.Mesh(g,M.clay);root.add(body);
+    const cell=T(512,512,(c,w,h)=>{c.fillStyle='#A54F36';c.fillRect(0,0,w,h);
+      for(let i=0;i<46;i++){const x=Math.random()*w,y=Math.random()*h,r=60+Math.random()*160;c.strokeStyle=Math.random()<.5?`rgba(196,112,82,${.08+Math.random()*.12})`:`rgba(122,52,32,${.08+Math.random()*.12})`;c.lineWidth=10+Math.random()*26;c.beginPath();c.ellipse(x,y,r,r*(.25+Math.random()*.5),Math.random()*Math.PI,0,Math.PI*(1+Math.random()));c.stroke()}});
+    cell.wrapS=cell.wrapT=THREE.RepeatWrapping;cell.repeat.set(1.4,1.4);
+    const body=new THREE.Mesh(g,new THREE.MeshPhysicalMaterial({map:cell,roughness:.16,clearcoat:1,clearcoatRoughness:.05,iridescence:.2,iridescenceIOR:1.35}));root.add(body);
     const t=T(512,512,(c,w,h)=>{c.clearRect(0,0,w,h);c.fillStyle='#fff';c.textAlign='center';c.font='800 300px "Schibsted Grotesk", sans-serif';c.fillText('8',w/2,310);c.font='600 60px "IBM Plex Mono", monospace';c.fillText('GRADE',w/2,400)});
     const lab=new THREE.Mesh(new THREE.PlaneGeometry(.55,.55),new THREE.MeshBasicMaterial({map:t,transparent:true,opacity:.95,toneMapped:false}));lab.position.set(0,.03,.101);root.add(lab);
     root.userData.labelY=.86;
@@ -1945,6 +2004,8 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
   /* ---------- sizing: cluster is pinned to the torn edge of the head ---------- */
   let W=1,H=1,unit=1;
+  /* the cluster is drawn about as wide as the head opening, as in the reference, not twice as wide */
+  const CLUSTER=.8;
   function layout(){
     renderer.setPixelRatio(Math.min(devicePixelRatio||1,innerWidth<700?1.75:2));renderer.setSize(innerWidth,innerHeight,false);
     const r=hero.getBoundingClientRect();if(!r.width||!r.height)return;W=r.width;H=r.height;
@@ -1953,7 +2014,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
     const ax=head.offsetLeft+(.502-.5)*hw,ay=ht+.048*hh;
     const k=2*Math.tan(THREE.MathUtils.degToRad(camera.fov/2))*camera.position.z/H;
     cluster.position.set((ax-W/2)*k,(H/2-ay)*k,0);
-    unit=(.255*hw*k)/1.3;cluster.scale.setScalar(unit);
+    unit=(.255*hw*k)/1.3*(W>620?CLUSTER:1);cluster.scale.setScalar(unit);
     const sc=key.shadow.camera,ext=3.2*unit;sc.left=-ext;sc.right=ext;sc.top=ext;sc.bottom=-ext;sc.near=.1;sc.far=60;sc.updateProjectionMatrix();
     key.target.position.copy(cluster.position).add(new THREE.Vector3(0,unit,0));key.position.copy(key.target.position).add(new THREE.Vector3(-6,9,14));
   }

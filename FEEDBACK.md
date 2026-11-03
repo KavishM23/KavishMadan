@@ -43,3 +43,12 @@ Later explicit user decisions take precedence over earlier recommendations in re
 1. Replace the large labelled Open/Rotate cursor surfaces with compact icons: a pointing hand for links and model actions, and a flat circular arrow for rotation.
 2. Implemented a 24×28 px pointing hand and a 28 px circular arrow. Image viewing uses a small magnifier; the reveal reticle and blueprint crosshair are smaller too. Removed the visible text labels and active-state trailing dots. The pointer tip stays aligned with the actual click position.
 3. Checked hand and rotation states in the browser; the rotation state measures 28 px and the cursor contains no text-label elements. Browser error logs were empty. Backup: versions/pre-compact-cursor/.
+
+## 3 November 2026 — full-screen proportions, paper-plane cursor, model detail
+
+1. **Full screen:** The head now sizes from the window height as well as its width. The torn edge sits at half the hero height and the face fills the rest, cropped near the nose like the reference. The 3D cluster is drawn about as wide as the head opening (0.8 of the old scale above 620 px; phones keep the old scale). The 621–1100 px right shift is kept.
+2. **Removed:** the "Stanford, do you copy?" bubble.
+3. **Cursor:** A cut-paper plane replaces the default dot. Its nose is the click point. It steers toward the direction of travel, banks on turns, leaves a fading dashed contrail and returns to a normal arrow angle when idle. Clicking throws paper confetti. The link hand pops in with a small wave. Reduced motion keeps a still plane with no trail or confetti.
+4. **Model detail:** Tyre: raised sidewall lettering, rim rivets, valve stem. Book: brass corner guards, index tabs, a paper-clipped sheet. Tablet: LinkedIn-style profile screen, top buttons, speaker holes. Satellite: thrusters, star tracker, panel hinges. Pick: celluloid swirl finish.
+5. **Fallback labels** wait 3 s before showing, so they no longer flash over the name while the 3D loads.
+6. Checked at 1180×775, 1470×840, 1920×1080, 2560×1300, 900×1100 and 390×844. Code and Awards still load, no console errors. Backup: versions/pre-fullscreen-fit/.
