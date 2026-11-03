@@ -82,4 +82,4 @@ Later explicit user decisions take precedence over earlier recommendations in re
 
 1. **Why:** The user wanted a smaller footprint than YouTube's 200×200 minimum. The music is now Spotify's compact embed (80 px tall) inside a 320 px card. The header switch plays and pauses it through Spotify's embed API.
 2. **Playlist:** The card has a collapsible list: Lacrimosa (Mozart, Jordi Savall), Smooth Operator (Sade), jazz is for ordinary people (berlioz, the default), sea of cloud (Nujabes), Hells Bells (AC/DC), Rock Your Body (instrumental, Starlite Karaoke, since Spotify has no official instrumental) and Father Figure (George Michael). It moves to the next song when one ends.
-3. **Limits:** The user asked for 10 songs but named 7, so 3 slots are open. Visitors not signed in to Spotify hear 30-second previews. Nothing loads from Spotify until the switch is pressed.
+3. **Limits:** Peso (A$AP Rocky), Summer Wind (Frank Sinatra, studio) and No Me Platiques Más (Luis Miguel) complete the 10. Visitors not signed in to Spotify hear 30-second previews. Nothing loads from Spotify until the switch is pressed.
