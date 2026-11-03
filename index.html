@@ -1503,14 +1503,14 @@ html.cur-on,html.cur-on *{cursor:none!important}
 
   /* ---- place the head so its torn edge sits at a fixed height in the hero ---- */
   const heroEl=document.getElementById('hero'),headEl=document.querySelector('.head');
-  /* Trevor-style framing: the torn edge sits just under the name and the face fills the rest of the window,
-     cropped by the bottom edge around the nose, so the head grows with the window's height as well as its width. */
-  const HEAD_AR=996/894,TEAR_F=.048,NOSE_F=.41;
+  /* The torn edge sits just under the name and the whole head, down to the chin, fits in the window,
+     so the head grows with the window's height as well as its width. */
+  const HEAD_AR=996/894,TEAR_F=.048,CHIN_F=.6;
   function placeHead(){
     const H=heroEl.clientHeight,W=heroEl.clientWidth;
     if(!H||!W)return;
-    const tear=(W<700?.56:.5)*H;
-    if(W>620){let iw=(H-tear)/NOSE_F/HEAD_AR;iw=Math.min(iw,W*(W<=1100?1.05:1.2));headEl.style.width=iw.toFixed(1)+'px'}
+    const tear=(W<700?.56:.45)*H;
+    if(W>620){let iw=(H-tear)/(CHIN_F-TEAR_F)/HEAD_AR;iw=Math.min(iw,W*(W<=1100?1.05:1.2));headEl.style.width=iw.toFixed(1)+'px'}
     else headEl.style.width='';
     const hw=headEl.getBoundingClientRect().width||headEl.offsetWidth,hh=hw*HEAD_AR;
     headEl.style.top=(tear-TEAR_F*hh).toFixed(1)+'px';headEl.style.bottom='auto';
@@ -2005,7 +2005,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
   /* ---------- sizing: cluster is pinned to the torn edge of the head ---------- */
   let W=1,H=1,unit=1;
   /* the cluster is drawn about as wide as the head opening, as in the reference, not twice as wide */
-  const CLUSTER=.8;
+  const CLUSTER=.86;
   function layout(){
     renderer.setPixelRatio(Math.min(devicePixelRatio||1,innerWidth<700?1.75:2));renderer.setSize(innerWidth,innerHeight,false);
     const r=hero.getBoundingClientRect();if(!r.width||!r.height)return;W=r.width;H=r.height;

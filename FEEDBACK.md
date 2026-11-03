@@ -52,3 +52,9 @@ Later explicit user decisions take precedence over earlier recommendations in re
 4. **Model detail:** Tyre: raised sidewall lettering, rim rivets, valve stem. Book: brass corner guards, index tabs, a paper-clipped sheet. Tablet: LinkedIn-style profile screen, top buttons, speaker holes. Satellite: thrusters, star tracker, panel hinges. Pick: celluloid swirl finish.
 5. **Fallback labels** wait 3 s before showing, so they no longer flash over the name while the 3D loads.
 6. Checked at 1180×775, 1470×840, 1920×1080, 2560×1300, 900×1100 and 390×844. Code and Awards still load, no console errors. Backup: versions/pre-fullscreen-fit/.
+
+## 3 November 2026 — follow-up: whole head, simpler cursor
+
+1. **Whole head in full screen:** The user wants the full head visible, not cropped at the nose. The torn edge now sits at 45% of the hero height and the head is sized so the chin and collar sit just inside the bottom edge. The cluster is 0.86 of the original scale above 620 px.
+2. **Cursor:** The paper plane, contrail and confetti were too much. The normal cursor is a small dot inside a softly trailing circle that tightens on click. Over links and 3D objects it becomes the small hand, which pops in with a wave (blue over objects). Magnifier, rotate, reveal and crosshair states are unchanged.
+3. Checked at 1180×775, 1470×840, 1920×1080 and 390×844; no console errors.
