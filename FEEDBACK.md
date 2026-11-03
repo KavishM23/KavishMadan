@@ -142,3 +142,7 @@ The research book waits for the neighbouring tyre, satellite, tablet and pick to
 ## 3 November 2026 — more detailed trophy cabinet
 
 The cabinet now has recessed, softly lit backing panels, layered walnut and brass mouldings, shelf edges and light housings. Each award sits on a stepped veined-marble plinth with a framed plaque, small fasteners and a soft contact shadow. Awards still turn but stay seated on their stands. Repeated static details are batched to preserve the earlier performance work. Desktop and narrow previews, award navigation and 20 regression tests passed.
+
+## 3 November 2026 — repair cabinet display artifacts
+
+The newly added recessed backing intersected the laptop lid as it turned; its proportions and hinge placement now keep it in front of the panel. Moved the laptop image clear of the frame, raised the rosette centre above its petals, replaced the disconnected gold and bronze cup handles with attached curves, and removed the dark stripe crossing the maths score. Checked the photographed bays, medals, crystal and a narrow-screen laptop view; all 20 controller and scroll tests pass.

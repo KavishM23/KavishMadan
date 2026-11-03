@@ -90,7 +90,7 @@ window.createTrophyCabinet=function({THREE,Round,environment,reduced,el,anisotro
  function cup(mat,label,scale=1){const g=new THREE.Group();
   const pts=[[0,0],[.46,0],[.47,.1],[.2,.2],[.13,.34],[.12,.66],[.3,.8],[.55,1.06],[.69,1.5],[.72,1.82],[.68,1.84],[.64,1.52],[.5,1.12],[.0,1.1]].map(([x,y])=>new THREE.Vector2(x,y));
   add(new THREE.LatheGeometry(pts,72),mat,g,0,.42,0);
-  [-1,1].forEach(sd=>{const h=add(new THREE.TorusGeometry(.32,.05,12,40,Math.PI*1.35),mat,g,sd*.74,1.85,0);h.rotation.z=sd<0?Math.PI*.62:-Math.PI*.0-Math.PI*.35+.0;if(sd>0)h.rotation.z=-Math.PI*.33});
+  [-1,1].forEach(sd=>{const path=new THREE.CubicBezierCurve3(new THREE.Vector3(sd*.64,2.07,0),new THREE.Vector3(sd*1.26,2.12,0),new THREE.Vector3(sd*1.19,1.38,0),new THREE.Vector3(sd*.55,1.47,0));add(new THREE.TubeGeometry(path,48,.05,12,false),mat,g)});
   add(new Round(1.0,.42,.9,3,.05),woodEnd,g,0,.21,0);
   const lt=textTex(384,128,(x,w,h)=>{x.fillStyle='#d8b464';x.fillRect(0,0,w,h);x.fillStyle='rgba(55,35,8,.9)';x.textAlign='center';x.textBaseline='middle';x.font='800 78px "Schibsted Grotesk", sans-serif';x.fillText(label,w/2,h/2+4)});
   add(new THREE.PlaneGeometry(.6,.2),new THREE.MeshPhysicalMaterial({map:lt,metalness:.8,roughness:.3}),g,0,.22,.452);
@@ -116,18 +116,18 @@ window.createTrophyCabinet=function({THREE,Round,environment,reduced,el,anisotro
   const lt=textTex(640,360,(x,w,h)=>{x.fillStyle='#142D43';x.fillRect(0,0,w,h);x.fillStyle='#F1E6D2';x.textAlign='center';x.textBaseline='middle';x.font='800 150px "Schibsted Grotesk", sans-serif';x.fillText(label,w/2,h/2-20);x.font='600 30px "IBM Plex Mono", monospace';x.fillStyle='#B5D2DE';x.fillText('SENIOR MATHS CHALLENGE',w/2,h-60)});
   const flip=add(new Round(1.5,.86,.24,3,.04),new THREE.MeshPhysicalMaterial({color:0x0c2233,roughness:.4,clearcoat:.6}),g,0,.95,0);flip.rotation.x=-.12;
   const face=add(new THREE.PlaneGeometry(1.4,.78),new THREE.MeshBasicMaterial({map:lt,toneMapped:false}),flip,0,0,.125);
-  add(new Round(1.5,.02,.26,1,.01),new THREE.MeshBasicMaterial({color:0x061520}),flip,0,0,.0);
   [-.55,.55].forEach(x=>add(new Round(.07,.55,.07,1,.02),brass,g,x,.3,0));add(new Round(1.3,.08,.5,2,.03),woodEnd,g,0,.04,0);return g}
  function laptop(){const g=new THREE.Group(),alu=new THREE.MeshPhysicalMaterial({color:0xc8ccd4,metalness:.9,roughness:.32});
-  add(new Round(1.5,.06,1.0,3,.03),alu,g,0,.03,.1);const lid=new THREE.Group();lid.position.set(0,.06,-.38);lid.rotation.x=-.32;g.add(lid);
+  // Keep the lid in front of the recessed backing at every display angle.
+  add(new Round(1.5,.06,.75,3,.03),alu,g,0,.03,.1);const lid=new THREE.Group();lid.position.set(0,.06,-.245);lid.rotation.x=-.1;g.add(lid);
   add(new Round(1.5,.98,.05,3,.03),alu,lid,0,.49,0);
   const img=new THREE.TextureLoader().load('img/lb-landing.webp');img.colorSpace=THREE.SRGBColorSpace;img.anisotropy=anisotropy;
-  add(new THREE.PlaneGeometry(1.38,.86),new THREE.MeshBasicMaterial({map:img,toneMapped:false}),lid,0,.49,.03);
+  add(new THREE.PlaneGeometry(1.38,.86),new THREE.MeshBasicMaterial({map:img,toneMapped:false,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1}),lid,0,.49,.045);
   const ros=rosette('#A54F36','#F1E6D2','TOP 7');ros.position.set(.62,.42,.48);ros.scale.setScalar(.55);g.add(ros);g.scale.setScalar(1.3);return g}
  function rosette(c1,c2,label){const g=new THREE.Group(),m1=new THREE.MeshStandardMaterial({color:c1,roughness:.7,side:THREE.DoubleSide});
-  for(let i=0;i<24;i++){const p=add(new THREE.PlaneGeometry(.16,.5),m1,g,0,0,0);p.rotation.z=i/24*Math.PI*2;p.translateY(.22);p.rotation.x=.2}
+  for(let i=0;i<24;i++){const p=add(new THREE.PlaneGeometry(.16,.5),m1,g,0,0,0);p.rotation.z=i/24*Math.PI*2;p.translateY(.22);p.rotation.x=.05}
   const ct=textTex(256,256,(x,w,h)=>{x.fillStyle=c2;x.beginPath();x.arc(w/2,h/2,w/2,0,Math.PI*2);x.fill();x.fillStyle='#142D43';x.textAlign='center';x.textBaseline='middle';x.font='800 64px "Schibsted Grotesk", sans-serif';x.fillText(label,w/2,h/2+4)});
-  add(new THREE.CircleGeometry(.24,40),new THREE.MeshStandardMaterial({map:ct,roughness:.6}),g,0,0,.03);
+  add(new THREE.CircleGeometry(.24,40),new THREE.MeshStandardMaterial({map:ct,roughness:.6}),g,0,0,.08);
   [-1,1].forEach(sd=>{const t=add(new THREE.PlaneGeometry(.16,.6),m1,g,sd*.09,-.48,-.01);t.rotation.z=sd*.18});return g}
  function pennant(){const g=new THREE.Group();add(new THREE.CylinderGeometry(.025,.025,2.1,12),brass,g,-.55,1.05,0);add(new THREE.SphereGeometry(.05,16,12),brass,g,-.55,2.12,0);
   const ft=textTex(512,256,(x,w,h)=>{x.fillStyle='#00356B';x.beginPath();x.moveTo(0,0);x.lineTo(w,h/2);x.lineTo(0,h);x.closePath();x.fill();x.fillStyle='#fff';x.font='800 70px "Schibsted Grotesk", sans-serif';x.textBaseline='middle';x.fillText('YYGS',30,h/2+4);x.font='600 22px "IBM Plex Mono", monospace';x.fillText('YALE',34,h/2+52)});
