@@ -84,6 +84,9 @@ Workshop.props=function(THREE,kit,carParts){
   // strings
   const sMat=std('#d5d3cc',.22,1);
   add(inst,strs);for(let i=0;i<6;i++){const a=-.0165+i*.0066,b=-.02+i*.008;add(strs,bar([b,PY-.06,.0515],[a,Y0+.428,.034],.0005+.00016*(5-i),sMat,5))}
+  // A pick passes across the strings when the guitar is selected.
+  const pickShape=new THREE.Shape();pickShape.moveTo(0,.018);pickShape.bezierCurveTo(.018,.02,.023,.009,.017,-.003);pickShape.quadraticCurveTo(.008,-.017,0,-.023);pickShape.quadraticCurveTo(-.008,-.017,-.017,-.003);pickShape.bezierCurveTo(-.023,.009,-.018,.02,0,.018);
+  const pick=mesh(new THREE.ExtrudeGeometry(pickShape,{depth:.002,bevelEnabled:true,bevelSize:.001,bevelThickness:.001,bevelSegments:2,curveSegments:16}),std('#ad5a40',.32,0,{clearcoat:.65}),[-.08,PY+.076,.063]);pick.userData.moving=true;pick.visible=false;add(inst,pick);
   inst.position.set(0,.115,.035);inst.rotation.x=-.145;
   // stand
   const steel=std('#101114',.42,.5),foam=std('#191919',.9);
@@ -98,11 +101,12 @@ Workshop.props=function(THREE,kit,carParts){
    add(root,mesh(new THREE.SphereGeometry(.018,16,12),rubberFoot,[s*.21,.012,.11]));
   }
   // leans forward when you reach for it; a strum rocks it on the stand and blurs the strings
-  root.userData.playFor=4.2;
+  root.userData.playFor=2.4;
   root.userData.play=(h,p,dt,t)=>{
-   const ring=p<4.2?Math.exp(-p*.6):0;
+   const ring=p<2.4?Math.exp(-Math.max(0,p-.7)*1.7):0;
    inst.rotation.x=-.145+h*.06;inst.rotation.z=Math.sin(p*7)*.02*ring;
    strs.scale.x=1+Math.sin(t*92)*(.02*h+.09*ring);strs.position.z=Math.sin(t*71)*.0006*(h+3*ring);
+   pick.visible=p>=.45&&p<1.6;const stroke=Math.max(0,Math.min(1,(p-.6)/.7));pick.position.x=-.08+stroke*.16;pick.rotation.z=-.3+stroke*.45;
   };
   return shadow(root);
  }

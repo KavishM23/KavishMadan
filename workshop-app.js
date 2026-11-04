@@ -28,7 +28,7 @@ const Sound=(()=>{
   const source=a.createBufferSource(),filter=a.createBiquadFilter(),level=out(a,gain);source.buffer=buffer;filter.type=type;filter.frequency.value=frequency;filter.Q.value=.7;source.connect(filter).connect(level);source.start();
  }
  return {
-  strum(){const a=ctx();if(!a)return;const notes=[220,329.63,440,493.88,523.25,329.63,440,493.88];notes.forEach((f,i)=>pluck(a,f,a.currentTime+i*.38,.085))},
+  strum(){const a=ctx();if(!a)return;[82.41,123.47,164.81,207.65,246.94,329.63].forEach((f,i)=>pluck(a,f,a.currentTime+(reduce?0:.65)+i*.022,.13))}, // an open E major
   ting(){const a=ctx();if(!a)return;for(const [f,g] of [[1760,.05],[2794,.03],[4186,.012]]){const o=a.createOscillator(),n=out(a,g);o.frequency.value=f;o.connect(n);n.gain.exponentialRampToValueAtTime(.0001,a.currentTime+1.3);o.start();o.stop(a.currentTime+1.3)}},
   thud(){const a=ctx();if(!a)return;const o=a.createOscillator(),n=out(a,.3);o.frequency.setValueAtTime(90,a.currentTime);o.frequency.exponentialRampToValueAtTime(38,a.currentTime+.2);o.connect(n);n.gain.exponentialRampToValueAtTime(.0001,a.currentTime+.26);o.start();o.stop(a.currentTime+.27)},
   rev(){const a=ctx();if(!a)return;const o=a.createOscillator(),f=a.createBiquadFilter(),n=out(a,.075),t=a.currentTime;o.type='sawtooth';f.type='lowpass';f.frequency.setValueAtTime(420,t);f.frequency.linearRampToValueAtTime(1900,t+.5);o.frequency.setValueAtTime(70,t);o.frequency.exponentialRampToValueAtTime(330,t+.5);o.frequency.exponentialRampToValueAtTime(90,t+1.1);o.connect(f).connect(n);n.gain.setValueAtTime(.075,t+.5);n.gain.exponentialRampToValueAtTime(.0001,t+1.15);o.start();o.stop(t+1.2)},
@@ -116,16 +116,14 @@ async function start(){
   cases:{userData:{playFor:.7,play:(h,p)=>{const k=p<.7?Math.sin(p/.7*Math.PI)*.07:0;lids.forEach((l,i)=>{l.rotation.x=-smooth(clamp(h*1.4-i*.09))*.3-k})}}}
  };
  const models={};
- for(const key of ['car','guitar','tablet','book','satellite','trophy','tyre','crate','pencil','pick','plant'])models[key]={o:items[key],h:0,goal:0,p:99,base:items[key].position.clone()};
+ for(const key of ['car','guitar','tablet','book','satellite','trophy','tyre','crate','pencil','pick','plant'])models[key]={o:items[key],h:0,goal:0,p:99};
  for(const key in shelfPlays)models[key]={o:shelfPlays[key],h:0,goal:0,p:99};
- const hoverDirection=new THREE.Vector3();
  function react(key){const m=models[key];if(!m)return;m.p=0;m.o.userData.click?.();if(VOICE[key])Sound[VOICE[key]]();wake()}
  function play(dt,time){
   let busy=false;
   for(const key in models){
    const m=models[key],u=m.o.userData;m.h=damp(m.h,m.goal,6.5,dt);if(Math.abs(m.h-m.goal)<.002)m.h=m.goal;m.p+=dt;
    if(stage?.key===key&&stage.m.own)continue;
-   if(m.base){hoverDirection.copy(camera.position).sub(m.base);hoverDirection.y=0;hoverDirection.normalize();m.o.position.copy(m.base).addScaledVector(hoverDirection,m.h*(key==='car'?.08:.14));}
    const running=u.play?.(m.h,m.p,dt,time);
    if(m.goal>0||m.h>0||m.p<(u.playFor||0)||running===true)busy=true;
   }
@@ -225,16 +223,6 @@ async function start(){
  const stacked=()=>camera.aspect<1;
  function slots(){return stacked()?[[0,1.37,.17],[0,.93,.17]]:[[-.238,.98,.17],[.238,.98,.17]]}
  const tablePose=new THREE.Vector3(),carStart=V(CAR.pos);
- // Keep the camera fixed while a selected object travels into the foreground.
- function flyToViewer(key,localFocus,distance){
-  const object=P[key],base=models[key].base.clone(),start=object.position.clone(),rotation=object.quaternion.clone();
-  const forward=new THREE.Vector3();camera.getWorldDirection(forward);
-  const face=camera.quaternion.clone(),focus=localFocus.clone().multiply(object.scale).applyQuaternion(face);
-  const end=camera.position.clone().addScaledVector(forward,distance).sub(focus);
-  const look=camera.position.clone().add(forward);
-  return {path:[camera.position.clone(),camera.position.clone()],look:[look,look.clone()],up:camera.up.clone(),
-   act(e){object.position.lerpVectors(start,end,seg(e,0,.72));object.quaternion.slerpQuaternions(rotation,face,seg(e,0,.72));if(e===0){object.position.copy(base);object.quaternion.copy(rotation)}}};
- }
  const carCurve=new THREE.CubicBezierCurve3(carStart.clone(),V([1.5,0,1.0]),V([1.15,0,5.2]),V([2.5,0,15]));
  const tyreStart=P.tyre.position.clone();
  const surf=(key,pre,pts=[])=>()=>{ // approach a surface square-on, pause, then push until it fills the screen
@@ -242,15 +230,19 @@ async function start(){
   return {path:[...pts.map(V),a,a.clone().addScaledVector(s.n,-s.d*.12),s.c.clone().addScaledVector(s.n,s.d)],look:[...pts.map((_, i)=>s.c.clone()),s.c,s.c,s.c],up:s.up};
  };
  const moves={
-  tablet:{label:'Code',dur:2.7,finish:'iris',own:true,
-   route(){this.flight=flyToViewer('tablet',new THREE.Vector3(0,.1,0),camera.aspect<1?2.4:1.8);return this.flight},
-   iris:e=>[3-seg(e,.82,1)*3,0],act(e){this.flight?.act(e)}},
+  tablet:{label:'Code',dur:2.7,finish:'cut',panel:'tablet',route:surf('tablet',2.9),
+   act(e){panels.tablet.rise(seg(e,.48,.68))}},
   book:{label:'Strata',dur:3,finish:'cut',panel:'book',own:true,upAt:[0,.3],route:surf('book',2.3),
    act(e){const u=seg(e,.36,.66);book.leaf.visible=u>.002;book.leaf.rotation.z=u*Math.PI;panels.book.rise(u>.002?1:0)}},
   crate:{label:'Contact',dur:2.4,finish:'contact',own:true,
-   route(){this.flight=flyToViewer('crate',new THREE.Vector3(0,stacked()?1.13:.98,.17),stacked()?4.2:3.3);return this.flight},
+   route(from){
+    const c=P.crate;c.updateWorldMatrix(true,false);const n=new THREE.Vector3(0,0,1).transformDirection(c.matrixWorld),tan=Math.tan(camera.fov*Math.PI/360);
+    const C=c.localToWorld(new THREE.Vector3(0,stacked()?1.13:.98,.17)),a=camera.aspect;
+    const d=stacked()?Math.max(.47/.84/(2*tan*a),.8/.62/(2*tan)):Math.max(.92/.66/(2*tan*a),.32/.5/(2*tan));
+    const far=C.clone().addScaledVector(n,d*1.9);far.y+=.28;
+    return {path:[from.p,far,C.clone().addScaledVector(n,d*1.12),C.clone().addScaledVector(n,d)],look:[from.t,C,C,C],up:Y};
+   },
    act(e){
-    this.flight?.act(e);
     slot=slots();const up=seg(e,.14,.62),ur=seg(e,.26,.78),lid=crate.lid,l=crate.letter,t=crate.card;
     lid.rotation.x=-seg(e,0,.34)*1.2;
     l.position.set(slot[0][0]*up,.2+(slot[0][1]-.2)*up,slot[0][2]*up);l.rotation.set(-.2*(1-up),0,0);
@@ -273,9 +265,9 @@ async function start(){
     P.tyre.position.x=tyreStart.x+dx*roll;P.tyre.position.z=tyreStart.z+dz*roll;P.tyre.rotation.y=Math.atan2(dx,dz)*tip;
     b.rotation.set(roll*Math.hypot(dx,dz)/(.362*s),0,tip*Math.PI/2);b.position.y=.2+tip*.162+Math.sin(tip*Math.PI)*.05;
    }},
-  guitar:{label:'About',dur:5.2,finish:'iris',hold:true,
+  guitar:{label:'About',dur:3.5,finish:'pick',hold:true,
    route:from=>{const g=P.guitar.position,o=a=>new THREE.Vector3(g.x+a[0],a[1],g.z+a[2]);return {path:[from.p,o([1.2,1.75,1.55]),o([.68,1.2,.73]),o([.38,.7,.45]),o([.18,.42,.31])],look:[from.t,o([-.05,1.5,-.05]),o([-.03,1.05,-.03]),o([.02,.6,.03]),o([.05,.4,.07])],up:Y}},
-   iris:e=>[3-seg(e,.76,1)*3,0],act(){}},
+   act(){}},
   satellite:{label:'Kessler',dur:4.4,finish:'iris',own:true,dark:true,
    route:from=>({path:[from.p,from.p],look:[from.t,from.t],up:Y}),
    // the camera flies formation with the Concorde as it climbs, then drops back to ride up with the satellite
@@ -296,9 +288,9 @@ async function start(){
     if(flight.trail.visible){const top=sat.sat.position.y-.4;flight.trail.scale.y=Math.max(.01,top);flight.trail.position.y=top/2;flight.trail.material.opacity=.4*(1-seg(e,.5,.72))}
     const sky=seg(e,.07,.22),space=seg(e,.52,.9);flight.dome.visible=sky>.001;flight.dome.position.copy(camera.position);flight.dome.material.uniforms.uSky.value=sky;flight.dome.material.uniforms.uSpace.value=space;
    }},
-  trophy:{label:'Awards',dur:2.7,finish:'iris',own:true,
-   route(){this.flight=flyToViewer('trophy',new THREE.Vector3(0,.32,0),camera.aspect<1?3.8:2.9);return this.flight},
-   iris:e=>[3-seg(e,.8,1)*3,0],act(e){this.flight?.act(e)}},
+  trophy:{label:'Awards',dur:2.7,finish:'iris',hold:true,upAt:[.15,.55],
+   route:from=>({path:[from.p,V([3.3,1.55,1.0]),V([3.66,1.75,-.42]),V([3.72,1.4,-.8]),V([3.72,.98,-.82])],look:[from.t,V([3.72,.75,-.82]),V([3.72,.85,-.82]),V([3.72,.8,-.83]),V([3.72,.6,-.84])],up:new THREE.Vector3(0,0,-1)}),
+   iris:e=>[3-seg(e,.74,1)*3,0],act(){}},
   research:{label:'Research',dur:1.7,finish:'overlay',hold:true,
    route:from=>({path:[from.p,V([2.6,2.2,-.7]),V([3.05,2.15,-1.5])],look:[from.t,V([4.7,2.15,-1.85]),V([4.7,2.15,-1.85])],up:Y}),act(){}}
  };
@@ -340,8 +332,8 @@ async function start(){
  }
  /* hand over to the real page: the full-screen wipe takes the place of whatever now fills the view */
  function takeover(m,next){
-  window.fitWipe(m.label);wipeEl.className='wipe still '+(m.finish==='sweep'?'sweep':m.finish==='iris'?'dusk':'cut');
-  setTimeout(()=>{next();setTimeout(()=>{wipeEl.className='wipe out';setTimeout(()=>{wipeEl.className='wipe'},760)},140)},m.finish==='sweep'?640:m.finish==='iris'?340:190);
+  window.fitWipe(m.label);wipeEl.className='wipe still '+(m.finish==='sweep'?'sweep':m.finish==='iris'?'dusk':m.finish==='pick'?'pick-sweep':'cut');
+  setTimeout(()=>{next();setTimeout(()=>{wipeEl.className='wipe out';setTimeout(()=>{wipeEl.className='wipe'},760)},140)},m.finish==='sweep'?640:m.finish==='iris'?340:m.finish==='pick'?700:190);
  }
  function arrive(){const s=stage,m=s.m;s.dir=0;if(m.finish==='contact'){contactOn=true;hero.classList.add('ws-contact');placeChoices();setTimeout(()=>emailBtn.focus({preventScroll:true}),60);return}if(m.finish==='overlay')window.openResearch?.(innerWidth/2,innerHeight/2);else takeover(m,s.done)}
  function placeChoices(){
