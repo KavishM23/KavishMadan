@@ -167,3 +167,5 @@ The newly added recessed backing intersected the laptop lid as it turned; its pr
 3. **Pilot:** The paper-cutout head, cropped from img/kavish-full.webp and deliberately oversized to match the site, always turned to the viewer, with a scarf streaming behind.
 4. **Timeline:** The plane comes in from far away (0 s), makes a close banked pass and waves its wings (1.7–2.6 s), then climbs out top right. At 2.7 s the head rises, the name slides in and the objects pop out at 3.3 s; everything is cleaned up by 4.4 s.
 5. **Fallbacks:** Any scroll, click, key or touch skips it. It does not play with reduced motion, on another section or in a background tab. If 3D or the image fails, the page goes straight to the finished hero. The torn-scalp peel and its canvas are gone.
+
+6. **Follow-up:** The user liked the plane but asked for the face to be removed. The pilot cutout and scarf are gone, the hood is closed over the cockpit, and img/kavish-full.webp is deleted because nothing else used it.

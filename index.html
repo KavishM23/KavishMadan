@@ -1594,7 +1594,7 @@ html.intro-hold .obj-labs{visibility:hidden}
   }
   placeHead();addEventListener('resize',placeHead);if(!headEl.complete)headEl.addEventListener('load',placeHead);
 
-  /* ---- intro: a Spitfire flies in with Kavish in the cockpit and climbs away; the hero rises as it leaves ---- */
+  /* ---- intro: a Spitfire flies in and climbs away; the hero rises as it leaves ---- */
   (function(){
     const R=document.documentElement;
     nameEl.querySelectorAll('.w').forEach(w=>{w.innerHTML=`<span class="wi">${w.textContent}</span>`});nameEl.classList.add('split');
@@ -2193,13 +2193,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
   function act(k2){if(k2==='research'){openBook();return}const l=labs[k2];if(l)l.click()}
   // The intro flight lives in the hero scene only while it plays.
   let flight=null;
-  async function flyIntro(onReveal,onDone){
-    const image=new Image();const loaded=await new Promise(r=>{image.onload=()=>r(true);image.onerror=()=>r(false);setTimeout(()=>r(false),3000);image.src='img/kavish-full.webp'});if(!loaded)return false;
-    const cw=image.naturalWidth*.76,ch=image.naturalHeight*.62,c=document.createElement('canvas');c.width=900;c.height=Math.round(900*ch/cw);
-    c.getContext('2d').drawImage(image,image.naturalWidth*.12,0,cw,ch,0,0,c.width,c.height);
-    const pilot=new THREE.CanvasTexture(c);pilot.colorSpace=THREE.SRGBColorSpace;pilot.anisotropy=ANISO;pilot.width=c.width;pilot.height=c.height;
-    flight=window.createSpitfireFlight({THREE,scene,camera,anisotropy:ANISO,pilot});flight.fly(onReveal,onDone);return true;
-  }
+  async function flyIntro(onReveal,onDone){flight=window.createSpitfireFlight({THREE,scene,camera,anisotropy:ANISO});flight.fly(onReveal,onDone);return true}
   window.hero3d={openBook,closeBook(){roots.research.userData.openTarget=0},flyIntro,endIntro(){if(flight){flight.dispose();flight=null}}};
   window.dispatchEvent(new Event('hero3d-ready'));
 

@@ -1,6 +1,6 @@
-/* The intro: a Spitfire flies in, passes close with Kavish in the open cockpit, then climbs away.
+/* The intro: a Spitfire flies in, passes close, then climbs away.
    Dimensions are in metres, nose along +Z, port wing along +X. Everything is removed from the scene once it has flown. */
-window.createSpitfireFlight=function({THREE,scene,camera,anisotropy=4,pilot}){
+window.createSpitfireFlight=function({THREE,scene,camera,anisotropy=4}){
  const canvasOf=(w,h,draw)=>{const c=document.createElement('canvas');c.width=w;c.height=h;draw(c.getContext('2d'),w,h);return c};
  const tex=c=>{const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=anisotropy;return t};
  const seeded=s=>()=>(s=(s*16807)%2147483647)/2147483647;
@@ -101,25 +101,15 @@ window.createSpitfireFlight=function({THREE,scene,camera,anisotropy=4,pilot}){
  rad(1.75,1.0);rad(-1.75,.72);
  const mast=add(new THREE.CylinderGeometry(.012,.045,.72,10),metal,plane,0,skinY(0,-1.75)+.3,-1.75);mast.rotation.x=-.22;
 
- // cockpit: a raised rim that follows the skin, windscreen, and the hood slid right back
+ // cockpit: a raised rim that follows the skin, the windscreen and the closed hood
  const rimPts=[];for(let i=0;i<64;i++){const a=i/64*Math.PI*2,x=Math.sin(a)*.34,z=-.1+Math.cos(a)*.76;rimPts.push(new THREE.Vector3(x,skinY(x,z)+.02,z))}
  add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(rimPts,true),160,.028,10,true),metal);
  const glass=new THREE.MeshPhysicalMaterial({color:0xdcebf0,transparent:true,opacity:.2,roughness:.04,metalness:.1,envMapIntensity:2.2,depthWrite:false,side:THREE.DoubleSide});
  const dome=new THREE.SphereGeometry(1,40,22,0,Math.PI*2,0,Math.PI/2);
  const shield=add(dome,glass,plane,0,.58,.74);shield.scale.set(.36,.34,.5);shield.renderOrder=4;
- const hood=add(dome,glass,plane,0,.62,-1.2);hood.scale.set(.37,.47,.74);hood.renderOrder=4;
- for(const [z,y,sx,sy] of [[.82,.58,.34,.24],[.56,.58,.36,.33],[-.95,.62,.36,.46],[-1.45,.62,.33,.42]]){const a=add(new THREE.TorusGeometry(1,.02,8,40,Math.PI),metal,plane,0,y,z);a.scale.set(sx,sy,1)}
-
- // ---------- the pilot: the paper cutout, turned to the viewer ----------
- const HEAD=1.62,AR=pilot.width/pilot.height;
- const headMat=new THREE.MeshBasicMaterial({map:pilot,transparent:true,alphaTest:.04,depthWrite:false,toneMapped:false,side:THREE.DoubleSide});
- const head=new THREE.Group();head.position.set(0,skinY(0,-.12)+HEAD*.43,-.12);plane.add(head);
- const sticker=add(new THREE.PlaneGeometry(HEAD*AR,HEAD),headMat,head);sticker.renderOrder=2;
- // a scarf streaming from the collar
- const scarfGeo=new THREE.PlaneGeometry(.26,2.1,1,24);scarfGeo.translate(0,-1.05,0);scarfGeo.rotateX(-Math.PI/2+.12);
- const scarfBase=scarfGeo.attributes.position.array.slice();
- const scarfMat=new THREE.MeshStandardMaterial({color:0xa54f36,roughness:.72,side:THREE.DoubleSide});
- add(scarfGeo,scarfMat,plane,.22,skinY(0,-.5)+.1,-.5);
+ const hood=add(dome,glass,plane,0,.62,-.42);hood.scale.set(.37,.46,.8);hood.renderOrder=4;
+ add(new THREE.BoxGeometry(.3,.34,.05),metal,plane,0,.84,-.72);   // armoured seat back, seen through the hood
+ for(const [z,y,sx,sy] of [[.82,.58,.34,.24],[.56,.58,.36,.33],[.14,.62,.36,.42],[-.42,.62,.37,.46],[-.98,.62,.34,.37]]){const a=add(new THREE.TorusGeometry(1,.02,8,40,Math.PI),metal,plane,0,y,z);a.scale.set(sx,sy,1)}
 
  // ---------- clouds drifting past for speed ----------
  const cloudMat=new THREE.MeshStandardMaterial({color:0x8fa6b4,roughness:1,envMapIntensity:.45,transparent:true,opacity:.55,depthWrite:false});
@@ -141,7 +131,7 @@ window.createSpitfireFlight=function({THREE,scene,camera,anisotropy=4,pilot}){
  const path=new THREE.CatmullRomCurve3(KEYS.map(k=>new THREE.Vector3(...k[1])),false,'centripetal');
  plane.visible=false;scene.add(plane);
  let t=0,fired=false,onReveal=null,onDone=null,finished=false;
- const inv=new THREE.Quaternion(),smooth=f=>f*f*(3-2*f);
+ const smooth=f=>f*f*(3-2*f);
  function pose(time){
   let i=0;while(i<KEYS.length-2&&time>=KEYS[i+1][0])i++;
   const f=Math.min(1,Math.max(0,(time-KEYS[i][0])/(KEYS[i+1][0]-KEYS[i][0])));
@@ -154,8 +144,6 @@ window.createSpitfireFlight=function({THREE,scene,camera,anisotropy=4,pilot}){
   // the wing waves hello on the close pass
   if(time>1.7&&time<2.65)plane.rotateZ(Math.sin((time-1.7)/.95*Math.PI*2)*.14);
   plane.updateMatrixWorld(true);
-  plane.getWorldQuaternion(inv).invert();head.quaternion.copy(inv).multiply(camera.quaternion);
-  const a=scarfGeo.attributes.position;for(let k=0;k<a.count;k++){const z=scarfBase[k*3+2],d=Math.abs(z);a.setY(k,scarfBase[k*3+1]+Math.sin(d*3.4-time*13)*.11*Math.min(1,d));a.setX(k,scarfBase[k*3]+Math.sin(d*2.3-time*9)*.08*Math.min(1,d))}a.needsUpdate=true;
   clouds.forEach(c=>{c.userData.x??=c.position.x;c.position.x=(c.userData.x-time*c.userData.v)*Math.max(.6,fit)});
   const fade=smooth(Math.min(1,Math.max(0,(time-REVEAL)/.55)));cloudMat.opacity=.55*(1-fade);clouds.forEach(c=>{c.visible=fade<1});
  }
