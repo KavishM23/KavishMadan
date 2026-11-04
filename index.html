@@ -529,7 +529,7 @@ section.intro .lede{color:#C4D3D9;font-size:clamp(1.02rem,1.4vw,1.2rem);max-widt
 .head{width:clamp(340px,min(58vw,96svh),1000px)}
 @media (max-width:620px){.head{width:min(100vw,460px)}}
 
-/* ---------- intro: the page waits behind the Spitfire's flyover ---------- */
+/* ---------- intro: the page waits behind the Concorde's flyover ---------- */
 html.intro-head .head{opacity:0}
 .name .wi{display:inline-block}
 @supports ((-webkit-background-clip:text) or (background-clip:text)){
@@ -855,7 +855,7 @@ html.intro-hold .obj-labs{visibility:hidden}
       <h1 class="name" aria-label="Kavish Madan"><span class="w">Kavish</span><span class="sp"> </span><span class="w">Madan</span></h1>
     </div>
     <canvas id="hero3d" aria-hidden="true"></canvas>
-    <img class="head" src="img/kavish-head4.webp" alt="Kavish Madan" fetchpriority="high" decoding="async" width="1800" height="2247">
+    <img class="head" src="img/kavish-head4.webp" alt="Kavish Madan" fetchpriority="high" decoding="sync" width="1800" height="2247">
     <div class="obj-labs">
       <button class="obj-lab" type="button" data-key="research" data-research>Research papers</button>
       <a class="obj-lab" data-key="linkedin" id="lab-linkedin" href="#contact">LinkedIn</a>
@@ -1594,7 +1594,7 @@ html.intro-hold .obj-labs{visibility:hidden}
   }
   placeHead();addEventListener('resize',placeHead);if(!headEl.complete)headEl.addEventListener('load',placeHead);
 
-  /* ---- intro: a Spitfire flies in and climbs away; the hero rises as it leaves ---- */
+  /* ---- intro: a Concorde sweeps past; the hero rises as it leaves ---- */
   (function(){
     const R=document.documentElement;
     nameEl.querySelectorAll('.w').forEach(w=>{w.innerHTML=`<span class="wi">${w.textContent}</span>`});nameEl.classList.add('split');
@@ -1618,7 +1618,9 @@ html.intro-hold .obj-labs{visibility:hidden}
     // No 3D in time, or no plane to fly: fall straight through to the finished hero.
     // (window.hero3d alone is not enough: it also names the canvas element with that id)
     const ready=new Promise(r=>{if(window.hero3d?.flyIntro)r(true);else addEventListener('hero3d-ready',()=>r(true),{once:true})});
-    Promise.race([ready,new Promise(r=>setTimeout(()=>r(false),5000))]).then(ok=>{if(done)return;if(!ok||document.hidden){finish();return}
+    // The portrait stays hidden until the reveal, so decode it first: it must not hitch as it rises.
+    const decoded=Promise.race([headEl.decode?headEl.decode().catch(()=>{}):0,new Promise(r=>setTimeout(r,1500))]);
+    Promise.race([ready,new Promise(r=>setTimeout(()=>r(false),5000))]).then(async ok=>{await decoded;if(done)return;if(!ok||document.hidden){finish();return}
       window.hero3d.flyIntro(reveal,finish).then(flying=>{if(!flying)finish()},finish)});
   })();
 
@@ -1828,7 +1830,7 @@ html.intro-hold .obj-labs{visibility:hidden}
 </script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 <script src="render-performance.js"></script>
-<script src="spitfire.js"></script>
+<script src="concorde.js"></script>
 <script type="module">
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
@@ -2193,7 +2195,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
   function act(k2){if(k2==='research'){openBook();return}const l=labs[k2];if(l)l.click()}
   // The intro flight lives in the hero scene only while it plays.
   let flight=null;
-  async function flyIntro(onReveal,onDone){flight=window.createSpitfireFlight({THREE,scene,camera,anisotropy:ANISO});flight.fly(onReveal,onDone);return true}
+  async function flyIntro(onReveal,onDone){flight=window.createConcordeFlight({THREE,scene,camera,sun:key,restoreSun:layout,anisotropy:ANISO});flight.fly(onReveal,onDone);return true}
   window.hero3d={openBook,closeBook(){roots.research.userData.openTarget=0},flyIntro,endIntro(){if(flight){flight.dispose();flight=null}}};
   window.dispatchEvent(new Event('hero3d-ready'));
 

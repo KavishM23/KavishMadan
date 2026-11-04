@@ -169,3 +169,11 @@ The newly added recessed backing intersected the laptop lid as it turned; its pr
 5. **Fallbacks:** Any scroll, click, key or touch skips it. It does not play with reduced motion, on another section or in a background tab. If 3D or the image fails, the page goes straight to the finished hero. The torn-scalp peel and its canvas are gone.
 
 6. **Follow-up:** The user liked the plane but asked for the face to be removed. The pilot cutout and scarf are gone, the hood is closed over the cockpit, and img/kavish-full.webp is deleted because nothing else used it.
+
+## 4 November 2026 — Concorde intro (replaces the Spitfire)
+
+1. **Feedback:** Use a Concorde, with proper shadows and an actual flight path. The Spitfire's keyframes, bob and wing wave looked bouncy.
+2. **Model (concorde.js):** To real dimensions: slender needle fuselage, ogival delta wing with drooped leading edge and tips, twin-engine nacelles with intake wedges and nozzles, tall swept fin. White livery with "KAVISH MADAN", G-KMAD, a navy and clay cheatline and fin. Cabin windows and flight deck are painted on.
+3. **Flight:** One cubic S-curve. Nothing is keyframed: the nose follows the path's tangent and the bank comes from the turn (tan bank = lateral acceleration / g). There is no bob or wobble. It banks one way on the approach, rolls through level as it crosses side-on, then banks its top towards the viewer and exits right. Speed is fast on the long approach and eases when close, without stopping. The two contrails are computed from the same path.
+4. **Shadows:** The hero's sun follows the plane with a shadow frustum sized to it, updated every frame, and its direction never changes. Hemisphere fill drops to 34% in flight so the sun models the shape. Both are handed back at 2.75 s, before the objects appear.
+5. **Timeline:** The hero starts rising at 2.35 s and the intro cleans up by about 4.1 s. The portrait is decoded before take-off so it cannot hitch as it rises.
