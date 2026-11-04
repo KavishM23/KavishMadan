@@ -246,6 +246,29 @@ Workshop.car=function(THREE,kit){
  });
  const rubberBump=canvasTexture(1024,256,(g,w,h)=>{const R=rng(77);g.fillStyle='#808080';g.fillRect(0,0,w,h);for(let i=0;i<26000;i++){const v=R()>.5?255:0;g.fillStyle=`rgba(${v},${v},${v},${.14*R()})`;g.fillRect(R()*w,R()*h,1+R()*3,1+R()*2)}},{srgb:false});
  const rubber=new THREE.MeshStandardMaterial({map:rubberMap,bumpMap:rubberBump,bumpScale:.012,roughness:.78,envMapIntensity:.8});
+ // Paint the sidewall lettering in the tyre shader, on the rubber itself.
+ // There is no transparent decal plane to cast a rectangular shadow or AO border.
+ const tyreInk=canvasTexture(1024,1024,(g,w,h)=>{
+  g.clearRect(0,0,w,h);g.translate(w/2,h/2);g.textAlign='center';g.textBaseline='middle';g.fillStyle='#e2dcd0';g.font='700 46px "IBM Plex Mono",monospace';
+  const text='KAVISH  •  WORKSHOP  •  RACING  •  ',radius=w*.41;let angle=-Math.PI/2;
+  for(const ch of text){const advance=g.measureText(ch).width/radius;g.save();g.rotate(angle+advance/2);g.translate(0,-radius);g.fillText(ch,0,0);g.restore();angle+=advance}
+ });
+ function letteredRubber(radius,width){
+  const material=rubber.clone();
+  material.onBeforeCompile=shader=>{
+   shader.uniforms.tyreInk={value:tyreInk};shader.uniforms.tyreRadius={value:radius};shader.uniforms.tyreWidth={value:width};
+   shader.vertexShader='varying vec3 vTyrePosition;\n'+shader.vertexShader;
+   shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvTyrePosition = position;');
+   shader.fragmentShader='uniform sampler2D tyreInk;\nuniform float tyreRadius;\nuniform float tyreWidth;\nvarying vec3 vTyrePosition;\n'+shader.fragmentShader;
+   shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',`#include <map_fragment>
+    vec2 inkUv = vTyrePosition.xz / (2.0 * tyreRadius) + vec2(0.5);
+    vec4 ink = texture2D(tyreInk, inkUv);
+    float side = smoothstep(tyreWidth * .37, tyreWidth * .46, abs(vTyrePosition.y));
+    diffuseColor.rgb = mix(diffuseColor.rgb, vec3(.78,.75,.69), ink.a * side * .9);`);
+  };
+  material.customProgramCacheKey=()=> 'workshop-tyre-lettering-v1';
+  return material;
+ }
  const rimMat=new THREE.MeshPhysicalMaterial({color:'#2a2c31',roughness:.34,metalness:.85,clearcoat:.3});
  const disc=new THREE.MeshStandardMaterial({color:'#25262a',roughness:.55,metalness:.4});
 
@@ -259,7 +282,7 @@ Workshop.car=function(THREE,kit){
  }
  function wheel(radius,width,sign){
   const outer=new THREE.Group(),g=new THREE.Group(),w=width;outer.add(g);outer.userData.moving=true;g.userData.moving=true;outer.userData.spin=g;
-  const tyre=mesh(tyreGeometry(radius,w),rubber);tyre.rotation.z=Math.PI/2;g.add(tyre);
+  const tyre=mesh(tyreGeometry(radius,w),letteredRubber(radius,w));tyre.rotation.z=Math.PI/2;g.add(tyre);
   // rim barrel
   const barrel=mesh(new THREE.LatheGeometry([[.222,-w*.42],[.226,-w*.46],[.214,-w*.48],[.2,-w*.42],[.196,w*.1],[.2,w*.42],[.214,w*.48],[.226,w*.46],[.222,w*.42]].map(([r,y])=>new THREE.Vector2(r,y)),96),rimMat);barrel.rotation.z=Math.PI/2;barrel.material=rimMat.clone();barrel.material.side=THREE.DoubleSide;g.add(barrel);
   // ten spokes, slightly dished, on the outer face

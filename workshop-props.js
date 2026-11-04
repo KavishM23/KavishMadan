@@ -34,11 +34,14 @@ Workshop.props=function(THREE,kit,carParts){
   const bodyGeo=new THREE.ExtrudeGeometry(sh,{depth:.024,bevelEnabled:true,bevelSegments:7,bevelSize:.014,bevelThickness:.014,curveSegments:60});
   {const uv=bodyGeo.attributes.uv,p=bodyGeo.attributes.position;for(let i=0;i<p.count;i++)uv.setXY(i,(p.getX(i)+.19)/.38,(p.getY(i)+.21)/.42)}
   const lacquer=new THREE.MeshPhysicalMaterial({map:burst,roughness:.2,clearcoat:1,clearcoatRoughness:.05,envMapIntensity:1.1});
-  add(inst,mesh(bodyGeo,lacquer,[0,.205,0]));
+  const bodySide=std('#3a1b11',.31,0,{clearcoat:.7,clearcoatRoughness:.2});
+  add(inst,mesh(bodyGeo,[lacquer,bodySide],[0,.205,0]));
   const backGeo=new THREE.ExtrudeGeometry(sh,{depth:.024,bevelEnabled:false,curveSegments:60});
   add(inst,mesh(backGeo,std('#2b140c',.3,0,{clearcoat:.8}),[0,.205,-.026]));
-  const bindGeo=new THREE.ExtrudeGeometry(sh,{depth:.003,bevelEnabled:true,bevelSegments:1,bevelSize:.0165,bevelThickness:.001,curveSegments:60});
-  add(inst,mesh(bindGeo,std('#e3d4b0',.4),[0,.205,.0118]));
+  // Narrow cream binding follows the body outline rather than covering the top.
+  const outline=sh.getPoints(96),binding=new THREE.Shape(outline);
+  binding.holes.push(new THREE.Path(outline.map(p=>new THREE.Vector2(p.x*.965,p.y*.965)).reverse()));
+  add(inst,mesh(new THREE.ShapeGeometry(binding,24),std('#e3d4b0',.4),[0,.205,.0382]));
   const cream=std('#e4d6b4',.36),mahog=std('#5b2e18',.28,0,{clearcoat:.7}),rose=std('#20120c',.5);
   const Y0=.205+.86*S; // the neck joins near the top of the body
   add(inst,box(.046,.47,.022,mahog,[0,Y0+.2,.012],.009));
@@ -47,15 +50,18 @@ Workshop.props=function(THREE,kit,carParts){
    const y=Y0+.42-.42*(1-Math.pow(.945,i+1))*1.4;
    if(y<Y0-.02)continue;
    add(inst,box(.0452,.0016,.0024,nickel,[0,y,.0303],.0006));
-   if([2,4,6,8,11,14,16,18,20].includes(i))add(inst,box(.026,.008,.0012,std('#efe6cf',.25),[0,y-.009,.0298],.0004));
+   if([2,4,6,8,11,14,16,18,20].includes(i)){
+    const inlay=new THREE.Shape();inlay.moveTo(-.014,-.004);inlay.lineTo(.014,-.004);inlay.lineTo(.011,.004);inlay.lineTo(-.011,.004);inlay.closePath();
+    add(inst,mesh(new THREE.ShapeGeometry(inlay),std('#efe6cf',.32),[0,y-.009,.0299]));
+   }
   }
   const nut=box(.046,.004,.005,cream,[0,Y0+.426,.03],.001);add(inst,nut);
   // headstock
   const hs=new THREE.Shape();hs.moveTo(-.024,0);hs.bezierCurveTo(-.05,.03,-.062,.1,-.054,.165);hs.lineTo(-.02,.18);hs.lineTo(0,.172);hs.lineTo(.02,.18);hs.lineTo(.054,.165);hs.bezierCurveTo(.062,.1,.05,.03,.024,0);hs.closePath();
   const headGeo=new THREE.ExtrudeGeometry(hs,{depth:.012,bevelEnabled:true,bevelSize:.002,bevelThickness:.002,bevelSegments:2,curveSegments:24});
-  const head=mesh(headGeo,std('#0d0a0a',.24,0,{clearcoat:1}),[0,Y0+.43,.01],[-.2,0,0]);add(inst,head);
-  const logo=canvasTexture(256,512,(g,w,h)=>{g.clearRect(0,0,w,h);g.fillStyle='#e7dcc0';g.font='italic 700 62px Georgia,serif';g.textAlign='center';g.fillText('Gibson',w/2,150);g.beginPath();g.moveTo(w/2,190);g.bezierCurveTo(w/2+40,240,w/2+30,290,w/2,320);g.bezierCurveTo(w/2-30,290,w/2-40,240,w/2,190);g.fill()});
-  const face=mesh(new THREE.PlaneGeometry(.09,.18),new THREE.MeshStandardMaterial({map:logo,transparent:true,roughness:.4}),[0,.09,.0145]);head.add(face);
+  {const uv=headGeo.attributes.uv,p=headGeo.attributes.position;for(let i=0;i<p.count;i++)uv.setXY(i,(p.getX(i)+.06)/.12,p.getY(i)/.18)}
+  const logo=canvasTexture(512,768,(g,w,h)=>{g.fillStyle='#100c0b';g.fillRect(0,0,w,h);g.fillStyle='#e7dcc0';g.font='italic 700 108px Georgia,serif';g.textAlign='center';g.fillText('Gibson',w/2,235);g.beginPath();g.moveTo(w/2,300);g.bezierCurveTo(w/2+44,345,w/2+30,405,w/2,435);g.bezierCurveTo(w/2-30,405,w/2-44,345,w/2,300);g.fill()});
+  const head=mesh(headGeo,[new THREE.MeshPhysicalMaterial({map:logo,roughness:.24,clearcoat:.8}),std('#24140d',.28,0,{clearcoat:.7})],[0,Y0+.43,.01],[-.2,0,0]);add(inst,head);
   for(const side of [-1,1])for(let i=0;i<3;i++){
    const y=.05+i*.042;head.add(bar([side*.03,y,.0],[side*.074,y,.0],.0033,chrome,10));
    const tip=box(.016,.012,.006,cream,[side*.082,y,.0],.003);head.add(tip);
@@ -71,6 +77,7 @@ Workshop.props=function(THREE,kit,carParts){
   }
   add(inst,box(.082,.016,.012,nickel,[0,PY-.018,.044],.004));
   add(inst,box(.086,.016,.012,nickel,[0,PY-.06,.044],.005));
+  for(let i=0;i<6;i++)add(inst,box(.008,.009,.003,chrome,[-.026+i*.0104,PY-.018,.052],.001));
   for(const [x,y] of [[.075,-.03],[.115,-.06],[.075,-.085],[.118,-.1]]){
    add(inst,mesh(new THREE.CylinderGeometry(.0105,.0132,.018,24),gold,[x,PY+y,.046],[Math.PI/2,0,0]));
    add(inst,mesh(new THREE.TorusGeometry(.008,.0008,6,20),nickel,[x,PY+y,.056]));

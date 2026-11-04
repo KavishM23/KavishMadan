@@ -70,7 +70,7 @@ export function flatten(root){
  const inverse=root.matrixWorld.clone().invert(),groups=new Map(),movers=[];
  (function walk(o){for(const c of o.children){
   if(c.userData.moving){movers.push(c);continue}
-  if(c.isMesh&&!c.isInstancedMesh&&c.visible&&!c.material.transparent&&!c.material.isShaderMaterial&&c.material.colorWrite!==false){
+  if(c.isMesh&&!c.isInstancedMesh&&c.visible&&!Array.isArray(c.material)&&!c.material.transparent&&!c.material.isShaderMaterial&&c.material.colorWrite!==false){
    const key=c.material.uuid+c.castShadow+c.receiveShadow;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(c);
   }
   walk(c);
@@ -149,7 +149,7 @@ export function reflectionsFrom(renderer,scene,hide,p=[.2,1.1,-.2]){
  const cam=new THREE.CubeCamera(.1,40,target);cam.position.set(...p);hide.forEach(o=>o.visible=false);
  const tone=renderer.toneMapping;renderer.toneMapping=THREE.NoToneMapping;cam.update(renderer,scene);renderer.toneMapping=tone;hide.forEach(o=>o.visible=true);
  const pm=new THREE.PMREMGenerator(renderer),env=pm.fromCubemap(target.texture).texture;pm.dispose();target.dispose();
- scene.traverse(o=>{const m=o.material;if(!m||m.userData.bake||m.userData.lifted||m.envMapIntensity===undefined)return;m.userData.lifted=true;m.envMapIntensity*=1.7});return env;
+ scene.traverse(o=>{const materials=Array.isArray(o.material)?o.material:[o.material];for(const m of materials){if(!m||m.userData.bake||m.userData.lifted||m.envMapIntensity===undefined)continue;m.userData.lifted=true;m.envMapIntensity*=1.7}});return env;
 }
 
 /* Two sets of the same chain: a light one while the camera moves, and a full one for the frame it stops on. */
