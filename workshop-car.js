@@ -248,12 +248,6 @@ Workshop.car=function(THREE,kit){
  const rubber=new THREE.MeshStandardMaterial({map:rubberMap,bumpMap:rubberBump,bumpScale:.012,roughness:.78,envMapIntensity:.8});
  const rimMat=new THREE.MeshPhysicalMaterial({color:'#2a2c31',roughness:.34,metalness:.85,clearcoat:.3});
  const disc=new THREE.MeshStandardMaterial({color:'#25262a',roughness:.55,metalness:.4});
- const sidewall=canvasTexture(1024,1024,(g,w,h)=>{
-  g.clearRect(0,0,w,h);g.translate(w/2,h/2);g.textAlign='center';g.textBaseline='middle';g.fillStyle='rgba(210,205,190,.7)';g.font='600 46px "IBM Plex Mono",monospace';
-  const text='KAVISH  •  WORKSHOP  •  RACING  •  ';const radius=w*.43;let angle=-Math.PI/2;
-  for(const ch of text){const advance=g.measureText(ch).width/radius;g.save();g.rotate(angle+advance/2);g.translate(0,-radius);g.fillText(ch,0,0);g.restore();angle+=advance}
- });
- const sidewallMat=new THREE.MeshBasicMaterial({map:sidewall,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1});
 
  function tyreGeometry(radius,width){
   const r0=.22,w=width/2,pts=[
@@ -266,7 +260,6 @@ Workshop.car=function(THREE,kit){
  function wheel(radius,width,sign){
   const outer=new THREE.Group(),g=new THREE.Group(),w=width;outer.add(g);outer.userData.moving=true;g.userData.moving=true;outer.userData.spin=g;
   const tyre=mesh(tyreGeometry(radius,w),rubber);tyre.rotation.z=Math.PI/2;g.add(tyre);
-  const lettering=mesh(new THREE.PlaneGeometry(radius*2,radius*2),sidewallMat,[sign*(w*.5+.002),0,0],[0,sign*Math.PI/2,0]);g.add(lettering);
   // rim barrel
   const barrel=mesh(new THREE.LatheGeometry([[.222,-w*.42],[.226,-w*.46],[.214,-w*.48],[.2,-w*.42],[.196,w*.1],[.2,w*.42],[.214,w*.48],[.226,w*.46],[.222,w*.42]].map(([r,y])=>new THREE.Vector2(r,y)),96),rimMat);barrel.rotation.z=Math.PI/2;barrel.material=rimMat.clone();barrel.material.side=THREE.DoubleSide;g.add(barrel);
   // ten spokes, slightly dished, on the outer face
