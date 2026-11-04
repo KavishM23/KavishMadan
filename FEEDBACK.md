@@ -189,3 +189,13 @@ Asked for the whole site to follow minhpham.design: deeper, darker colours, keep
 
 ## The staircase needed a start
 The helix began in mid-air. It now starts at a walled landing at the top: a lit arched doorway marked START, a floor you walk out onto, handrails that run back to the wall, and newel posts where the first step drops away. The camera opens slightly higher so the whole entrance is framed.
+
+## Moroccan gateway, and no more hard edges on the 3D
+The plain doorway was too simple, and objects were being sliced along a line near the top of the page as they scrolled.
+- The staircase scene now fills the whole viewport and fades into the dark under the copy, so it never ends on a box edge. The same fades soften the cabinet.
+- Overlapping geometry at the landing that could flicker is gone.
+- The doorway is now a Moroccan bab: horseshoe arch of alternating voussoirs, carved plaster, zellige tile, slim columns, brass rosettes, a cedar canopy with a glazed tile roof, and a tiled hall with a lantern and carved screen. Two studded cedar doors swing open when the Code page appears. All of it is modelled or drawn in code, in the site's palette.
+
+## Real materials on the stairs and gateway
+From further down the stairs the back of the doorway was a flat red box. It is now a proper small building: brick walls, a stone plinth and string course, a tiled roof, stepped merlons along the wall, and a lit window with an iron grille. The hall also sits on the landing slab instead of hanging off it.
+Brick, limestone and flagstone are drawn in code with matching height maps. Treads vary slightly from step to step, and the scene has real cast shadows from one light. They are drawn once and redrawn only while the doors swing, so scrolling stays cheap.

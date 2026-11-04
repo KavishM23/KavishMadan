@@ -1,13 +1,18 @@
 /* Two real projects, one physical helix. The camera and drone follow scroll in both directions. */
 window.createCodeStaircase=function({THREE,Round,environment,makeDrone,reduced,el,anisotropy=4}){
+ const masonry=window.createMasonry({THREE,anisotropy});
  const journey=document.getElementById('code-journey');
  const scene=new THREE.Scene();scene.environment=environment;scene.fog=new THREE.Fog(0x0d0d0d,18,40);
  scene.add(new THREE.HemisphereLight(0xb7ab98,0x0d0d0d,.9));
- const key=new THREE.DirectionalLight(0xfff0dc,2.6);key.position.set(-7,13,9);scene.add(key);
+ const key=new THREE.DirectionalLight(0xfff0dc,2.8);key.position.set(-7,10,9);key.target.position.set(0,-3.4,0);scene.add(key,key.target);
+ // Real shadows from one light. The stairs never move, so the map is drawn once and redrawn only while the doors swing.
+ key.castShadow=true;{const shadowSize=innerWidth<=650?1024:2048;key.shadow.mapSize.set(shadowSize,shadowSize)}key.shadow.bias=-.0004;key.shadow.normalBias=.025;key.shadow.autoUpdate=false;key.shadow.needsUpdate=true;
+ {const c=key.shadow.camera;c.left=-8.5;c.right=8.5;c.top=9.5;c.bottom=-9.5;c.near=1;c.far=46}
  const fill=new THREE.DirectionalLight(0xeb5939,1.5);fill.position.set(8,3,-7);scene.add(fill);
  const camera=new THREE.PerspectiveCamera(43,1,.1,80);
- const stone=new THREE.MeshStandardMaterial({color:0x3b3833,roughness:.7,metalness:.08});
- const edge=new THREE.MeshStandardMaterial({color:0x6a6054,roughness:.5,metalness:.3});
+ const treadTexture={map:masonry.limestone.map,bumpMap:masonry.limestone.bumpMap,bumpScale:1.5};
+ const stone=new THREE.MeshStandardMaterial({...treadTexture,color:0x665f56,roughness:.78,metalness:0,envMapIntensity:.55});
+ const edge=new THREE.MeshStandardMaterial({...treadTexture,color:0x9c9284,roughness:.7,metalness:0,envMapIntensity:.55});
  const metal=new THREE.MeshStandardMaterial({color:0x1e1c1a,roughness:.3,metalness:.75});
  const copper=new THREE.MeshStandardMaterial({color:0xeb5939,roughness:.35,metalness:.6});
  const accent=new THREE.MeshStandardMaterial({color:0xb7ab98,roughness:.4,emissive:0x6a6054,emissiveIntensity:.25});
@@ -18,7 +23,8 @@ window.createCodeStaircase=function({THREE,Round,environment,makeDrone,reduced,e
  function wedge(span,inner,radius){const s=new THREE.Shape(),a=-Math.PI/2;s.moveTo(Math.cos(a)*inner,Math.sin(a)*inner);s.lineTo(Math.cos(a)*radius,Math.sin(a)*radius);s.absarc(0,0,radius,a,a+span,false);s.lineTo(Math.cos(a+span)*inner,Math.sin(a+span)*inner);s.absarc(0,0,inner,a+span,a,true);s.closePath();const g=new THREE.ExtrudeGeometry(s,{depth:.105,bevelEnabled:true,bevelSize:.015,bevelThickness:.012,bevelSegments:1,curveSegments:5});g.rotateX(-Math.PI/2);return g}
  const tread=wedge(total/steps*.98,1.08,outer);
  const ordinary=new THREE.InstancedMesh(tread,stone,80),marked=new THREE.InstancedMesh(tread,edge,10),stepTransform=new THREE.Object3D();let ordinaryIndex=0,markedIndex=0;
- for(let i=0;i<steps;i++){stepTransform.position.set(0,-i/steps*drop,0);stepTransform.rotation.y=start+i/steps*total;stepTransform.updateMatrix();if(i%9===0)marked.setMatrixAt(markedIndex++,stepTransform.matrix);else ordinary.setMatrixAt(ordinaryIndex++,stepTransform.matrix)}
+ const treadTint=new THREE.Color();let treadSeed=7;
+ for(let i=0;i<steps;i++){stepTransform.position.set(0,-i/steps*drop,0);stepTransform.rotation.y=start+i/steps*total;stepTransform.updateMatrix();treadSeed=(treadSeed*16807)%2147483647;const tone=.86+(treadSeed/2147483647)*.28;treadTint.setRGB(tone,tone*.985,tone*.96);if(i%9===0){marked.setColorAt(markedIndex,treadTint);marked.setMatrixAt(markedIndex++,stepTransform.matrix)}else{ordinary.setColorAt(ordinaryIndex,treadTint);ordinary.setMatrixAt(ordinaryIndex++,stepTransform.matrix)}}
  ordinary.computeBoundingSphere();marked.computeBoundingSphere();world.add(ordinary,marked);
  const core=add(new THREE.CylinderGeometry(.36,.36,drop+1,32),metal,world,new THREE.Vector3(0,-drop/2+.15,0));
  const points=[];for(let i=0;i<=240;i++)points.push(at(i/240,outer-.06,1.0));
@@ -28,32 +34,15 @@ window.createCodeStaircase=function({THREE,Round,environment,makeDrone,reduced,e
  for(let i=0;i<=steps;i+=3){stepTransform.position.copy(at(i/steps,outer-.06,.5));stepTransform.updateMatrix();posts.setMatrixAt(i/3,stepTransform.matrix)}posts.computeBoundingSphere();world.add(posts);
 
  // The top of the stairs: a walled landing with a lit doorway, so the descent starts somewhere.
- const entry=new THREE.MeshStandardMaterial({color:0x1b1917,roughness:.82,metalness:.05}),deck=1.3,back=start-deck,wallAngle=back+.03,wallH=3,doorX=-2.2,doorW=1.34,doorH=2.3;
+ const entry=new THREE.MeshStandardMaterial({map:masonry.flagstone.map,bumpMap:masonry.flagstone.bumpMap,bumpScale:2,roughness:.82,metalness:0,envMapIntensity:.35}),deck=1.3,back=start-deck,wallAngle=back+.03,wallH=3.45;
  const onDeck=(a,r,y)=>new THREE.Vector3(Math.sin(a)*r,y,Math.cos(a)*r);
- const deckTop=add(wedge(deck+.02,.3,outer+.27),entry,world);
- const deckSlab=add(wedge(deck+.02,.3,outer+.22),stone,world,new THREE.Vector3(0,-.25,0));deckSlab.scale.y=3;
- deckTop.rotation.y=deckSlab.rotation.y=back;
- add(new THREE.CylinderGeometry(.36,.36,wallH,32),metal,world,new THREE.Vector3(0,.6+wallH/2,0));
- add(new THREE.CylinderGeometry(.47,.47,.07,32),edge,world,new THREE.Vector3(0,.6+wallH,0)).material=entry;
- const arch=(w,h,x=doorX,y=.06)=>{const p=new THREE.Path(),r=w/2;p.moveTo(x-r,y);p.lineTo(x-r,h-r);p.absarc(x,h-r,r,Math.PI,0,true);p.lineTo(x+r,y);p.closePath();return p};
- const entrance=new THREE.Group();entrance.position.set(0,0,0);entrance.rotation.y=wallAngle+Math.PI/2;world.add(entrance);
- const wallShape=new THREE.Shape();wallShape.moveTo(-outer-.27,0);wallShape.lineTo(-.2,0);wallShape.lineTo(-.2,wallH);wallShape.lineTo(-outer-.27,wallH);wallShape.closePath();wallShape.holes.push(arch(doorW,doorH));
- const wall=add(new THREE.ExtrudeGeometry(wallShape,{depth:.3,bevelEnabled:false,curveSegments:24}),entry,entrance);wall.position.z=-.3;
- add(new Round(outer+.25,.1,.42,2,.03),metal,entrance,new THREE.Vector3(-(outer+.25)/2-.12,wallH+.05,-.15));
- const frameShape=new THREE.Shape(arch(doorW+.12,doorH+.06).getPoints(32));frameShape.holes.push(arch(doorW,doorH));
- add(new THREE.ExtrudeGeometry(frameShape,{depth:.34,bevelEnabled:false,curveSegments:24}),copper,entrance,new THREE.Vector3(0,0,-.32));
- const glowGeo=new THREE.ShapeGeometry(new THREE.Shape(arch(doorW,doorH).getPoints(32)));
- const glowTint=new Float32Array(glowGeo.attributes.position.count*3),glowLow=new THREE.Color(0xffd6a6),glowHigh=new THREE.Color(0xeb5939),glowMix=new THREE.Color();
- for(let i=0;i<glowGeo.attributes.position.count;i++){glowMix.copy(glowLow).lerp(glowHigh,glowGeo.attributes.position.getY(i)/doorH);glowMix.toArray(glowTint,i*3)}
- glowGeo.setAttribute('color',new THREE.BufferAttribute(glowTint,3));
- add(glowGeo,new THREE.MeshBasicMaterial({vertexColors:true,toneMapped:false,fog:false}),entrance,new THREE.Vector3(0,0,-.27));
- const spillCanvas=document.createElement('canvas');spillCanvas.width=spillCanvas.height=128;const spillInk=spillCanvas.getContext('2d'),spillFade=spillInk.createRadialGradient(64,128,0,64,128,64);spillFade.addColorStop(0,'rgba(255,190,130,.34)');spillFade.addColorStop(.55,'rgba(235,110,70,.12)');spillFade.addColorStop(1,'rgba(235,89,57,0)');spillInk.fillStyle=spillFade;spillInk.fillRect(0,0,128,128);
- const spill=add(new THREE.PlaneGeometry(1.9,1.9),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(spillCanvas),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false}),entrance,new THREE.Vector3(doorX,.13,.95));spill.rotation.x=-Math.PI/2;
- const doorLight=new THREE.PointLight(0xffb37a,5,6,2);doorLight.position.set(doorX,1.15,.75);entrance.add(doorLight);
- const signCanvas=document.createElement('canvas');signCanvas.width=512;signCanvas.height=96;const signTexture=new THREE.CanvasTexture(signCanvas);signTexture.colorSpace=THREE.SRGBColorSpace;signTexture.anisotropy=anisotropy;
- const drawSign=()=>{const g=signCanvas.getContext('2d');g.clearRect(0,0,512,96);g.fillStyle='#b7ab98';g.font='600 58px "League Spartan","Avenir Next",sans-serif';g.textAlign='center';g.textBaseline='middle';if('letterSpacing' in g)g.letterSpacing='18px';g.fillText('START',256,54);signTexture.needsUpdate=true};
- drawSign();document.fonts?.load('600 58px "League Spartan"').then(drawSign).catch(()=>{});
- add(new THREE.PlaneGeometry(1.5,.28),new THREE.MeshBasicMaterial({map:signTexture,transparent:true,toneMapped:false}),entrance,new THREE.Vector3(doorX,2.64,.01));
+ const deckTop=add(wedge(deck,.3,outer+.27),entry,world);
+ const deckSlab=add(wedge(deck+1.08,.3,outer+.24),stone,world,new THREE.Vector3(0,-.25,0));deckSlab.scale.y=3;
+ deckTop.rotation.y=back;deckSlab.rotation.y=back-1.08;
+ add(new THREE.CylinderGeometry(.36,.36,wallH,32,1,true),metal,world,new THREE.Vector3(0,.65+wallH/2,0));
+ add(new THREE.CylinderGeometry(.47,.47,.07,32),edge,world,new THREE.Vector3(0,.65+wallH,0)).material=entry;
+ const entrance=new THREE.Group();entrance.rotation.y=wallAngle+Math.PI/2;world.add(entrance);
+ const gate=window.createMoroccanGate({THREE,Round,parent:entrance,wallLeft:-outer-.27,wallRight:-.2,wallHeight:wallH,masonry,anisotropy});
  const deckRail=(r,y,radius,material)=>{const line=[];for(let i=0;i<=32;i++)line.push(onDeck(start-i/32*deck,r,y));add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(line),48,radius,7,false),material,world)};
  deckRail(outer-.06,1.0,.035,metal);deckRail(1.12,.85,.024,copper);
  const deckPosts=new THREE.InstancedMesh(new THREE.CylinderGeometry(.018,.018,1.02,7),metal,6);
@@ -72,10 +61,12 @@ window.createCodeStaircase=function({THREE,Round,environment,makeDrone,reduced,e
   for(const x of [-1.6,1.6])add(new THREE.CylinderGeometry(.027,.027,.35,8),metal,screen,new THREE.Vector3(x,-1.46,0));
   const bar=add(new Round(4.15,.06,.055,2,.02),accent,screen,new THREE.Vector3(0,-1.33,.07));
  }
+ world.traverse(o=>{if(!o.isMesh||o.material.isMeshBasicMaterial)return;o.castShadow=o.receiveShadow=true});
  const drone=makeDrone();drone.scale.setScalar(.32);world.add(drone);
  const pad=add(new THREE.CylinderGeometry(.8,.8,.08,48),metal,world,at(.995,4.1,.1));
  const padRing=add(new THREE.TorusGeometry(.6,.025,6,64),accent,pad);padRing.rotation.x=Math.PI/2;padRing.position.y=.05;
  const slot={el,scene,camera,models:[],group:world,visible:false,progress:0,q:-.04};
+ const framing=journey.querySelector('.journey-scene');let frame=null,gateAt=0,gateShown=-1,gateWait=0,gateSeen=-1e9;
  const panels=[...journey.querySelectorAll('.journey-project')],intro=journey.querySelector('.journey-heading'),stops=[...journey.querySelectorAll('[data-journey-stop]')];
  const markers=[document.getElementById('b-lastbite'),document.getElementById('b-tutortime'),document.getElementById('b-kungfooled')];
  let live=false,lastActive=-2,lastProgress=-1;
@@ -102,8 +93,13 @@ window.createCodeStaircase=function({THREE,Round,environment,makeDrone,reduced,e
   if(!live)return;
   const rect=journey.getBoundingClientRect(),distance=Math.max(1,journey.offsetHeight-innerHeight),p=clamp(-rect.top/distance),stage=slot.rect||el.getBoundingClientRect();slot.progress=p;
   const old=slot.q;slot.q=damp(slot.q,mapped(p),9,dt);const q=slot.q,angle=start+q*total;
-  const mobile=innerWidth<=650,compact=innerWidth>650&&innerWidth<=1100,aspect=Math.max(.45,stage.width/Math.max(1,stage.height)),r=mobile?12.0:compact?Math.max(11.8,4.1+7*(1.1/aspect)):10.2;
-  camera.fov=mobile?48:43;camera.position.copy(at(q,r,4.6));camera.lookAt(at(q+.025,1.8,.8));
+  // The scene fills the viewport, so nothing is cut at a box edge; .journey-scene only says where the stairs sit in it.
+  const box=framing.getBoundingClientRect(),goal={x:box.left+box.width/2-stage.left-stage.width/2,y:box.top+box.height/2-stage.top-stage.height/2,h:Math.max(1,box.height),w:box.width};
+  if(!frame)frame={...goal};else for(const k in goal)frame[k]=damp(frame[k],goal[k],7,dt);
+  const mobile=innerWidth<=650,compact=innerWidth>650&&innerWidth<=1100,aspect=Math.max(.45,frame.w/frame.h),r=mobile?12.0:compact?Math.max(11.8,4.1+7*(1.1/aspect)):10.2,baseFov=mobile?48:43;
+  camera.fov=2*Math.atan(Math.tan(baseFov*Math.PI/360)*stage.height/frame.h)*180/Math.PI;camera.setViewOffset(stage.width,stage.height,-frame.x,-frame.y,stage.width,stage.height);
+  camera.position.copy(at(q,r,4.6));camera.lookAt(at(q+.025,1.8,.8));
+  const clock=performance.now();if(clock-gateSeen>600){gateAt=0;gateWait=.45}gateSeen=clock;if(gateWait>0)gateWait-=dt;else gateAt=Math.min(1,gateAt+dt/2.4);if(gateAt!==gateShown){gateShown=gateAt;gate.swing(gateAt*gateAt*(3-2*gateAt));key.shadow.needsUpdate=true}
   const dq=clamp((q-old)/Math.max(dt,.001),-1,1);
   const droneQ=Math.min(.995,q+.055),land=clamp((p-.91)/.09),position=at(droneQ,4.4,4.1*(1-land)+.36*land);
   position.y+=Math.sin(t*2)*.045*(1-land);drone.position.copy(position);drone.rotation.set(.16+Math.abs(dq)*.12,start+droneQ*total+Math.PI*.55,-dq*.35);drone.userData.tick?.(t,1-land);

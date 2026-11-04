@@ -140,6 +140,16 @@ section.intro h2{text-transform:none;letter-spacing:-.03em;font-size:clamp(2.5re
 .cab-fig{color:var(--sand)}.cab-title{font-family:var(--f-d);color:var(--sand);text-transform:uppercase}.cab-lvl{background:none;border:1px solid var(--line);color:var(--sand-lo)}.cab-count{color:var(--sand-lo)}.cab-meta{color:var(--hot)}
 .cab-dots button::before{border-color:var(--sand-lo)}.cab-dots button[aria-current="true"]::before{background:var(--hot);border-color:var(--hot)}
 
+/* 3D scenes run off the edges of the screen or fade into the dark; none ends on a hard line. Copy sits above the canvas. */
+.journey-view{display:none}
+html.spiral-ready .journey-view{display:block;position:absolute;inset:0;pointer-events:none}
+html.spiral-ready .journey-scene{visibility:hidden}
+html.spiral-ready .journey-sticky{z-index:3}
+html.spiral-ready .journey-sticky::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,var(--bg-1) 17%,transparent 33%),linear-gradient(180deg,var(--bg-1),transparent 90px),linear-gradient(0deg,var(--bg-1),transparent 90px)}
+.cab-sticky{z-index:3}
+.cab-sticky::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,var(--bg-1) 31%,transparent 41%),linear-gradient(180deg,var(--bg-1) 78px,transparent 170px)}
+.cab-card,.cab-dots,.cab-hint{z-index:2}
+
 /* scroll-filled statements: words wake from dim to full as they pass */
 [data-fill] .fw{color:rgba(183,171,152,.16);transition:color .25s linear}
 [data-fill] .fw.on{color:var(--sand)}
@@ -155,4 +165,9 @@ section.intro h2{text-transform:none;letter-spacing:-.03em;font-size:clamp(2.5re
  html.spiral-ready .journey-scene{bottom:max(48%,392px)}
  html.spiral-ready .code-journey:not(.departed) .journey-scene{top:372px;bottom:9%}
  html.spiral-ready .journey-track a{font-size:.58rem;letter-spacing:.06em}
+ html.spiral-ready .journey-sticky::before{background:linear-gradient(0deg,var(--bg-1) 46%,transparent 53%),linear-gradient(180deg,var(--bg-1),transparent 90px);transition:opacity .4s}
+ html.spiral-ready .journey-sticky::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;opacity:0;background:linear-gradient(180deg,var(--bg-1) 45%,transparent 50%),linear-gradient(0deg,var(--bg-1) 8%,transparent 14%);transition:opacity .4s}
+ html.spiral-ready .code-journey:not(.departed) .journey-sticky::before{opacity:0}
+ html.spiral-ready .code-journey:not(.departed) .journey-sticky::after{opacity:1}
+ .cab-sticky::before{background:linear-gradient(180deg,var(--bg-1) 64px,transparent 130px),linear-gradient(0deg,var(--bg-1) 42%,transparent 50%)}
 }
