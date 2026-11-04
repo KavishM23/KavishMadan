@@ -76,7 +76,9 @@ window.createPortfolioAtelier=function({THREE,Round,environment,reduced,anisotro
   return {el,visible:false,pending:true};
  });
  function build(el){const i=slots.findIndex(s=>s.el===el);if(i<0||!slots[i].pending)return slots[i];slots[i]=makeSlot(el);return slots[i]}
- function prepare(view){const todo=slots.filter(s=>s.pending&&view.contains(s.el)).map(s=>s.el),idle=fn=>window.requestIdleCallback?requestIdleCallback(fn,{timeout:700}):setTimeout(fn,60);const next=()=>{const el=todo.shift();if(!el)return;build(el);idle(next)};idle(next)}
+ // Build only scenes near the viewport; the observer builds the rest as the
+ // visitor reaches them instead of allocating every model on the page at once.
+ function prepare(view){const todo=slots.filter(s=>{if(!s.pending||!view.contains(s.el))return false;const r=s.el.getBoundingClientRect();return r.bottom>=-innerHeight*.25&&r.top<=innerHeight*1.25}).map(s=>s.el),idle=fn=>window.requestIdleCallback?requestIdleCallback(fn,{timeout:700}):setTimeout(fn,60);const next=()=>{const el=todo.shift();if(!el)return;build(el);idle(next)};idle(next)}
  const damp=(a,b,k,dt)=>a+(b-a)*(1-Math.exp(-k*dt));
  // keep every object whole inside its stage: whatever the drag angle, hover lift or stage shape, the camera backs off
  // until the object's projected bounds sit inside the frame (it never moves closer than the authored distance)

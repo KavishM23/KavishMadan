@@ -213,6 +213,10 @@ Workshop.car=function(THREE,kit){
  const seat=mesh(loft([{z:-1.62,top:.47,bot:.28,w:.205,p:3},{z:-1.86,top:.56,bot:.28,w:.225,p:3.2},{z:-2.02,top:.72,bot:.3,w:.235,p:3.2}],{steps:16,around:40}),pad);add(root,seat);
  add(root,box(.26,.2,.1,pad,[0,.76,-2.03],.04));
  for(const s of [-1,1])add(root,box(.09,.16,.34,pad,[s*.2,.69,-1.92],.035));
+ // Shoulder belts and a metal buckle sit against the seat, inside the cockpit.
+ const harness=mat('#812f32',.85),buckle=mat('#aaa9a4',.3,.8);
+ for(const s of [-1,1])add(root,blade([s*.095,.695,-2.005],[s*.055,.51,-1.68],.036,.004,harness));
+ add(root,box(.075,.012,.055,buckle,[0,.51,-1.68],.006));
  const yoke=new THREE.Group();yoke.position.set(0,.61,-1.42);yoke.rotation.x=.42;yoke.userData.moving=true;add(root,yoke);
  add(yoke,box(.27,.1,.03,carbonBare,[0,0,0],.018));
  for(const s of [-1,1])add(yoke,box(.05,.13,.042,pad,[s*.145,.01,0],.018));
@@ -293,6 +297,8 @@ Workshop.car=function(THREE,kit){
   const hubM=mesh(new THREE.CylinderGeometry(.068,.08,.08,32),rimMat,[hub-sign*.02,0,0],[0,0,sign*Math.PI/2]);g.add(hubM);
   const nut=mesh(new THREE.CylinderGeometry(.031,.036,.05,6),brass,[hub+sign*.035,0,0],[0,0,Math.PI/2]);g.add(nut);
   add(g,mesh(new THREE.CylinderGeometry(.012,.012,.056,12),steel,[hub+sign*.04,0,0],[0,0,Math.PI/2]));
+  // A machined lip makes the rim read as a separate part from the tyre.
+  add(g,mesh(new THREE.TorusGeometry(.205,.004,8,64),steel,[face,0,0],[0,Math.PI/2,0]));
   // brake: drum and disc behind the spokes
   const inner=-sign*w*.12;
   add(outer,mesh(new THREE.CylinderGeometry(.17,.17,.03,64),disc,[inner,0,0],[0,0,Math.PI/2]));

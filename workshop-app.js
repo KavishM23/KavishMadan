@@ -82,7 +82,9 @@ async function start(){
  let W=1,H=1,best=null,fast=null,chainKey='',fastScale=.9,ratio=1,ao=!phone&&!params.has('noao'),fastAO=ao,settleAt=0;
  function size(){
   const r=hero.getBoundingClientRect();W=Math.max(1,Math.round(r.width));H=Math.max(1,Math.round(r.height));
-  ratio=Math.min(devicePixelRatio||1,phone?1.5:2,Math.sqrt((phone?2500000:4500000)/(W*H)));
+  // Post-processing uses several full-size buffers. Cap their combined cost
+  // without lowering normal-density screens below their native resolution.
+  ratio=Math.min(devicePixelRatio||1,phone?1.5:1.75,Math.max(1,Math.sqrt((phone?2000000:3200000)/(W*H))));
   renderer.setPixelRatio(ratio);renderer.setSize(W,H,false);camera.aspect=W/H;camera.updateProjectionMatrix();
   const pw=Math.round(W*ratio),ph=Math.round(H*ratio);
   const fw=Math.round(pw*fastScale),fh=Math.round(ph*fastScale),key=[pw,ph,fw,fh,fastAO].join();
@@ -414,7 +416,9 @@ async function start(){
    frameTime+=(now-lastDraw);lastDraw=now;
   }else if(settleAt&&now>=settleAt){settleAt=0;lastDraw=now;draw(best)}
   hero.classList.toggle('ws-moving',intro<1);
-  if(!settleAt&&!moved&&!dirty&&!pending&&!wantContact&&!contactOn&&!stage){running=false;return}
+  // A completed transition can remain mounted behind an overlay. Only an
+  // actively moving stage needs another frame.
+  if(!settleAt&&!moved&&!dirty&&!pending&&!wantContact&&!contactOn&&!stage?.dir){running=false;return}
   requestAnimationFrame(tick);
  }
  /* day and night share one scene: the sun goes down, a lamp comes on, and the name catches it */
@@ -434,9 +438,6 @@ async function start(){
  dispatchEvent(new Event('workshop-ready'));wake();
 }
 
+// A direct link to another page should not allocate the whole workshop in the
+// background. api.leave/contact start it when the visitor actually returns.
 if(home())start().catch(e=>{console.error(e);fail()});
-else{ // landed straight on a page: get the workshop ready quietly for the way back
- const later=()=>start().catch(e=>{console.error(e);fail()});
- addEventListener('load',()=>setTimeout(()=>(window.requestIdleCallback||setTimeout)(later),1500),{once:true});
- if(document.readyState==='complete')setTimeout(later,1500);
-}

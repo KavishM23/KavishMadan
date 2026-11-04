@@ -126,7 +126,7 @@ Workshop.props=function(THREE,kit,carParts){
  function sketchbook(pageMap){
   const root=new THREE.Group(),W=.46,H=.62,thick=.03;
   const leather=canvasTexture(512,512,(g,w,h)=>{const R=rng(91);g.fillStyle='#402018';g.fillRect(0,0,w,h);for(let i=0;i<9000;i++){g.fillStyle=`rgba(${R()>.5?'110,70,50':'12,6,4'},${.1*R()})`;g.fillRect(R()*w,R()*h,1+R()*3,1+R()*3)}},{repeat:true});
-  add(root,box(W*2+.05,.011,H+.03,new THREE.MeshPhysicalMaterial({map:leather,bumpMap:leather,bumpScale:.4,roughness:.56}),[0,.006,0],.005));
+  add(root,box(W*2+.05,.011,H+.03,new THREE.MeshPhysicalMaterial({map:leather,bumpMap:leather,bumpScale:.002,roughness:.56}),[0,.006,0],.005));
   // the pages rise from the gutter and fall away towards the edge
   const prof=x=>{const d=Math.abs(x)/W;return .012+thick*(.3+.7*Math.sin(Math.min(1,d*5.5)*Math.PI/2))*(1-.42*d*d)};
   const uvOffset=s=>s<0?0:.5;
@@ -226,7 +226,7 @@ Workshop.props=function(THREE,kit,carParts){
    const R=rng(203);g.fillStyle='#808080';g.fillRect(0,0,w,h);
    for(let i=0;i<520;i++){const x=R()*w,y=R()*h,s=14+R()*46,v=Math.floor(70+R()*130);g.fillStyle=`rgb(${v},${v},${v})`;g.beginPath();g.moveTo(x,y);g.lineTo(x+s*(R()-.5)*2,y+s*(R()-.3));g.lineTo(x+s*(R()-.3),y+s*(R()-.5)*2);g.closePath();g.fill()}
   },{srgb:false,repeat:true});
-  const silver=std('#b8b7b0',.34,1,{bumpMap:foil,bumpScale:.22,roughnessMap:foil}),goldFoil=std('#b98a3a',.3,1,{bumpMap:foil,bumpScale:.26,roughnessMap:foil}),frame=std('#3b3c40',.42,.7);
+  const silver=std('#b8b7b0',.34,1,{bumpMap:foil,bumpScale:.006,roughnessMap:foil}),goldFoil=std('#b98a3a',.3,1,{bumpMap:foil,bumpScale:.008,roughnessMap:foil}),frame=std('#3b3c40',.42,.7);
   add(sat,box(.44,.38,.36,silver,[0,0,0],.012));
   for(const y of [-.19,.19])add(sat,box(.452,.012,.372,frame,[0,y,0],.003));
   for(const x of [-.22,.22])for(const z of [-.18,.18])add(sat,box(.012,.39,.012,frame,[x,0,z],.003));
