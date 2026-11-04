@@ -91,11 +91,25 @@ Workshop.room=function(THREE,kit,{bakes=null}={}){
   },{scale:.7});
  }
  const backMap=plaster(4096,1544,601,(g,w,h,R)=>{
-  // the name, stencilled straight onto the wall
+  // A painted workshop mural: orbital drafting lines, layered ink and a warm sun.
   const size=h*.175,cx=w*.515,cy=h*.245;
+  g.save();
+  const sunX=cx+w*.205,sunY=cy-h*.035,sunR=h*.18;
+  g.fillStyle='rgba(177,111,83,.17)';g.beginPath();g.arc(sunX,sunY,sunR,0,Math.PI*2);g.fill();
+  g.lineWidth=3;g.strokeStyle='rgba(57,94,104,.25)';
+  g.beginPath();g.ellipse(cx,cy+h*.03,w*.28,h*.17,-.035,0,Math.PI*2);g.stroke();
+  g.strokeStyle='rgba(165,96,72,.24)';g.lineWidth=2;
+  g.beginPath();g.ellipse(cx+w*.018,cy-h*.015,w*.245,h*.145,.06,0,Math.PI*2);g.stroke();
+  for(const [px,py,r] of [[cx-w*.252,cy+h*.045,7],[cx+w*.257,cy-h*.012,9],[sunX-sunR*.82,sunY+sunR*.52,5]]){g.fillStyle='#a56e55';g.beginPath();g.arc(px,py,r,0,Math.PI*2);g.fill()}
+  // Fine registration marks give the wall art a hand-drawn drafting character.
+  g.strokeStyle='rgba(45,77,82,.35)';g.lineWidth=2;
+  for(const [px,py] of [[cx-w*.27,cy-h*.14],[cx+w*.27,cy+h*.14]]){g.beginPath();g.moveTo(px-18,py);g.lineTo(px+18,py);g.moveTo(px,py-18);g.lineTo(px,py+18);g.stroke()}
+  g.restore();
   const c=document.createElement('canvas');c.width=w;c.height=Math.round(size*1.5);const x=c.getContext('2d');
-  x.font=`800 ${size}px "League Spartan",Arial,sans-serif`;x.textAlign='center';x.textBaseline='middle';x.fillStyle='#1E3A40';
+  x.font=`800 ${size}px "League Spartan",Arial,sans-serif`;x.textAlign='center';x.textBaseline='middle';
   try{x.letterSpacing=`${-size*.012}px`}catch(e){}
+  x.fillStyle='#a66a51';x.globalAlpha=.62;x.fillText('KAVISH MADAN',cx+size*.028,c.height/2+size*.078);
+  x.globalAlpha=1;x.fillStyle='#1E3A40';
   x.fillText('KAVISH MADAN',cx,c.height/2+size*.05);
   x.globalCompositeOperation='destination-out';
   for(let i=0;i<18000;i++){x.fillStyle=`rgba(0,0,0,${R()*.2})`;x.fillRect(R()*w,R()*c.height,1+R()*3,1+R()*2)}
