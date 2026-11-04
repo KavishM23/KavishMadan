@@ -28,7 +28,7 @@ const Sound=(()=>{
   const source=a.createBufferSource(),filter=a.createBiquadFilter(),level=out(a,gain);source.buffer=buffer;filter.type=type;filter.frequency.value=frequency;filter.Q.value=.7;source.connect(filter).connect(level);source.start();
  }
  return {
-  strum(){const a=ctx();if(!a)return;[82.41,123.47,164.81,207.65,246.94,329.63].forEach((f,i)=>pluck(a,f,a.currentTime+(reduce?0:.65)+i*.022,.13))}, // an open E major
+  strum(){const a=ctx();if(!a)return;[82.41,123.47,164.81,207.65,246.94,329.63].forEach((f,i)=>pluck(a,f,a.currentTime+(reduce?0:1.35)+i*.022,.13))}, // an open E major
   ting(){const a=ctx();if(!a)return;for(const [f,g] of [[1760,.05],[2794,.03],[4186,.012]]){const o=a.createOscillator(),n=out(a,g);o.frequency.value=f;o.connect(n);n.gain.exponentialRampToValueAtTime(.0001,a.currentTime+1.3);o.start();o.stop(a.currentTime+1.3)}},
   thud(){const a=ctx();if(!a)return;const o=a.createOscillator(),n=out(a,.3);o.frequency.setValueAtTime(90,a.currentTime);o.frequency.exponentialRampToValueAtTime(38,a.currentTime+.2);o.connect(n);n.gain.exponentialRampToValueAtTime(.0001,a.currentTime+.26);o.start();o.stop(a.currentTime+.27)},
   rev(){const a=ctx();if(!a)return;const o=a.createOscillator(),f=a.createBiquadFilter(),n=out(a,.075),t=a.currentTime;o.type='sawtooth';f.type='lowpass';f.frequency.setValueAtTime(420,t);f.frequency.linearRampToValueAtTime(1900,t+.5);o.frequency.setValueAtTime(70,t);o.frequency.exponentialRampToValueAtTime(330,t+.5);o.frequency.exponentialRampToValueAtTime(90,t+1.1);o.connect(f).connect(n);n.gain.setValueAtTime(.075,t+.5);n.gain.exponentialRampToValueAtTime(.0001,t+1.15);o.start();o.stop(t+1.2)},
@@ -267,7 +267,8 @@ async function start(){
     b.rotation.set(roll*Math.hypot(dx,dz)/(.362*s),0,tip*Math.PI/2);b.position.y=.2+tip*.162+Math.sin(tip*Math.PI)*.05;
    }},
   guitar:{label:'About',dur:3.5,finish:'pick',hold:true,
-   route:from=>{const g=P.guitar.position,o=a=>new THREE.Vector3(g.x+a[0],a[1],g.z+a[2]);return {path:[from.p,o([1.2,1.75,1.55]),o([.68,1.2,.73]),o([.38,.7,.45]),o([.18,.42,.31])],look:[from.t,o([-.05,1.5,-.05]),o([-.03,1.05,-.03]),o([.02,.6,.03]),o([.05,.4,.07])],up:Y}},
+   // Hold a complete view of the instrument instead of flying through its hardware.
+   route:from=>{const g=P.guitar.position,depth=camera.aspect<1?5.2:4.3,o=a=>new THREE.Vector3(g.x+a[0],a[1],g.z+a[2]),target=o([0,.96,0]);return {path:[from.p,o([1.3,1.65,6.2]),o([.65,1.18,depth]),o([.5,1.12,depth])],look:[from.t,target,target.clone(),target.clone()],up:Y}},
    act(){}},
   satellite:{label:'Kessler',dur:4.4,finish:'iris',own:true,dark:true,
    route:from=>({path:[from.p,from.p],look:[from.t,from.t],up:Y}),
