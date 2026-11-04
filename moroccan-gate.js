@@ -115,7 +115,9 @@ window.createMoroccanGate=function({THREE,Round,parent,wallLeft,wallRight,wallHe
  const count=33,span=Math.PI+2*turn,voussoir=new THREE.BoxGeometry(.15,(R+.09)*span/count*.93,.06),rings=[new THREE.InstancedMesh(voussoir,stoneSand,17),new THREE.InstancedMesh(voussoir,copper,16)],place=new THREE.Object3D(),seen=[0,0];
  for(let i=0;i<count;i++){const t=Math.PI+turn-span*(i+.5)/count,k=i%2;place.position.set(cx+Math.cos(t)*(R+.095),cy+Math.sin(t)*(R+.095),.075);place.rotation.set(0,0,t);place.updateMatrix();rings[k].setMatrixAt(seen[k]++,place.matrix)}
  rings.forEach(r=>parent.add(r));
- const lineShape=new THREE.Shape(archPoints(.2,spring));lineShape.holes.push(archHole(.175,spring+.001));add(extrude(lineShape,.09),brass,[0,0,.02]);
+ // the brass line is an open band that follows the arc and stops at the springing, so nothing crosses the doorway
+ const bandPoints=[];for(let i=0;i<=56;i++){const t=Math.PI+turn-span*i/56;bandPoints.push(new THREE.Vector2(cx+Math.cos(t)*(R+.2),cy+Math.sin(t)*(R+.2)))}for(let i=56;i>=0;i--){const t=Math.PI+turn-span*i/56;bandPoints.push(new THREE.Vector2(cx+Math.cos(t)*(R+.175),cy+Math.sin(t)*(R+.175)))}
+ add(extrude(new THREE.Shape(bandPoints),.09),brass,[0,0,.02]);
  const revealShape=new THREE.Shape(archPoints(.018));revealShape.holes.push(archHole());add(extrude(revealShape,.33),copper,[0,0,-.31]);
 
  // jambs: tile strips and slim columns with carved capitals

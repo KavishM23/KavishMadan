@@ -89,7 +89,7 @@ window.createCodeStaircase=function({THREE,Round,environment,makeDrone,reduced,e
   for(const part of reveals){const k=smooth(clamp((run-part.at)/.14));part.object.visible=k>0;part.flat?part.object.scale.set(Math.max(k,.001),1,Math.max(k,.001)):part.object.scale.setScalar(Math.max(k,.001))}
  }
  const slot={el,scene,camera,models:[],group:world,visible:false,progress:0,q:-.05};
- const framing=journey.querySelector('.journey-scene');let frame=null,doorShown=-1,burst=0,burstShown=-1,pouring=false;const caption=journey.querySelector('[data-flight-status]');
+ const framing=journey.querySelector('.journey-scene');let frame=null,doorOpen=0,doorShown=-1,burst=0,burstShown=-1,pouring=false;const caption=journey.querySelector('[data-flight-status]');
  const panels=[...journey.querySelectorAll('.journey-project')],intro=journey.querySelector('.journey-heading'),stops=[...journey.querySelectorAll('[data-journey-stop]')];
  const markers=[document.getElementById('b-lastbite'),document.getElementById('b-tutortime'),document.getElementById('b-kungfooled')];
  let live=false,lastActive=-2,lastProgress=-1;
@@ -117,7 +117,9 @@ window.createCodeStaircase=function({THREE,Round,environment,makeDrone,reduced,e
   if(!live)return;
   const rect=journey.getBoundingClientRect(),distance=Math.max(1,journey.offsetHeight-innerHeight),p=clamp(-rect.top/distance),stage=slot.rect||el.getBoundingClientRect();slot.progress=p;
   const door=smooth(clamp((p-.012)/.046));if(door>=.95)pouring=true;else if(door<.7)pouring=false;
-  burst=clamp(burst+(pouring?dt/1.7:-dt/.9));const out=ease(burst);
+  burst=clamp(burst+(pouring?dt/1.7:-dt/.8));const out=ease(burst);
+  // going back up, the doors stay open until the last tread is inside, and only then close
+  const doorWanted=burst>0?1:door;doorOpen=Math.abs(doorWanted-doorOpen)<.002?doorWanted:damp(doorOpen,doorWanted,12,dt);
   // the camera waits for the stairs to come out, then scrolling drives it as normal
   const old=slot.q;slot.q=damp(slot.q,restQ+(mapped(p)-restQ)*out,9,dt);const q=slot.q,angle=start+q*total;
   // The scene fills the viewport, so nothing is cut at a box edge; .journey-scene only says where the stairs sit in it.
@@ -127,7 +129,7 @@ window.createCodeStaircase=function({THREE,Round,environment,makeDrone,reduced,e
   camera.fov=2*Math.atan(Math.tan(baseFov*Math.PI/360)*stage.height/frame.h)*180/Math.PI;camera.setViewOffset(stage.width,stage.height,-frame.x,-frame.y,stage.width,stage.height);
   const near=mobile?10.6:compact?9.6:8.5,shut=1-out;
   camera.position.copy(at(q,r+(near-r)*shut,4.6-1.9*shut));camera.lookAt(at(q+.025,1.8,.8).lerp(gateFocus,shut));
-  if(door!==doorShown||burst!==burstShown){if(burst!==burstShown)pour(burst);doorShown=door;burstShown=burst;gate.swing(door,Math.sin(Math.PI*clamp(burst/.7)));key.shadow.needsUpdate=true}
+  if(doorOpen!==doorShown||burst!==burstShown){if(burst!==burstShown)pour(burst);doorShown=doorOpen;burstShown=burst;gate.swing(doorOpen,Math.sin(Math.PI*clamp(burst/.7)));key.shadow.needsUpdate=true}
   const dq=clamp((q-old)/Math.max(dt,.001),-1,1);
   const droneQ=Math.min(.995,q+.055),land=clamp((p-.91)/.09),position=at(droneQ,4.4,4.1*(1-land)+.36*land);
   position.y+=Math.sin(t*2)*.045*(1-land);const flown=ease(clamp(burst/.6));drone.visible=burst>0;drone.position.lerpVectors(droneDoor,position,flown);drone.scale.setScalar(.32*Math.max(flown,.02));drone.rotation.set(.16+Math.abs(dq)*.12,start+droneQ*total+Math.PI*.55,-dq*.35);drone.userData.tick?.(t,1-land);

@@ -202,4 +202,4 @@ Brick, limestone and flagstone are drawn in code with matching height maps. Trea
 
 ## The door opens on scroll and the staircase comes out of it
 The Code page now opens on the closed gateway alone, with nothing below the landing. Scrolling swings the doors, tied directly to scroll. Once they are open, the staircase slides out of the hall through the doorway as one ribbon, crosses the landing and corkscrews down the column, so every tread lands at the same moment. Rails, column, screens and the landing pad appear as it passes, and the drone flies out too.
-The burst runs on a clock, so it never holds the page, and the camera waits for it before normal scrolling takes over. Scrolling back closes the doors and draws the stairs back in.
+The burst runs on a clock, so it never holds the page, and the camera waits for it before normal scrolling takes over. Scrolling back draws the stairs in first, and the doors stay open until the last tread is inside. Closing them with the scroll left the stairs stuck against a shut door.
