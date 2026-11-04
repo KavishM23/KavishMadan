@@ -3,7 +3,9 @@ Workshop.props=function(THREE,kit,carParts){
  const {loft,skin,bar,blade,tube,mesh,box,add,worn,canvasTexture,rng,lerp,smooth}=kit;
  const std=(color,roughness=.5,metalness=0,extra={})=>new THREE.MeshPhysicalMaterial({color,roughness,metalness,...extra});
  const chrome=std('#d8dadc',.13,1),nickel=std('#b9b6ae',.22,1),gold=std('#c9a257',.26,1),blackPlastic=std('#0f1012',.42),rubberFoot=std('#111',.85);
- const shadow=root=>{root.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});return root};
+ // Transparent overlays (glass, screen effects and lettering) must not cast
+ // the rectangular shadow of their underlying plane.
+ const shadow=root=>{root.traverse(o=>{if(o.isMesh){const materials=Array.isArray(o.material)?o.material:[o.material];o.castShadow=materials.every(m=>m&&!m.transparent&&m.opacity===1);o.receiveShadow=true}});return root};
 
  /* ---------- guitar: a single-cut, sunburst, on its own stand ---------- */
  function guitar(){
@@ -99,6 +101,8 @@ Workshop.props=function(THREE,kit,carParts){
   const steel=std('#101114',.42,.5),foam=std('#191919',.9);
   add(root,bar([0,.09,-.1],[0,.64,-.2],.011,steel));
   add(root,bar([0,.3,-.135],[0,.3,.05],.009,steel));
+  add(root,bar([0,.1,-.1],[0,.098,-.04],.011,steel));
+  add(root,bar([-.03,.64,-.2],[.03,.64,-.2],.008,foam));
   for(const s of [-1,1]){
    add(root,bar([0,.1,-.1],[s*.21,.012,.11],.011,steel));
    add(root,bar([0,.1,-.1],[s*.04,.012,-.33],.011,steel));
@@ -508,7 +512,7 @@ Workshop.props=function(THREE,kit,carParts){
   add(root,mesh(new THREE.TorusGeometry(.14,.012,8,30),std('#2b2b2b',.7),[.58,1.58,hz]));
   return shadow(root);
  }
- function stool(){const root=new THREE.Group(),steel=std('#2f3336',.5,.7);add(root,mesh(new THREE.CylinderGeometry(.19,.19,.05,28),std('#a8784c',.55),[0,.68,0]));for(let i=0;i<3;i++){const a=i/3*6.283+.4;add(root,bar([Math.cos(a)*.1,.66,Math.sin(a)*.1],[Math.cos(a)*.24,.01,Math.sin(a)*.24],.014,steel,10))}add(root,mesh(new THREE.TorusGeometry(.155,.008,8,32),steel,[0,.28,0],[Math.PI/2,0,0]));return shadow(root)}
+ function stool(){const root=new THREE.Group(),steel=std('#2f3336',.5,.7);add(root,mesh(new THREE.CylinderGeometry(.19,.19,.05,28),std('#a8784c',.55),[0,.68,0]));for(let i=0;i<3;i++){const a=i/3*6.283+.4;add(root,bar([Math.cos(a)*.1,.66,Math.sin(a)*.1],[Math.cos(a)*.24,.01,Math.sin(a)*.24],.014,steel,10))}add(root,mesh(new THREE.TorusGeometry(.182,.008,8,32),steel,[0,.28,0],[Math.PI/2,0,0]));return shadow(root)}
  function sillPot(){const root=new THREE.Group();add(root,mesh(new THREE.CylinderGeometry(.1,.075,.15,24),std('#b5563a',.6),[0,.075,0]));const leaf=std('#4d7d36',.5,0,{side:THREE.DoubleSide});for(let i=0;i<14;i++){const a=i*2.4,h=.2+(i%4)*.08,r=.05+(i%3)*.05;add(root,bar([Math.cos(a)*.02,.14,Math.sin(a)*.02],[Math.cos(a)*r,.14+h,Math.sin(a)*r],.018-.002*(i%3),leaf,6))}return shadow(root)}
  return {guitar,sketchbook,pencil,pick,tablet,satellite,trophy,tyre,shelving,plant,crate,workbench,stool,sillPot};
 };
