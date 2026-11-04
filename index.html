@@ -861,17 +861,22 @@ html.intro-hold .obj-labs{visibility:hidden}
 <a class="ws-back" href="#home">← Workshop</a>
 <main id="top">
   <section class="ws-loader" id="ws-loader" aria-label="Welcome to the workshop">
+    <div class="ws-boot" aria-live="polite">
+      <div class="ws-boot-head"><b>Kavish<br>Madan</b><span>WORKSHOP SYSTEM<br>PORTFOLIO SHOWCASE</span></div>
+      <p>WORKSHOP INTERFACE V1.0<br>Preparing interactive environment</p>
+      <p>LOADING RESOURCES</p>
+      <p class="ws-boot-status">&gt; <span id="ws-loader-status">Preparing the workshop…</span><span class="ws-caret" aria-hidden="true"> _</span></p>
+      <p class="ws-boot-foot">PLEASE WAIT WHILE THE WORKSHOP LOADS</p>
+    </div>
     <div class="ws-loader-card">
-      <p class="ws-loader-kicker">KAVISH MADAN <span> / </span> WORKSHOP</p>
-      <h1>Welcome in.</h1>
-      <p class="ws-loader-lead">Take a look around and explore the things I’ve made.</p>
+      <p class="ws-loader-kicker">Kavish Madan Portfolio Showcase</p>
+      <p class="ws-loader-lead">Click start to enter the workshop<span class="ws-caret" aria-hidden="true"> _</span></p>
       <div class="ws-loader-guide">
-        <p class="ws-guide-pointer"><span aria-hidden="true">↔</span><b>Look around</b> Move your cursor or drag the room.</p>
-        <p class="ws-guide-touch"><span aria-hidden="true">↔</span><b>Look around</b> Drag to explore the room.</p>
-        <p><span aria-hidden="true">✳</span><b>Explore</b> Select an object to open its story.</p>
+        <p class="ws-guide-pointer">Move your cursor or drag to look around.</p>
+        <p class="ws-guide-touch">Drag to look around.</p>
+        <p>Select an object to explore.</p>
       </div>
-      <div class="ws-loader-status" role="status" aria-live="polite"><span class="ws-loader-dot" aria-hidden="true"></span><span id="ws-loader-status">Preparing the workshop…</span></div>
-      <button type="button" id="ws-loader-enter" disabled>Enter workshop <span aria-hidden="true">↗</span></button>
+      <button type="button" id="ws-loader-enter" disabled>START</button>
     </div>
   </section>
   <script>
@@ -879,8 +884,9 @@ html.intro-hold .obj-labs{visibility:hidden}
     const panel=document.getElementById('ws-loader'),button=document.getElementById('ws-loader-enter'),status=document.getElementById('ws-loader-status');
     if(!document.documentElement.classList.contains('on-home')){panel.hidden=true;return}
     let ready=false;
-    function available(ok){if(ready)return;ready=true;clearTimeout(timeout);status.textContent=ok?'The workshop is ready.':'The workshop is taking longer than expected.';button.disabled=false;button.firstChild.textContent=ok?'Enter workshop ':'Continue to the site ';panel.classList.add('is-ready');if(!ok)document.getElementById('hero')?.classList.add('ws-failed')}
+    function available(ok){if(ready)return;ready=true;clearTimeout(timeout);status.textContent=ok?'The workshop is ready.':'The workshop is taking longer than expected.';button.disabled=false;button.firstChild.textContent=ok?'START':'CONTINUE';panel.classList.add('is-ready');if(!ok)document.getElementById('hero')?.classList.add('ws-failed')}
     const timeout=setTimeout(()=>available(false),20000);
+    addEventListener('workshop-progress',e=>{if(!ready)status.textContent=e.detail});
     addEventListener('workshop-ready',()=>available(true),{once:true});addEventListener('workshop-failed',()=>available(false),{once:true});
     button.addEventListener('click',()=>{panel.hidden=true;document.querySelector('.top a[data-tab="home"]')?.focus({preventScroll:true})});
     addEventListener('hashchange',()=>{if(location.hash&&location.hash!=='#home')panel.hidden=true});

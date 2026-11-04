@@ -55,18 +55,22 @@ window.workshopApi=api;
 
 async function start(){
  if(started)return;started=true;
+ const progress=message=>dispatchEvent(new CustomEvent('workshop-progress',{detail:message}));
  const firstHome=home();
  if(firstHome)hero.classList.add('ws-loading');
  let renderer;
  try{renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:'high-performance',stencil:false})}catch(e){fail();return}
  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.shadowMap.autoUpdate=false;
  await Promise.race([Promise.all(['800 100px "League Spartan"','700 100px "League Spartan"','500 20px "IBM Plex Mono"'].map(f=>document.fonts.load(f))),new Promise(r=>setTimeout(r,1800))]);
+ progress('Loading room lighting and textures…');
  const bakes={};
  await Promise.all(['floor','back','left','right'].map(n=>new Promise(res=>new THREE.TextureLoader().load(`img/workshop-light-${n}.webp`,t=>{t.colorSpace=THREE.SRGBColorSpace;bakes[n]=t;res()},undefined,res))));
  await frame();
+ progress('Building workshop objects…');
  const {scene,room,items}=await buildScene({renderer,bakes,texScale:phone?.5:1});
  await frame();
  const lights=lightScene(scene,{shadowSize:phone?1024:2048});
+ progress('Preparing the first frame…');
  const camera=new THREE.PerspectiveCamera(31,1,.05,90);
  renderer.shadowMap.needsUpdate=true;renderer.setSize(8,8,false);renderer.render(scene,camera);
  scene.environment=reflectionsFrom(renderer,scene,Object.values(items));

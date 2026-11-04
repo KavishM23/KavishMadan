@@ -1,16 +1,15 @@
 /* The workshop hero. The 3D set stands in the same near-black as the rest of the site. */
-.ws-loader{position:fixed;inset:0;z-index:200;display:grid;place-items:center;overflow:auto;padding:max(24px,env(safe-area-inset-top)) 24px max(24px,env(safe-area-inset-bottom));background:#152d31;color:#f1e6d2}
-.ws-loader-card{width:min(100%,580px);padding:clamp(26px,5vw,52px);border:1px solid #f1e6d22e;border-radius:24px;background:#1c393c;box-shadow:0 28px 90px #08151266}
-.ws-loader-kicker{margin:0 0 32px;color:#b8ced0;font:600 .68rem/1.5 "IBM Plex Mono",monospace;letter-spacing:.13em}.ws-loader-kicker span{color:#dd9370}
-.ws-loader h1{margin:0;color:#f1e6d2;font:800 clamp(3rem,8vw,5rem)/.92 "League Spartan",sans-serif;letter-spacing:-.045em}
-.ws-loader-lead{max-width:31ch;margin:20px 0 28px;color:#c9d9d5;font:400 1rem/1.5 "Nunito Sans",sans-serif}
-.ws-loader-guide{display:grid;gap:10px;border-block:1px solid #f1e6d22b;padding:20px 0}
-.ws-loader-guide p{display:flex;align-items:center;gap:10px;margin:0;color:#d5dfd8;font:400 .89rem/1.4 "Nunito Sans",sans-serif}.ws-loader-guide p span{display:grid;place-items:center;width:30px;height:30px;flex:none;border-radius:50%;background:#a6c5c8;color:#152d31;font-size:1rem}.ws-loader-guide b{color:#f1e6d2;white-space:nowrap}.ws-guide-touch{display:none!important}
-.ws-loader-status{display:flex;align-items:center;gap:9px;margin:24px 0 16px;color:#c9d9d5;font:500 .7rem/1.4 "IBM Plex Mono",monospace}.ws-loader-dot{width:8px;height:8px;border-radius:50%;background:#e7ad85;animation:wsWait 1.6s ease-in-out infinite}.ws-loader.is-ready .ws-loader-dot{background:#acd0a6;animation:none}
-.ws-loader button{display:flex;justify-content:space-between;gap:30px;align-items:center;width:100%;min-height:52px;border:0;border-radius:12px;padding:0 18px;background:#f1e6d2;color:#152d31;font:700 1rem "League Spartan",sans-serif;cursor:pointer}.ws-loader button:disabled{opacity:.4;cursor:wait}.ws-loader button:focus-visible{outline:3px solid #a6c5c8;outline-offset:4px}
-@media(hover:none){.ws-guide-pointer{display:none!important}.ws-guide-touch{display:flex!important}}
-@media(max-width:480px){.ws-loader-guide p{flex-wrap:wrap}.ws-loader-card{border-radius:18px}.ws-loader-kicker{margin-bottom:24px}}
-@media(prefers-reduced-motion:reduce){.ws-loader-dot{animation:none}}
+/* A simple boot display, followed by a bordered start prompt. */
+.ws-loader{position:fixed;inset:0;z-index:200;overflow:auto;padding:max(32px,env(safe-area-inset-top)) max(32px,env(safe-area-inset-right)) max(32px,env(safe-area-inset-bottom)) max(32px,env(safe-area-inset-left));background:#000;color:#fff;font:500 clamp(13px,1.15vw,16px)/1.35 "IBM Plex Mono",monospace;letter-spacing:.015em}
+.ws-boot{min-height:calc(100% - 8px)}.ws-boot-head{display:flex;gap:clamp(40px,6vw,90px);align-items:flex-start}.ws-boot-head b{font-weight:600}.ws-boot p{margin:38px 0 0}.ws-boot .ws-boot-status{margin:18px 0 0 32px}.ws-boot-foot{position:absolute;bottom:48px;left:max(32px,env(safe-area-inset-left));font-size:.9em}
+.ws-loader-card{display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(470px,calc(100% - 40px));border:6px solid #fff;padding:24px 26px;color:#fff;background:#000}
+.ws-loader.is-ready .ws-boot{display:none}.ws-loader.is-ready .ws-loader-card{display:block}
+.ws-loader-kicker,.ws-loader-lead,.ws-loader-guide p{margin:0;font:inherit;color:#fff}.ws-loader-guide{margin:20px 0;color:#fff}.ws-guide-touch{display:none!important}
+.ws-caret{animation:wsCursor 1s steps(1,end) infinite}@keyframes wsCursor{50%{opacity:0}}
+.ws-loader button{display:block;margin:18px auto 0;padding:7px 10px;border:3px solid #fff;background:#000;color:#fff;font:inherit;cursor:pointer}.ws-loader button:hover,.ws-loader button:focus-visible{background:#fff;color:#000}.ws-loader button:focus-visible{outline:2px solid #fff;outline-offset:4px}.ws-loader button:disabled{opacity:.5;cursor:wait}
+@media(hover:none){.ws-guide-pointer{display:none!important}.ws-guide-touch{display:block!important}}
+@media(max-width:480px){.ws-loader{padding:24px;font-size:13px}.ws-loader-card{border-width:4px;padding:20px}.ws-boot-head{gap:28px}.ws-boot-foot{left:24px;bottom:24px}}
+@media(prefers-reduced-motion:reduce){.ws-caret{animation:none}}
 /* The workshop is the home screen. It stays fixed over the pages; the full-screen wipe covers the hand-over. */
 .workshop-hero{position:fixed;inset:0;height:100svh;z-index:30;background:var(--bg-1);visibility:hidden;pointer-events:none}
 html.on-home .workshop-hero{visibility:visible;pointer-events:auto}
