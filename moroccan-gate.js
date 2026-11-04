@@ -51,15 +51,16 @@ window.createMoroccanGate=function({THREE,Round,parent,wallLeft,wallRight,wallHe
 
  // Zellige: eight-pointed stars cut from glazed tile, set in dark grout
  function zelligeCanvas(){
-  const size=1024,cells=4,s=size/cells,[c,g]=canvas(size,size);g.fillStyle='#2a241e';g.fillRect(0,0,size,size);
+  const size=1024,cells=4,s=size/cells,[c,g]=canvas(size,size),[h,e]=canvas(size,size);g.fillStyle='#2a241e';g.fillRect(0,0,size,size);e.fillStyle='#9a9a9a';e.fillRect(0,0,size,size);
   const inks=[[sand,hot],[hot,night],[night,brassInk],[brassInk,hot]];
   for(let y=0;y<cells;y++)for(let x=0;x<cells;x++){
    const X=(x+.5)*s,Y=(y+.5)*s,[a,b]=inks[(x+2*y)%4];
    star(g,X,Y,s*.5);g.fillStyle=a;g.fill();g.lineWidth=6;g.strokeStyle='#0b0a09';g.stroke();
+   star(e,X,Y,s*.5);e.fillStyle='#e0e0e0';e.fill();e.lineWidth=11;e.strokeStyle='#141414';e.stroke();star(e,X,Y,s*.25);e.fillStyle='#f4f4f4';e.fill();e.lineWidth=7;e.stroke();
    star(g,X,Y,s*.25);g.fillStyle=b;g.fill();g.lineWidth=4;g.stroke();
    g.globalAlpha=.1+seed()*.14;star(g,X-s*.05,Y-s*.06,s*.3);g.fillStyle='#fff';g.fill();g.globalAlpha=1;
   }
-  return c}
+  return[c,h]}
  // Gebs: a sebka lattice of lozenges carved into plaster; light from above, shadow below
  function plasterCanvas(){
   const size=512,n=2,s=size/n,[c,g]=canvas(size,size);g.fillStyle='#3a342c';g.fillRect(0,0,size,size);
@@ -83,10 +84,10 @@ window.createMoroccanGate=function({THREE,Round,parent,wallLeft,wallRight,wallHe
   const s=cw/5;g.strokeStyle='#1a0e08';g.lineWidth=13;g.lineJoin='round';for(let y=-1;y<8;y++)for(let x=-1;x<6;x++){star(g,(x+.5)*s,(y+.5)*s,s*.52);g.stroke();star(g,(x+1)*s,(y+1)*s,s*.18);g.stroke()}
   g.lineWidth=30;g.strokeRect(0,0,cw,ch);return c}
 
- const zelligeArt=zelligeCanvas(),plasterArt=plasterCanvas(),cedarArt=cedarCanvas(),screenArt=screenCanvas();
- const tile=(rx,ry)=>new THREE.MeshPhysicalMaterial({map:texture(zelligeArt,rx,ry),roughness:.26,metalness:.02,clearcoat:.6,clearcoatRoughness:.2,envMapIntensity:.5});
+ const [zelligeArt,zelligeHeight]=zelligeCanvas(),plasterArt=plasterCanvas(),cedarArt=cedarCanvas(),screenArt=screenCanvas();
+ const tile=(rx,ry)=>new THREE.MeshPhysicalMaterial({map:texture(zelligeArt,rx,ry),bumpMap:texture(zelligeHeight,rx,ry,false),bumpScale:1.5,roughness:.26,metalness:.02,clearcoat:.6,clearcoatRoughness:.2,envMapIntensity:.5});
  const plasterMap=texture(plasterArt,2.1,2.1),plasterBump=texture(plasterArt,2.1,2.1,false);
- const plaster=new THREE.MeshStandardMaterial({map:plasterMap,bumpMap:plasterBump,bumpScale:1.4,roughness:.9,envMapIntensity:.3});
+ const plaster=new THREE.MeshStandardMaterial({map:plasterMap,bumpMap:plasterBump,bumpScale:3,roughness:.88,envMapIntensity:.3});
  const wallMat=new THREE.MeshStandardMaterial({map:masonry.brick.map,bumpMap:masonry.brick.bumpMap,bumpScale:2.6,color:0xd8cdbe,roughness:.92,envMapIntensity:.22});
  const dressed=new THREE.MeshStandardMaterial({map:masonry.limestone.map,bumpMap:masonry.limestone.bumpMap,bumpScale:1.4,color:0x9c9284,roughness:.8,envMapIntensity:.25});
  const brass=new THREE.MeshStandardMaterial({color:0xc9a45c,metalness:1,roughness:.32,envMapIntensity:.9});
@@ -108,7 +109,7 @@ window.createMoroccanGate=function({THREE,Round,parent,wallLeft,wallRight,wallHe
  for(const [x,y,sw,sh] of [[cx,frameTop-.02,2*half+.08,.05],[cx-half,1.5,.05,3],[cx+half,1.5,.05,3]])add(new Round(sw,sh,.09,2,.012),brass,[x,y,.04]);
 
  // zellige dado along the wall, with a brass rail above it
- const dadoH=.98,leftEnd=cx-.86,rightEnd=cx+.86;
+ const dadoH=.98,leftEnd=cx-.83,rightEnd=cx+.83;
  for(const [x0,x1] of [[wallLeft,leftEnd],[rightEnd,wallRight]]){const dw=x1-x0;add(new THREE.BoxGeometry(dw,dadoH,.07),tile(dw/.8,dadoH/.8),[(x0+x1)/2,dadoH/2+.03,.035]);add(new Round(dw,.035,.095,2,.012),brass,[(x0+x1)/2,dadoH+.04,.045])}
 
  // horseshoe arch: alternating voussoirs, a reveal, and a thin brass line outside them
@@ -123,8 +124,11 @@ window.createMoroccanGate=function({THREE,Round,parent,wallLeft,wallRight,wallHe
  // jambs: tile strips and slim columns with carved capitals
  for(const side of [-1,1]){
   const x=cx+side*(w/2+.095);add(new THREE.BoxGeometry(.15,spring-.04,.06),tile(.19,(spring-.04)/.8),[x,(spring+.04)/2,.075]);
-  const col=[[.052,0],[.062,.03],[.042,.08],[.036,.3],[.036,spring-.46],[.044,spring-.4],[.075,spring-.3],[.09,spring-.24],[.09,spring-.2]].map(([r,y])=>new THREE.Vector2(r,y));
-  add(new THREE.LatheGeometry(col,20),stoneSand,[cx+side*(w/2+.26),.1,.135]);
+  const columnX=cx+side*.775,pedestal=.17,imposts=1.33,tall=imposts-(floor+pedestal);
+  add(new Round(.22,pedestal,.21,2,.015),stoneSand,[columnX,floor+pedestal/2,.15]);add(new Round(.25,.03,.24,2,.01),stoneSand,[columnX,floor+pedestal+.012,.15]);
+  const shaft=[[.075,0],[.078,.02],[.056,.055],[.062,.08],[.047,.12],[.042,.5],[.04,tall-.3],[.052,tall-.27],[.042,tall-.24],[.052,tall-.21],[.044,tall-.18],[.062,tall-.13],[.082,tall-.07],[.1,tall-.02],[.1,tall]].map(([r,y])=>new THREE.Vector2(r,y));
+  add(new THREE.LatheGeometry(shaft,28),stoneSand,[columnX,floor+pedestal+.02,.15]);
+  add(new Round(.29,.09,.26,2,.012),stoneSand,[columnX,imposts+.045,.15]);add(new Round(.31,.016,.28,1,.006),brass,[columnX,imposts+.095,.15]);
   // brass rosette in each spandrel
   const rose=new THREE.Group();rose.position.set(cx+side*.98,2.42,.05);parent.add(rose);
   add(new THREE.CylinderGeometry(.17,.17,.018,32).rotateX(Math.PI/2),iron,[0,0,.01],rose);
@@ -152,10 +156,10 @@ window.createMoroccanGate=function({THREE,Round,parent,wallLeft,wallRight,wallHe
  tileRoof(canopyW,.62,[cx,wallHeight-.01,.01],Math.PI/2+.34,-1);
 
  // the hall behind the doors
- const hallW=1.56,hallH=2.75,hallD=1.7,hallZ=-.3-hallD/2,hallY=floor+hallH/2,hide=new THREE.MeshBasicMaterial({visible:false});
+ const hallW=1.56,hallH=2.75,hallD=1.25,hallZ=-.3-hallD/2,hallY=floor+hallH/2,hide=new THREE.MeshBasicMaterial({visible:false});
  const hallWall=new THREE.MeshStandardMaterial({color:0x8a5f42,roughness:.8,side:THREE.BackSide,envMapIntensity:.15});
  const hallRoof=new THREE.MeshStandardMaterial({color:0x2b1a11,roughness:.7,side:THREE.BackSide});
- const hallFloor=tile(1.9,2.1);hallFloor.side=THREE.BackSide;
+ const hallFloor=tile(1.9,1.56);hallFloor.side=THREE.BackSide;
  const hallEnd=new THREE.MeshBasicMaterial({map:texture(screenArt),side:THREE.BackSide,toneMapped:false,fog:false});
  add(new THREE.BoxGeometry(hallW,hallH,hallD),[hallWall,hallWall,hallRoof,hallFloor,hide,hallEnd],[cx,hallY,hallZ]);
  const outerW=hallW+.12,outerD=hallD+.08,rearZ=hallZ-.03-outerD/2;
@@ -165,7 +169,7 @@ window.createMoroccanGate=function({THREE,Round,parent,wallLeft,wallRight,wallHe
  add(new Round(outerW+.16,.34,.1,2,.015),dressed,[cx,floor+.17,rearZ-.03]);
  for(const side of [-1,1])add(new Round(.06,.06,outerD,2,.012),dressed,[cx+side*(outerW/2+.015),floor+1.55,hallZ-.03]);
  add(new Round(outerW+.09,.06,.06,2,.012),dressed,[cx,floor+1.55,rearZ-.015]);
- tileRoof(outerW+.3,outerD+.26,[cx,wallHeight-.2,-.3],-(Math.PI/2+.27),1);
+ tileRoof(outerW+.16,outerD+.2,[cx,wallHeight-.2,-.3],-(Math.PI/2+.18),1);
  add(new Round(wallRight-wallLeft+.08,.07,.38,2,.02),dressed,[(wallLeft+wallRight)/2,wallHeight+.03,-.15]);
  const merlonShape=new THREE.Shape();[[-.17,0],[.17,0],[.17,.12],[.09,.12],[.09,.22],[0,.32],[-.09,.22],[-.09,.12],[-.17,.12]].forEach(([x,y],i)=>merlonShape[i?'lineTo':'moveTo'](x,y));merlonShape.closePath();
  const merlonGeometry=new THREE.ExtrudeGeometry(merlonShape,{depth:.22,bevelEnabled:false}),merlonCount=Math.floor((wallRight-wallLeft)/.5),merlons=new THREE.InstancedMesh(merlonGeometry,wallMat,merlonCount);
@@ -177,7 +181,7 @@ window.createMoroccanGate=function({THREE,Round,parent,wallLeft,wallRight,wallHe
  const trim=new THREE.Shape(smallArch(.33,2.31,1.66));trim.holes.push(new THREE.Path(smallArch(.26,2.24,1.72)));add(extrude(trim,.05),dressed,[0,0,0],rear);
  add(new Round(.82,.05,.1,2,.012),dressed,[0,1.64,.03],rear);
  for(const x of [-.13,0,.13])add(new Round(.016,.56,.016,1,.004),iron,[x,1.98,.03],rear);add(new Round(.54,.016,.016,1,.004),iron,[0,1.98,.03],rear);
- for(const side of [-1,1]){const dado=add(new THREE.PlaneGeometry(hallD,.86),tile(2.1,1.07),[cx+side*(hallW/2-.012),floor+.44,hallZ]);dado.rotation.y=-side*Math.PI/2}
+ for(const side of [-1,1]){const dado=add(new THREE.PlaneGeometry(hallD,.86),tile(1.56,1.07),[cx+side*(hallW/2-.012),floor+.44,hallZ]);dado.rotation.y=-side*Math.PI/2}
  add(new Round(w+.12,.05,.44,2,.015),stoneSand,[cx,floor+.016,-.14]);
 
  // a pierced brass lantern

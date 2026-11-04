@@ -203,3 +203,10 @@ Brick, limestone and flagstone are drawn in code with matching height maps. Trea
 ## The door opens on scroll and the staircase comes out of it
 The Code page now opens on the closed gateway alone, with nothing below the landing. Scrolling swings the doors, tied directly to scroll. Once they are open, the staircase slides out of the hall through the doorway as one ribbon, crosses the landing and corkscrews down the column, so every tread lands at the same moment. Rails, column, screens and the landing pad appear as it passes, and the drone flies out too.
 The burst runs on a clock, so it never holds the page, and the camera waits for it before normal scrolling takes over. Scrolling back draws the stairs in first, and the doors stay open until the last tread is inside. Closing them with the scroll left the stairs stuck against a shut door.
+
+## Everything connects, and About me comes first
+Parts of the staircase and gateway floated: the columns held nothing up, treads stopped short of the central column, the copper rail had no posts, and the helix ended in mid-air.
+- Columns now stand on pedestals and carry the arch through impost blocks.
+- Treads run into a carved stone column with brass bands. Rails have posts and turned newels, and the stairs finish on a stone floor.
+- Curved edges are smooth, tile and plaster have real relief, and the hall roof no longer pokes past the wall from the front.
+On the home page, About me now sits straight under the hero, followed by the intro and the builds.
