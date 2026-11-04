@@ -159,3 +159,11 @@ The newly added recessed backing intersected the laptop lid as it turned; its pr
 2. **Rule now:** Input always moves the page straight away; nothing is held, blocked or locked. This supersedes the gate entries above. Lenis lerp is slightly quicker at 0.11.
 3. **Kept:** Transitions are not left half-done. About 0.24 s after you stop inside one, it eases on in the direction you were scrolling (up to 0.9 s). Any new input cancels that at once. Direction is read from the input itself.
 4. **Checked on the real page:** One long flick travels 1,724 px, and continuous scrolling crosses the whole Code page in 2.6 s with no stalled frames.
+
+## 4 November 2026 — Spitfire intro
+
+1. **Request:** Replace the tearing-head intro with a Spitfire, with Kavish in the cockpit.
+2. **Model (spitfire.js):** A real-dimension model: lofted fuselage, elliptical wings and tailplane on an airfoil section, fin, four-blade propeller with spinner and blur disc, Merlin exhaust stubs, cannon, radiators, mast, windscreen and hood slid back. Painted in RAF green and grey with roundels, fin flash, sky band and "KM" fuselage letters.
+3. **Pilot:** The paper-cutout head, cropped from img/kavish-full.webp and deliberately oversized to match the site, always turned to the viewer, with a scarf streaming behind.
+4. **Timeline:** The plane comes in from far away (0 s), makes a close banked pass and waves its wings (1.7–2.6 s), then climbs out top right. At 2.7 s the head rises, the name slides in and the objects pop out at 3.3 s; everything is cleaned up by 4.4 s.
+5. **Fallbacks:** Any scroll, click, key or touch skips it. It does not play with reduced motion, on another section or in a background tab. If 3D or the image fails, the page goes straight to the finished hero. The torn-scalp peel and its canvas are gone.
