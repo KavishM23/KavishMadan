@@ -177,3 +177,15 @@ The newly added recessed backing intersected the laptop lid as it turned; its pr
 3. **Flight:** One cubic S-curve. Nothing is keyframed: the nose follows the path's tangent and the bank comes from the turn (tan bank = lateral acceleration / g). There is no bob or wobble. It banks one way on the approach, rolls through level as it crosses side-on, then banks its top towards the viewer and exits right. Speed is fast on the long approach and eases when close, without stopping. The two contrails are computed from the same path.
 4. **Shadows:** The hero's sun follows the plane with a shadow frustum sized to it, updated every frame, and its direction never changes. Hemisphere fill drops to 34% in flight so the sun models the shape. Both are handed back at 2.75 s, before the objects appear.
 5. **Timeline:** The hero starts rising at 2.35 s and the intro cleans up by about 4.1 s. The portrait is decoded before take-off so it cannot hitch as it rises.
+
+## Art direction: near-black, sand and one orange
+Asked for the whole site to follow minhpham.design: deeper, darker colours, keeping every 3D object and the torn-portrait face.
+- Ground is two near-blacks (#0D0D0D, #141312), type is warm sand (#B7AB98), and one orange (#EB5939) carries each emphasis.
+- Type moved to League Spartan capitals and Nunito Sans body; tiny tracked labels replace pills.
+- Cards went flat, straight and hairlined. Paper tilts, tape, folds and grain went.
+- The portrait is warm monochrome and low-key. Photos sit graded and return to full colour on hover.
+- All 3D scenes, the Concorde livery and the tears are regraded to the same palette, lit low with an orange rim. The trophy cabinet is a dark room with one spotlight per bay.
+- Overrides live in `noir.css`, loaded last. The statement fill lives in `noir.js`.
+
+## The staircase needed a start
+The helix began in mid-air. It now starts at a walled landing at the top: a lit arched doorway marked START, a floor you walk out onto, handrails that run back to the wall, and newel posts where the first step drops away. The camera opens slightly higher so the whole entrance is framed.

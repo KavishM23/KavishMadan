@@ -5,8 +5,8 @@ window.createConcordeFlight=function({THREE,scene,camera,sun,restoreSun,anisotro
  const canvasOf=(w,h,draw)=>{const c=document.createElement('canvas');c.width=w;c.height=h;draw(c.getContext('2d'),w,h);return c};
  const tex=c=>{const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=anisotropy;return t};
  const seeded=s=>()=>(s=(s*16807)%2147483647)/2147483647;
- const NAVY='#142d43',CLAY='#a54f36',SHELL='#f3f1ea',GLASS='#10161c';
- const FONT='"Schibsted Grotesk", Arial, sans-serif';
+ const NAVY='#0d0d0d',CLAY='#eb5939',SHELL='#d9cfbf',GLASS='#0a0a0a';
+ const FONT='"League Spartan", Arial, sans-serif';
 
  // ---------- paint ----------
  const ZN=31,ZT=-31,LEN=ZN-ZT,uOf=z=>(z-ZT)/LEN;
@@ -21,7 +21,7 @@ window.createConcordeFlight=function({THREE,scene,camera,sun,restoreSun,anisotro
    g.fillStyle=NAVY;g.fillRect(U(-24),Y(.76)-5,U(22)-U(-24),10);g.fillStyle=CLAY;g.fillRect(U(-24),Y(.782)-3,U(22)-U(-24),6);
    g.fillStyle=GLASS;for(let z=-15;z<19.5;z+=.52)if(Math.abs(z+1.5)>.7)g.fillRect(U(z),Y(.693)-8,8,17);
    const label=(txt,z,size,f,fill,spread=0)=>{g.save();g.translate(U(z),Y(f));g.scale(s.port?-.59:.59,s.port?1:-1);g.font=`800 ${size}px ${FONT}`;g.textAlign='center';g.textBaseline='middle';g.fillStyle=fill;if('letterSpacing' in g)g.letterSpacing=spread+'px';g.fillText(txt,0,0);g.restore()};
-   label('KAVISH MADAN',3,104,.625,NAVY,10);label('G-KMAD',-19.5,50,.625,'#506575',4)}
+   label('KAVISH MADAN',3,104,.625,NAVY,10);label('G-KMAD',-19.5,50,.625,'#7f766a',4)}
   // flight deck glazing and the black radome tip
   g.fillStyle=GLASS;g.fillRect(U(21.6),h*.38,U(23.4)-U(21.6),h*.24);
   g.fillStyle=SHELL;for(const y of [.46,.54])g.fillRect(U(21.6),h*y-5,U(23.4)-U(21.6),10);g.fillRect(U(22.4)-3,h*.38,6,h*.24);
@@ -88,7 +88,7 @@ window.createConcordeFlight=function({THREE,scene,camera,sun,restoreSun,anisotro
  const trails=[makeTrail(),makeTrail()];
 
  // ---------- clouds: they stay where they are, as clouds do, with a very slow drift ----------
- const cloudMat=new THREE.MeshStandardMaterial({color:0x8fa6b4,roughness:1,envMapIntensity:.45,transparent:true,opacity:.5,depthWrite:false});
+ const cloudMat=new THREE.MeshStandardMaterial({color:0x4a453e,roughness:1,envMapIntensity:.45,transparent:true,opacity:.5,depthWrite:false});
  const cloudDepth=new THREE.MeshBasicMaterial({colorWrite:false});   // one soft shape rather than overlapping bubbles
  function cloud(seed){const r=seeded(seed),g=new THREE.Group();for(let i=0;i<9;i++){const geo=new THREE.SphereGeometry(.5+r()*.6,24,16),x=(i-4)*.62+r()*.2,y=(r()-.5)*.5,z=(r()-.5)*.6;for(const m of [cloudDepth,cloudMat]){const s=new THREE.Mesh(geo,m);s.position.set(x,y,z);s.scale.y=.7;g.add(s)}}return g}
  const clouds=[[-15,-9,-60,1.9],[17,11,-70,2.2],[8,-12,-80,2.6]].map(([x,y,z,s],i)=>{const c=cloud(11+i*7);c.position.set(x,y,z);c.scale.setScalar(s);c.userData.x=x;scene.add(c);return c});
