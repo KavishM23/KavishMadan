@@ -18,7 +18,8 @@ Workshop.props=function(THREE,kit,carParts){
   sh.bezierCurveTo(...P(.42,.23),...P(.27,.39),...P(.43,.66));
   sh.bezierCurveTo(...P(.58,.91),...P(.35,1.03),...P(.16,.84));
   sh.lineTo(...P(.14,1.08));sh.closePath();
-  const burst=canvasTexture(1024,1024,(g,w,h)=>{
+  const burst=canvasTexture(2048,2048,(g,w,h)=>{
+   g.save();g.scale(w/1024,h/1024);w=1024;h=1024;
    const R=rng(61);const gr=g.createRadialGradient(505,560,50,512,520,500);
    gr.addColorStop(0,'#e0a84c');gr.addColorStop(.42,'#c9812f');gr.addColorStop(.66,'#8a3c1a');gr.addColorStop(.86,'#3a1610');gr.addColorStop(1,'#180a08');g.fillStyle=gr;g.fillRect(0,0,w,h);
    // flame figure across the maple
@@ -28,7 +29,7 @@ Workshop.props=function(THREE,kit,carParts){
     for(let x=0;x<=w;x+=34){const yy=y+Math.sin(x*.012+i*.7)*a+Math.sin(x*.041+i)*a*.45;x?g.lineTo(x,yy):g.moveTo(x,yy)}
     g.stroke();
    }
-   g.globalCompositeOperation='source-over';
+   g.globalCompositeOperation='source-over';g.restore();
   });
   const bodyGeo=new THREE.ExtrudeGeometry(sh,{depth:.024,bevelEnabled:true,bevelSegments:7,bevelSize:.014,bevelThickness:.014,curveSegments:60});
   {const uv=bodyGeo.attributes.uv,p=bodyGeo.attributes.position;for(let i=0;i<p.count;i++)uv.setXY(i,(p.getX(i)+.19)/.38,(p.getY(i)+.21)/.42)}
@@ -72,7 +73,12 @@ Workshop.props=function(THREE,kit,carParts){
   add(inst,box(.086,.016,.012,nickel,[0,PY-.06,.044],.005));
   for(const [x,y] of [[.075,-.03],[.115,-.06],[.075,-.085],[.118,-.1]]){
    add(inst,mesh(new THREE.CylinderGeometry(.0105,.0132,.018,24),gold,[x,PY+y,.046],[Math.PI/2,0,0]));
+   add(inst,mesh(new THREE.TorusGeometry(.008,.0008,6,20),nickel,[x,PY+y,.056]));
   }
+  // Selector switch, washer and mounting screws on the cream pickguard.
+  add(inst,mesh(new THREE.CylinderGeometry(.009,.009,.003,24),cream,[-.095,PY+.09,.043],[Math.PI/2,0,0]));
+  add(inst,bar([-.095,PY+.09,.045],[-.087,PY+.103,.06],.0022,nickel,8));
+  for(const [x,y] of [[.038,.174],[.056,.095]])add(inst,mesh(new THREE.SphereGeometry(.002,10,8),chrome,[x,PY+y,.053]));
   const guard=new THREE.Shape();guard.moveTo(.024,.18);guard.lineTo(.078,.18);guard.bezierCurveTo(.1,.14,.085,.1,.052,.085);guard.lineTo(.03,.09);guard.closePath();
   add(inst,mesh(new THREE.ExtrudeGeometry(guard,{depth:.002,bevelEnabled:false,curveSegments:16}),cream,[0,PY,.05]));
   // strings
@@ -92,9 +98,9 @@ Workshop.props=function(THREE,kit,carParts){
    add(root,mesh(new THREE.SphereGeometry(.018,16,12),rubberFoot,[s*.21,.012,.11]));
   }
   // leans forward when you reach for it; a strum rocks it on the stand and blurs the strings
-  root.userData.playFor=2.4;
+  root.userData.playFor=4.2;
   root.userData.play=(h,p,dt,t)=>{
-   const ring=p<2.4?Math.exp(-p*1.7):0;
+   const ring=p<4.2?Math.exp(-p*.6):0;
    inst.rotation.x=-.145+h*.06;inst.rotation.z=Math.sin(p*7)*.02*ring;
    strs.scale.x=1+Math.sin(t*92)*(.02*h+.09*ring);strs.position.z=Math.sin(t*71)*.0006*(h+3*ring);
   };
