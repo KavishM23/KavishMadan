@@ -883,11 +883,12 @@ html.intro-hold .obj-labs{visibility:hidden}
   (function(){
     const panel=document.getElementById('ws-loader'),button=document.getElementById('ws-loader-enter'),status=document.getElementById('ws-loader-status');
     if(!document.documentElement.classList.contains('on-home')){panel.hidden=true;return}
-    let ready=false;
+    let ready=false,minElapsed=false,pendingReady=false;
     function available(ok){if(ready)return;ready=true;clearTimeout(timeout);status.textContent=ok?'The workshop is ready.':'The workshop is taking longer than expected.';button.disabled=false;button.firstChild.textContent=ok?'START':'CONTINUE';panel.classList.add('is-ready');if(!ok)document.getElementById('hero')?.classList.add('ws-failed')}
     const timeout=setTimeout(()=>available(false),20000);
+    setTimeout(()=>{minElapsed=true;if(pendingReady)available(true)},3200);
     addEventListener('workshop-progress',e=>{if(!ready)status.textContent=e.detail});
-    addEventListener('workshop-ready',()=>available(true),{once:true});addEventListener('workshop-failed',()=>available(false),{once:true});
+    addEventListener('workshop-ready',()=>{if(minElapsed)available(true);else pendingReady=true},{once:true});addEventListener('workshop-failed',()=>available(false),{once:true});
     button.addEventListener('click',()=>{panel.hidden=true;document.querySelector('.top a[data-tab="home"]')?.focus({preventScroll:true})});
     addEventListener('hashchange',()=>{if(location.hash&&location.hash!=='#home')panel.hidden=true});
   })();

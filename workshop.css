@@ -1,6 +1,8 @@
 /* The workshop hero. The 3D set stands in the same near-black as the rest of the site. */
 /* A simple boot display, followed by a bordered start prompt. */
 .ws-loader{position:fixed;inset:0;z-index:200;overflow:auto;padding:max(32px,env(safe-area-inset-top)) max(32px,env(safe-area-inset-right)) max(32px,env(safe-area-inset-bottom)) max(32px,env(safe-area-inset-left));background:#000;color:#fff;font:500 clamp(13px,1.15vw,16px)/1.35 "IBM Plex Mono",monospace;letter-spacing:.015em}
+html.cur-on .ws-loader,html.cur-on .ws-loader *{cursor:auto!important}
+html.cur-on .ws-loader button:not(:disabled){cursor:pointer!important}
 .ws-boot{min-height:calc(100% - 8px)}.ws-boot-head{display:flex;gap:clamp(40px,6vw,90px);align-items:flex-start}.ws-boot-head b{font-weight:600}.ws-boot p{margin:38px 0 0}.ws-boot .ws-boot-status{margin:18px 0 0 32px}.ws-boot-foot{position:absolute;bottom:48px;left:max(32px,env(safe-area-inset-left));font-size:.9em}
 .ws-loader-card{display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(470px,calc(100% - 40px));border:6px solid #fff;padding:24px 26px;color:#fff;background:#000}
 .ws-loader.is-ready .ws-boot{display:none}.ws-loader.is-ready .ws-loader-card{display:block}
