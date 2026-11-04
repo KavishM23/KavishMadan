@@ -1710,7 +1710,7 @@ html.intro-hold .obj-labs{visibility:hidden}
   function markTabs(){document.querySelectorAll('[data-tab]').forEach(a=>{if(a.dataset.tab===curView.id)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')})}
   function afterShow(target){
     const go=()=>{const y=target&&target!==curView?target.getBoundingClientRect().top+scrollY:0;if(window.resetPortfolioScroll)resetPortfolioScroll(y);else{scrollTo({top:y,behavior:'instant'});window.lenis&&lenis.scrollTo(y,{immediate:true,force:true})}
-      if(curView.id==='home'){fitName();placeHead()}
+      if(curView.id==='home')fitName();
       onScroll();updateTears();cutAll();if(window.ScrollTrigger)ScrollTrigger.refresh();markTabs()};
     requestAnimationFrame(()=>requestAnimationFrame(go));setTimeout(go,120);
   }
