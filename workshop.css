@@ -157,11 +157,9 @@ html.on-home .ws-back{opacity:0;translate:0 12px;pointer-events:none}
 #b-wing,#honors,#about,#builds,.code-journey{--bg:var(--t-sand);--hot:var(--t-saf)}
 #builds,#about{--hot:var(--t-terra)}
 #b-4x4,#more,.phero,#b-quad,section.intro,#more-code,#b-kessler,#academics,#b-wing,#honors,#about,#builds,.code-journey{background:var(--bg)}
-/* A paper surface on the About page, behind its text and interactive models. */
-#about{position:relative;isolation:isolate}
-#about::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:url("img/paper-grain.svg") repeat;background-size:256px 256px;mix-blend-mode:soft-light;opacity:.48}
-#about>.in{position:relative;z-index:1}
-html[data-theme="dark"] #about::before{opacity:.8}
+/* The introduction ends at a torn edge; the story continues on the next sheet. */
+.about-hero{padding-bottom:clamp(28px,4vw,60px)}
+.about-hero .about-intro{margin-bottom:0}
 .foot .small,.foot .small span{color:#C5D2CF}
 
 /* Day and night switch */
