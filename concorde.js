@@ -3,9 +3,9 @@
    Dimensions are in metres, nose along +Z, port wing along +X. Everything is removed once it has flown. */
 window.createConcordeFlight=function({THREE,scene,camera,sun,restoreSun,anisotropy=4}){
  const canvasOf=(w,h,draw)=>{const c=document.createElement('canvas');c.width=w;c.height=h;draw(c.getContext('2d'),w,h);return c};
- const tex=c=>{const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=anisotropy;return t};
+ const tex=c=>{const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=anisotropy;t.onUpdate=()=>{t.onUpdate=null;c.width=c.height=1};return t};
  const seeded=s=>()=>(s=(s*16807)%2147483647)/2147483647;
- const NAVY='#0d0d0d',CLAY='#eb5939',SHELL='#d9cfbf',GLASS='#0a0a0a';
+ const NAVY='#142d43',CLAY='#a54f36',SHELL='#e6e0d2',GLASS='#0a0a0a';
  const FONT='"League Spartan", Arial, sans-serif';
 
  // ---------- paint ----------
@@ -138,6 +138,7 @@ window.createConcordeFlight=function({THREE,scene,camera,sun,restoreSun,anisotro
   geos.forEach(g=>g.dispose());mats.forEach(m=>{m.map?.dispose();m.dispose()});
  }
  return{
+  plane,
   fly(reveal,done){onReveal=reveal;onDone=done;plane.visible=true;pose(0)},
   tick(dt){if(finished||!plane.visible)return;t+=dt;if(!fired&&t>=REVEAL){fired=true;onReveal?.()}if(sunHeld&&t>=SUN_BACK)giveSunBack();pose(Math.min(t,END));if(t>=END){finished=true;onDone?.()}},
   seek(time){t=time;pose(time)},

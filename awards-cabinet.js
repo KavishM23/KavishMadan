@@ -4,7 +4,7 @@ window.createTrophyCabinet=function({THREE,Round,environment,reduced,el,anisotro
  const items=[...document.querySelectorAll('#honors .aw-grid .peel.aw')].map(c=>({cat:c.querySelector('.cat')?.textContent||'',fig:c.querySelector('.fig')?.textContent||'',title:c.querySelector('h4')?.textContent||'',text:c.querySelector('p')?.textContent||'',lvl:c.querySelector('.lvl')?.textContent||''}));
  const N=items.length,BW=3.3,H=3.7,D=1.9,L=N*BW;
  const scene=new THREE.Scene();scene.environment=environment;
- scene.add(new THREE.HemisphereLight(0xb7ab98,0x1c130e,.3));
+ scene.add(new THREE.HemisphereLight(0xf4eadb,0x6b4a33,.7));
  const key=new THREE.DirectionalLight(0xfff0dc,.85);key.position.set(-4,6,9);scene.add(key);
  const spot=new THREE.SpotLight(0xffe9c8,64,14,.38,.8,1.4);scene.add(spot,spot.target);
  const camera=new THREE.PerspectiveCamera(36,1,.1,90);
@@ -15,23 +15,23 @@ window.createTrophyCabinet=function({THREE,Round,environment,reduced,el,anisotro
  const rng=(s=>()=>(s=(s*16807)%2147483647)/2147483647)(17);
 
  // ---------- materials ----------
- const woodC=canvasOf(1024,256,(g,w,h)=>{g.fillStyle='#2a1e16';g.fillRect(0,0,w,h);for(let i=0;i<220;i++){const y=rng()*h,a=.04+rng()*.12;g.strokeStyle=rng()<.5?`rgba(30,15,6,${a})`:`rgba(150,95,55,${a})`;g.lineWidth=1+rng()*3;g.beginPath();g.moveTo(0,y);for(let x=0;x<=w;x+=32)g.lineTo(x,y+Math.sin(x/(60+rng()*40)+i)*4);g.stroke()}});
+ const woodC=canvasOf(1024,256,(g,w,h)=>{g.fillStyle='#7c5034';g.fillRect(0,0,w,h);for(let i=0;i<220;i++){const y=rng()*h,a=.04+rng()*.12;g.strokeStyle=rng()<.5?`rgba(30,15,6,${a})`:`rgba(150,95,55,${a})`;g.lineWidth=1+rng()*3;g.beginPath();g.moveTo(0,y);for(let x=0;x<=w;x+=32)g.lineTo(x,y+Math.sin(x/(60+rng()*40)+i)*4);g.stroke()}});
  const woodT=tex(woodC);woodT.wrapS=woodT.wrapT=THREE.RepeatWrapping;woodT.repeat.set(N*1.2,1);
  const wood=new THREE.MeshPhysicalMaterial({map:woodT,roughness:.42,clearcoat:.6,clearcoatRoughness:.25});
- const woodEnd=new THREE.MeshPhysicalMaterial({color:0x1e1510,roughness:.5,clearcoat:.4});
+ const woodEnd=new THREE.MeshPhysicalMaterial({color:0x6e4630,roughness:.5,clearcoat:.4});
  const brass=new THREE.MeshPhysicalMaterial({color:0xd2a94e,metalness:1,roughness:.28});
  const gold=new THREE.MeshPhysicalMaterial({color:0xc9a45c,metalness:1,roughness:.2});
  const silver=new THREE.MeshPhysicalMaterial({color:0xd9dde4,metalness:1,roughness:.2});
  const bronze=new THREE.MeshPhysicalMaterial({color:0xb86b3c,metalness:1,roughness:.3});
- const marbleC=canvasOf(512,512,(g,w,h)=>{g.fillStyle='#2b2926';g.fillRect(0,0,w,h);for(let i=0;i<34;i++){const x=rng()*w,y=rng()*h;g.strokeStyle=`rgba(91,102,105,${.025+rng()*.09})`;g.lineWidth=.5+rng()*2;g.beginPath();g.moveTo(x,y);g.bezierCurveTo(x+40,y-50,x+105,y+65,x+190,y-25);g.stroke()}for(let i=0;i<7000;i++){const c=rng()<.5?'255,255,255':'94,85,72';g.fillStyle=`rgba(${c},${rng()*.04})`;g.fillRect(rng()*w,rng()*h,2,2)}});
+ const marbleC=canvasOf(512,512,(g,w,h)=>{g.fillStyle='#e6d9c3';g.fillRect(0,0,w,h);for(let i=0;i<34;i++){const x=rng()*w,y=rng()*h;g.strokeStyle=`rgba(91,102,105,${.025+rng()*.09})`;g.lineWidth=.5+rng()*2;g.beginPath();g.moveTo(x,y);g.bezierCurveTo(x+40,y-50,x+105,y+65,x+190,y-25);g.stroke()}for(let i=0;i<7000;i++){const c=rng()<.5?'255,255,255':'94,85,72';g.fillStyle=`rgba(${c},${rng()*.04})`;g.fillRect(rng()*w,rng()*h,2,2)}});
  const marble=new THREE.MeshPhysicalMaterial({map:tex(marbleC),roughness:.3,clearcoat:.8,clearcoatRoughness:.15});
- const darkWood=new THREE.MeshPhysicalMaterial({color:0x281b16,roughness:.46,clearcoat:.3});
- const insetC=canvasOf(512,512,(g,w,h)=>{g.fillStyle='#151412';g.fillRect(0,0,w,h);const gr=g.createRadialGradient(w/2,65,12,w/2,160,330);gr.addColorStop(0,'rgba(247,225,187,.45)');gr.addColorStop(.5,'rgba(185,184,164,.12)');gr.addColorStop(1,'rgba(185,184,164,0)');g.fillStyle=gr;g.fillRect(0,0,w,h);for(let i=0;i<8000;i++){g.fillStyle=`rgba(0,0,0,${rng()*.1})`;g.fillRect(rng()*w,rng()*h,1,1)}});
+ const darkWood=new THREE.MeshPhysicalMaterial({color:0x7a4e32,roughness:.46,clearcoat:.3});
+ const insetC=canvasOf(512,512,(g,w,h)=>{g.fillStyle='#1f5258';g.fillRect(0,0,w,h);const gr=g.createRadialGradient(w/2,65,12,w/2,160,330);gr.addColorStop(0,'rgba(247,225,187,.45)');gr.addColorStop(.5,'rgba(185,184,164,.12)');gr.addColorStop(1,'rgba(185,184,164,0)');g.fillStyle=gr;g.fillRect(0,0,w,h);for(let i=0;i<8000;i++){g.fillStyle=`rgba(0,0,0,${rng()*.1})`;g.fillRect(rng()*w,rng()*h,1,1)}});
  const insetMat=new THREE.MeshStandardMaterial({map:tex(insetC),roughness:.96});
  const shadowC=canvasOf(256,256,(g,w,h)=>{const gr=g.createRadialGradient(w/2,h/2,6,w/2,h/2,w*.49);gr.addColorStop(0,'rgba(8,18,23,.42)');gr.addColorStop(.45,'rgba(8,18,23,.2)');gr.addColorStop(1,'rgba(8,18,23,0)');g.fillStyle=gr;g.fillRect(0,0,w,h)});
  const contactShadow=new THREE.MeshBasicMaterial({map:tex(shadowC),transparent:true,depthWrite:false,opacity:.72});
  // the felt back wall carries a soft pool of light above every bay
- const backC=canvasOf(256*N,256,(g,w,h)=>{g.fillStyle='#151412';g.fillRect(0,0,w,h);for(let i=0;i<N;i++){const cx=(i+.5)*256,gr=g.createRadialGradient(cx,40,6,cx,120,170);gr.addColorStop(0,'rgba(255,236,200,.55)');gr.addColorStop(.45,'rgba(255,226,180,.18)');gr.addColorStop(1,'rgba(255,226,180,0)');g.fillStyle=gr;g.fillRect(cx-128,0,256,h)}for(let i=0;i<9000;i++){g.fillStyle=`rgba(0,0,0,${rng()*.08})`;g.fillRect(rng()*w,rng()*h,1.5,1.5)}});
+ const backC=canvasOf(256*N,256,(g,w,h)=>{g.fillStyle='#1f5258';g.fillRect(0,0,w,h);for(let i=0;i<N;i++){const cx=(i+.5)*256,gr=g.createRadialGradient(cx,40,6,cx,120,170);gr.addColorStop(0,'rgba(255,236,200,.55)');gr.addColorStop(.45,'rgba(255,226,180,.18)');gr.addColorStop(1,'rgba(255,226,180,0)');g.fillStyle=gr;g.fillRect(cx-128,0,256,h)}for(let i=0;i<9000;i++){g.fillStyle=`rgba(0,0,0,${rng()*.08})`;g.fillRect(rng()*w,rng()*h,1.5,1.5)}});
  const felt=new THREE.MeshStandardMaterial({map:tex(backC),roughness:.95});
  const streakC=canvasOf(256,512,(g,w,h)=>{g.clearRect(0,0,w,h);g.save();g.translate(w/2,h/2);g.rotate(-.5);[[-60,26,.5],[10,10,.35],[48,4,.6]].forEach(([x,bw,a])=>{const gr=g.createLinearGradient(x-bw,0,x+bw,0);gr.addColorStop(0,'rgba(255,255,255,0)');gr.addColorStop(.5,`rgba(255,255,255,${a})`);gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(x-bw,-h,bw*2,h*2)});g.restore()});
  const glass=new THREE.MeshBasicMaterial({map:tex(streakC),transparent:true,opacity:.22,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false});

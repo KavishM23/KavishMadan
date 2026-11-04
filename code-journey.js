@@ -2,8 +2,9 @@
 window.createCodeStaircase=function({THREE,Round,environment,makeDrone,reduced,el,anisotropy=4}){
  const masonry=window.createMasonry({THREE,anisotropy});
  const journey=document.getElementById('code-journey');
- const scene=new THREE.Scene();scene.environment=environment;scene.fog=new THREE.Fog(0x0d0d0d,18,40);
- scene.add(new THREE.HemisphereLight(0xb7ab98,0x0d0d0d,.9));
+ const scene=new THREE.Scene();scene.environment=environment;scene.fog=new THREE.Fog(0xefe4d3,22,46);
+ const sky=new THREE.HemisphereLight(0xf4eadb,0x9a8a78,1.05);scene.add(sky);
+ const night=dark=>{scene.fog.color.set(dark?0x17272b:0xefe4d3);sky.intensity=dark?.55:1.05};night(document.documentElement.dataset.theme==='dark');addEventListener('site-theme',e=>night(e.detail.dark));
  const key=new THREE.DirectionalLight(0xfff0dc,2.8);key.position.set(-7,10,9);key.target.position.set(0,-3.4,0);scene.add(key,key.target);
  // Real shadows from one light. The stairs never move, so the map is drawn once and redrawn only while the doors swing.
  key.castShadow=true;{const shadowSize=innerWidth<=650?1024:2048;key.shadow.mapSize.set(shadowSize,shadowSize)}key.shadow.bias=-.0004;key.shadow.normalBias=.025;key.shadow.autoUpdate=false;key.shadow.needsUpdate=true;

@@ -210,3 +210,28 @@ Parts of the staircase and gateway floated: the columns held nothing up, treads 
 - Treads run into a carved stone column with brass bands. Rails have posts and turned newels, and the stairs finish on a stone floor.
 - Curved edges are smooth, tile and plaster have real relief, and the hall roof no longer pokes past the wall from the front.
 On the home page, About me now sits straight under the hero, followed by the intro and the builds.
+
+## The workshop hero (local test, not pushed)
+
+Kavish's idea, after looking at Henry Heffernan's site: make the main page a workshop around an F1 car, using the picture Codex generated, but as real 3D.
+
+- The workshop is the whole home screen, with nothing below it, like Heffernan's. It opens small in the dark, then the camera settles into the framing of the picture. About, Builds, Code, Awards and Contact are now separate pages.
+- Each object has its own way into its page, then hands over to the same full-screen wipe the rest of the site uses. On the tablet the wipe plays on the screen first, and the camera pushes in until that screen fills the display. Going back is a plain wipe straight to the workshop, with no replay.
+- The top bar is Workshop, About, the music switch and a hamburger menu that lists every page.
+- Contact is not a page. The crate opens in the room with two choices: the letter copies the email, and the old floating LinkedIn tablet opens the profile.
+- Kessler: the camera flies alongside the Concorde as it climbs, then the satellite passes it on the way up into space.
+- The palette comes from the Moroccan gate: pastel plaster, blush, sage and zellige blue grounds with deep teal, terracotta and majorelle. The workshop stays a real workshop of plaster and concrete, and the footer is the one deep block.
+- The portrait now lives on the About page.
+- Every model has a hover reaction and a click reaction, with short sounds only on a click. The pencil, pick, plant and shelf cases are toys that open nothing.
+- The name is stencilled on the wall, so the big name stays without a portrait.
+- Floor and wall light is baked into `img/workshop-light-*.webp`. After moving anything in the room, run `tools/bake-workshop.html` and copy the new maps in.
+- Moving frames use a lighter render, and the frame the camera stops on gets the full one.
+- The Concorde intro, torn portrait and Latest badge are switched off in this version, not deleted.
+
+## School section, back on paper
+The flat cards in School & academics went back to real paper on the dark ground: a ruled notebook page with stamped grades, a till receipt and ticket stubs. The SAT retake line and the next-sitting note were removed.
+
+## Day and night, and a lighter build
+- A switch in the top bar flips the whole site between the Moroccan pastels and a deep night version, and it remembers the choice. In the workshop the sun goes down, a warm lamp comes on and the window turns to dusk.
+- Scenes on other pages are built the first time they are needed, not at load. The workshop frees its render buffers while you are on a page, stops drawing when nothing moves, and the hidden hero's models are no longer built.
+- The left of the room now has a workbench, pegboard, stool, sill plant and a Moroccan rug. If anything in the room moves, run tools/bake-workshop.html again.

@@ -10,7 +10,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <script>/* intro plays on a fresh load of the home page; a timer clears it if anything goes wrong */
-(function(){var h=location.hash,r=document.documentElement;if((!h||h==='#home')&&!matchMedia('(prefers-reduced-motion: reduce)').matches){r.classList.add('intro','intro-head','intro-hold');setTimeout(function(){r.classList.remove('intro','intro-head','intro-hold','intro-run')},10000)}})();</script>
+(function(){var h=location.hash,r=document.documentElement;try{if(localStorage.getItem('km-theme')==='dark')r.dataset.theme='dark'}catch(e){}if(!h||h==='#home')r.classList.add('on-home');if((!h||h==='#home')&&!matchMedia('(prefers-reduced-motion: reduce)').matches){r.classList.add('intro','intro-head','intro-hold');setTimeout(function(){r.classList.remove('intro','intro-head','intro-hold','intro-run')},10000)}})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@500;600;700;800&family=Nunito+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Caveat:wght@600;700&display=swap">
@@ -18,25 +18,32 @@
 /* Near-black, warm sand and one hot orange: a maker portfolio with an interactive 3D object cluster
    emerging from a torn portrait. The art direction lives in noir.css, loaded after everything else. */
 :root{
-  --navy:#0D0D0D;        /* ground */
-  --navy-deep:#0D0D0D;   /* dark band, canvas sky */
-  --charcoal:#141312;    /* dark band */
-  --accent:#EB5939;        /* provisional mineral accent */
-  --hot:#EB5939;         /* fired clay on light grounds */
-  --paper:#B7AB98;       /* paper */
-  --ink:#D3C9B9;         /* navy ink on paper */
-  --ink-2:#9A9083;       /* muted blue ink */
-  --dim:#9A9083;         /* muted text on navy */
-  --white:#B7AB98;      /* warm limestone text and controls */
-  --mineral:#6A6054;
-  --olive:#2A2622;
-  --bp:#141312;          /* blueprint blue */
-  --bp-line:#B7AB98;     /* blueprint line art */
-  --bp-acc:#EB5939;      /* blueprint callouts */
+  /* one set of tiles, two lights: the Moroccan day and its night */
+  --t-sand:#EFE4D3;--t-blush:#EBD6C7;--t-sage:#D6DDCE;--t-sky:#CEDADB;--t-card:#F8F1E6;--t-ink:#1E3A40;--t-ink2:#4A6266;
+  --t-terra:#A5513A;--t-teal:#1F6166;--t-maj:#2F4C7E;--t-saf:#A67A26;--t-foot:#1E3A40;--ink-rgb:30 58 64;--ground-rgb:239 228 211;
+  --navy:var(--t-sand);        /* ground: plaster sand */
+  --navy-deep:var(--t-sand);   /* the same, behind 3D */
+  --charcoal:var(--t-blush);    /* blush clay */
+  --accent:var(--t-terra);        /* terracotta */
+  --hot:var(--t-terra);         /* the accent; each section picks its own below */
+  --paper:var(--t-ink);       /* deep teal text */
+  --ink:var(--t-ink);         /* deep teal text */
+  --ink-2:var(--t-ink2);       /* muted teal */
+  --dim:var(--t-ink2);         /* muted teal */
+  --white:var(--t-ink);      /* text and controls */
+  --mineral:var(--t-teal);
+  --olive:var(--t-sage);
+  --bp:var(--t-card);          /* blueprint ground */
+  --bp-line:var(--t-ink);     /* blueprint line art */
+  --bp-acc:var(--t-terra);      /* blueprint callouts */
   --f-d:"League Spartan","Avenir Next",Futura,system-ui,sans-serif;
   --f-b:"Nunito Sans",system-ui,-apple-system,sans-serif;
   --f-m:"IBM Plex Mono",ui-monospace,Menlo,monospace;
-  color-scheme:dark;
+  color-scheme:light;
+}
+html[data-theme="dark"]{
+  --t-sand:#17272B;--t-blush:#2B2225;--t-sage:#1B2B26;--t-sky:#18283A;--t-card:#22363A;--t-ink:#F0E6D6;--t-ink2:#B7C4BF;
+  --t-terra:#E6A182;--t-teal:#86CBC4;--t-maj:#A9C0EE;--t-saf:#E2BB6E;--t-foot:#0E1A1D;--ink-rgb:240 230 214;--ground-rgb:23 39 43;color-scheme:dark;
 }
 @property --p{syntax:'<length>';inherits:true;initial-value:22px}
 @property --h{syntax:'<length>';inherits:true;initial-value:0px}
@@ -157,7 +164,7 @@ html.cur-on,html.cur-on *{cursor:none!important}
 .rb{position:fixed;inset:0;z-index:90;display:grid;place-items:center;overflow:auto;
   padding:calc(env(safe-area-inset-top,0px) + 30px) max(16px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 30px) max(16px,env(safe-area-inset-left,0px))}
 .rb-back{position:fixed;inset:0;background:rgba(8,8,8,.74);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);animation:fadeIn .4s ease both}
-.rb-book{position:relative;width:min(1120px,100%);display:grid;grid-template-columns:1fr 1fr;background:#0D0D0D;padding:14px;border-radius:20px;
+.rb-book{position:relative;width:min(1120px,100%);display:grid;grid-template-columns:1fr 1fr;background:var(--t-blush);padding:14px;border-radius:20px;
   box-shadow:0 50px 90px -30px rgba(0,0,0,.75),inset 0 0 0 2px rgba(255,255,255,.06);perspective:2600px;transform-style:preserve-3d;
   animation:rbIn .75s cubic-bezier(.2,.9,.25,1) both}
 .rb-book::after{content:"";position:absolute;left:14px;right:14px;bottom:6px;height:8px;border-radius:0 0 8px 8px;background:repeating-linear-gradient(90deg,#efe8d8 0 2px,#d9d0bd 2px 3px);z-index:-1}
@@ -289,11 +296,11 @@ section.intro .lede{color:#C4D3D9;font-size:clamp(1.02rem,1.4vw,1.2rem);max-widt
 .model-stage.accent-model{min-height:0;height:clamp(200px,20vw,260px);width:min(320px,100%);margin-top:clamp(18px,2.5vw,30px);background:none;border-radius:0}
 .model-stage.accent-model::before{display:none}
 @media (max-width:900px){.model-stage.accent-model{display:none}}
-.b-accent{--bg:#B7AB98;--fg:#0D0D0D;--fg2:#493A23;--acc:#0D0D0D;--chip:rgba(13,13,13,.1);--tagbg:#0D0D0D;--tagfg:#B7AB98}
-.b-paper{--bg:#B7AB98;--fg:#0D0D0D;--fg2:#9A9083;--acc:#EB5939;--chip:rgba(13,13,13,.07);--tagbg:#EB5939;--tagfg:#fff}
-.b-deep{--bg:#141312;--fg:#fff;--fg2:#B8CDD7;--acc:#B7AB98;--chip:rgba(255,255,255,.08);--tagbg:#B7AB98;--tagfg:#0D0D0D}
-.b-char{--bg:#141312;--fg:#fff;--fg2:#D2D9C9;--acc:#B7AB98;--chip:rgba(255,255,255,.08);--tagbg:#B7AB98;--tagfg:#0D0D0D}
-.b-navy{--bg:#0D0D0D;--fg:#fff;--fg2:#C4D3D9;--acc:#B7AB98;--chip:rgba(255,255,255,.08);--tagbg:#B7AB98;--tagfg:#0D0D0D}
+.b-accent{--bg:var(--t-blush);--fg:var(--t-ink);--fg2:var(--t-ink2);--acc:var(--t-terra);--chip:rgb(var(--ink-rgb) / .07);--tagbg:var(--t-terra);--tagfg:var(--t-card)}
+.b-paper{--bg:var(--t-sage);--fg:var(--t-ink);--fg2:var(--t-ink2);--acc:var(--t-teal);--chip:rgb(var(--ink-rgb) / .07);--tagbg:var(--t-teal);--tagfg:var(--t-card)}
+.b-deep{--bg:var(--t-sky);--fg:var(--t-ink);--fg2:var(--t-ink2);--acc:var(--t-maj);--chip:rgb(var(--ink-rgb) / .07);--tagbg:var(--t-maj);--tagfg:var(--t-card)}
+.b-char{--bg:var(--t-sand);--fg:var(--t-ink);--fg2:var(--t-ink2);--acc:var(--t-saf);--chip:rgb(var(--ink-rgb) / .07);--tagbg:var(--t-saf);--tagfg:var(--t-card)}
+.b-navy{--bg:var(--t-sand);--fg:var(--t-ink);--fg2:var(--t-ink2);--acc:var(--t-terra);--chip:rgb(var(--ink-rgb) / .07);--tagbg:var(--t-terra);--tagfg:var(--t-card)}
 .b-grid{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:clamp(28px,4vw,64px);align-items:center;max-width:1180px;margin-inline:auto}
 .band.flip .b-grid>.b-art{order:-1}
 @media (max-width:900px){.b-grid{grid-template-columns:1fr}.band.flip .b-grid>.b-art{order:0}}
@@ -462,7 +469,7 @@ section.intro .lede{color:#C4D3D9;font-size:clamp(1.02rem,1.4vw,1.2rem);max-widt
 :root{--tearH:clamp(300px,56vh,600px)}
 .torn{height:var(--tearH);margin:0 0 calc(-1 * var(--tearH));position:relative;z-index:6;pointer-events:none}
 .torn svg{overflow:visible}
-.torn + section,.torn + footer{padding-top:calc(var(--tearH) * .37 + clamp(24px,3vw,48px))}
+.torn + section,.torn + footer{padding-top:calc(var(--tearH) * .46 + clamp(24px,3vw,48px))}
 
 /* ---------- screenshot prints ---------- */
 .shots{position:relative;padding-bottom:16%}
@@ -676,6 +683,7 @@ html.intro-hold .obj-labs{visibility:hidden}
 <link rel="stylesheet" href="code-journey.css">
 <link rel="stylesheet" href="awards-cabinet.css">
 <link rel="stylesheet" href="noir.css">
+<link rel="stylesheet" href="workshop.css">
 </head>
 <body>
 <!-- sticker art (reused below) -->
@@ -699,107 +707,108 @@ html.intro-hold .obj-labs{visibility:hidden}
       <feComposite in="soft" in2="rough" operator="in" result="softIn"/>
       <feBlend in="rough" in2="softIn" mode="multiply"/>
     </filter>
-    <linearGradient id="g-lens" x1="0" x2="1"><stop offset="0" stop-color="#EB5939"/><stop offset=".55" stop-color="#EB5939"/><stop offset="1" stop-color="#B7AB98"/></linearGradient>
+    <linearGradient id="g-lens" x1="0" x2="1"><stop offset="0" stop-color="#A54F36"/><stop offset=".55" stop-color="#A54F36"/><stop offset="1" stop-color="#F1E6D2"/></linearGradient>
     <g id="s-rocket">
-      <path d="M44 150C46 172 54 186 60 198C66 186 74 172 76 150Z" fill="#EB5939"/>
+      <path d="M44 150C46 172 54 186 60 198C66 186 74 172 76 150Z" fill="#A54F36"/>
       <path d="M52 150C54 166 58 176 60 186C62 176 66 166 68 150Z" fill="#D3C9B9"/>
-      <path d="M38 108L12 148L14 170L40 146Z" fill="#EB5939"/>
-      <path d="M82 108L108 148L106 170L80 146Z" fill="#EB5939"/>
-      <path d="M60 6C90 34 94 94 84 146L36 146C26 94 30 34 60 6Z" fill="#B7AB98"/>
-      <path d="M60 6C90 34 94 94 84 146L68 146C76 94 74 34 60 6Z" fill="#9A9083"/>
-      <path d="M60 6C72 17 80 31 84 46L36 46C40 31 48 17 60 6Z" fill="#EB5939"/>
-      <circle cx="60" cy="80" r="15" fill="#0D0D0D" stroke="#B7AB98" stroke-width="5"/>
+      <path d="M38 108L12 148L14 170L40 146Z" fill="#A54F36"/>
+      <path d="M82 108L108 148L106 170L80 146Z" fill="#A54F36"/>
+      <path d="M60 6C90 34 94 94 84 146L36 146C26 94 30 34 60 6Z" fill="#F1E6D2"/>
+      <path d="M60 6C90 34 94 94 84 146L68 146C76 94 74 34 60 6Z" fill="#537E9A"/>
+      <path d="M60 6C72 17 80 31 84 46L36 46C40 31 48 17 60 6Z" fill="#A54F36"/>
+      <circle cx="60" cy="80" r="15" fill="#142D43" stroke="#F1E6D2" stroke-width="5"/>
       <circle cx="55" cy="75" r="4" fill="#fff" opacity=".75"/>
-      <rect x="54" y="118" width="12" height="44" rx="5" fill="#EB5939"/>
+      <rect x="54" y="118" width="12" height="44" rx="5" fill="#A54F36"/>
       <path d="M36 146L84 146L80 156L40 156Z" fill="#7F766A"/>
     </g>
     <g id="s-sat">
-      <rect x="72" y="60" width="76" height="8" fill="#9A9083"/>
+      <rect x="72" y="60" width="76" height="8" fill="#537E9A"/>
       <rect x="4" y="38" width="70" height="52" rx="4" fill="#6A6054"/>
-      <path d="M27 38V90M51 38V90M4 64H74" stroke="#9A9083" stroke-width="2.5"/>
+      <path d="M27 38V90M51 38V90M4 64H74" stroke="#537E9A" stroke-width="2.5"/>
       <rect x="146" y="38" width="70" height="52" rx="4" fill="#6A6054"/>
-      <path d="M169 38V90M193 38V90M146 64H216" stroke="#9A9083" stroke-width="2.5"/>
-      <rect x="88" y="34" width="44" height="60" rx="7" fill="#B7AB98"/>
+      <path d="M169 38V90M193 38V90M146 64H216" stroke="#537E9A" stroke-width="2.5"/>
+      <rect x="88" y="34" width="44" height="60" rx="7" fill="#F1E6D2"/>
       <path d="M88 52H132M88 72H132" stroke="#C9A45C" stroke-width="3"/>
-      <rect x="106" y="16" width="8" height="20" fill="#9A9083"/>
-      <path d="M88 20Q110 -6 132 20Z" fill="#B7AB98"/>
-      <rect x="107" y="94" width="6" height="18" fill="#9A9083"/>
-      <circle cx="110" cy="118" r="6" fill="#EB5939"/>
+      <rect x="106" y="16" width="8" height="20" fill="#537E9A"/>
+      <path d="M88 20Q110 -6 132 20Z" fill="#F1E6D2"/>
+      <rect x="107" y="94" width="6" height="18" fill="#537E9A"/>
+      <circle cx="110" cy="118" r="6" fill="#A54F36"/>
     </g>
     <g id="s-drone">
       <path d="M100 78L38 40M100 78L162 40M100 78L38 112M100 78L162 112" stroke="#1A1917" stroke-width="10" stroke-linecap="round"/>
-      <ellipse cx="38" cy="40" rx="32" ry="9" fill="#B7AB98"/><circle cx="38" cy="40" r="6" fill="#EB5939"/>
-      <ellipse cx="162" cy="40" rx="32" ry="9" fill="#B7AB98"/><circle cx="162" cy="40" r="6" fill="#EB5939"/>
-      <ellipse cx="38" cy="112" rx="32" ry="9" fill="#B7AB98"/><circle cx="38" cy="112" r="6" fill="#EB5939"/>
-      <ellipse cx="162" cy="112" rx="32" ry="9" fill="#B7AB98"/><circle cx="162" cy="112" r="6" fill="#EB5939"/>
-      <rect x="72" y="60" width="56" height="38" rx="13" fill="#B7AB98"/>
-      <rect x="72" y="60" width="56" height="13" rx="6.5" fill="#EB5939"/>
-      <circle cx="100" cy="104" r="9" fill="#0D0D0D" stroke="#9A9083" stroke-width="3"/>
+      <ellipse cx="38" cy="40" rx="32" ry="9" fill="#F1E6D2"/><circle cx="38" cy="40" r="6" fill="#A54F36"/>
+      <ellipse cx="162" cy="40" rx="32" ry="9" fill="#F1E6D2"/><circle cx="162" cy="40" r="6" fill="#A54F36"/>
+      <ellipse cx="38" cy="112" rx="32" ry="9" fill="#F1E6D2"/><circle cx="38" cy="112" r="6" fill="#A54F36"/>
+      <ellipse cx="162" cy="112" rx="32" ry="9" fill="#F1E6D2"/><circle cx="162" cy="112" r="6" fill="#A54F36"/>
+      <rect x="72" y="60" width="56" height="38" rx="13" fill="#F1E6D2"/>
+      <rect x="72" y="60" width="56" height="13" rx="6.5" fill="#A54F36"/>
+      <circle cx="100" cy="104" r="9" fill="#142D43" stroke="#537E9A" stroke-width="3"/>
     </g>
     <g id="s-pick">
-      <path d="M60 6C96 6 114 22 114 44C114 78 80 112 60 124C40 112 6 78 6 44C6 22 24 6 60 6Z" fill="#EB5939"/>
-      <path d="M60 18C86 18 100 30 100 46C100 70 76 96 60 106C44 96 20 70 20 46C20 30 34 18 60 18Z" fill="none" stroke="#B7AB98" stroke-width="3" opacity=".5"/>
+      <path d="M60 6C96 6 114 22 114 44C114 78 80 112 60 124C40 112 6 78 6 44C6 22 24 6 60 6Z" fill="#A54F36"/>
+      <path d="M60 18C86 18 100 30 100 46C100 70 76 96 60 106C44 96 20 70 20 46C20 30 34 18 60 18Z" fill="none" stroke="#F1E6D2" stroke-width="3" opacity=".5"/>
       <text x="60" y="70" text-anchor="middle" font-family="League Spartan,sans-serif" font-weight="800" font-size="42" fill="#fff">8</text>
       <text x="60" y="88" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-weight="600" font-size="10" fill="#fff" letter-spacing="2">GRADE</text>
     </g>
     <g id="s-medal">
-      <path d="M30 0H56L72 64H46Z" fill="#0D0D0D"/>
-      <path d="M64 0H90L74 64H48Z" fill="#EB5939"/>
-      <circle cx="60" cy="118" r="54" fill="#B7AB98"/>
+      <path d="M30 0H56L72 64H46Z" fill="#142D43"/>
+      <path d="M64 0H90L74 64H48Z" fill="#A54F36"/>
+      <circle cx="60" cy="118" r="54" fill="#F1E6D2"/>
       <circle cx="60" cy="118" r="42" fill="#C9A45C" stroke="#D3C9B9" stroke-width="3"/>
-      <text x="60" y="127" text-anchor="middle" font-family="League Spartan,sans-serif" font-weight="800" font-size="26" fill="#0D0D0D">GOLD</text>
+      <text x="60" y="127" text-anchor="middle" font-family="League Spartan,sans-serif" font-weight="800" font-size="26" fill="#142D43">GOLD</text>
     </g>
     <g id="s-plane">
-      <path d="M4 50L166 4L66 68Z" fill="#B7AB98"/>
-      <path d="M66 68L166 4L98 106Z" fill="#9A9083"/>
+      <path d="M4 50L166 4L66 68Z" fill="#F1E6D2"/>
+      <path d="M66 68L166 4L98 106Z" fill="#537E9A"/>
       <path d="M66 68L80 96L98 106Z" fill="#7F766A"/>
     </g>
     <g id="s-lhc">
-      <circle cx="76" cy="62" r="46" fill="#B7AB98"/>
+      <circle cx="76" cy="62" r="46" fill="#F1E6D2"/>
       <circle cx="76" cy="62" r="52" fill="none" stroke="#6A6054" stroke-width="14"/>
-      <circle cx="30" cy="110" r="22" fill="none" stroke="#B7AB98" stroke-width="9"/>
-      <circle cx="124" cy="46" r="7" fill="#EB5939"/><circle cx="40" cy="28" r="5" fill="#fff"/>
-      <text x="76" y="71" text-anchor="middle" font-family="League Spartan,sans-serif" font-weight="800" font-size="26" fill="#0D0D0D">LHC</text>
+      <circle cx="30" cy="110" r="22" fill="none" stroke="#F1E6D2" stroke-width="9"/>
+      <circle cx="124" cy="46" r="7" fill="#A54F36"/><circle cx="40" cy="28" r="5" fill="#fff"/>
+      <text x="76" y="71" text-anchor="middle" font-family="League Spartan,sans-serif" font-weight="800" font-size="26" fill="#142D43">LHC</text>
     </g>
     <g id="s-visor">
       <path d="M18 60C4 60 2 30 20 26M172 60C186 60 188 30 170 26" fill="none" stroke="#1A1917" stroke-width="10" stroke-linecap="round"/>
-      <rect x="16" y="22" width="158" height="62" rx="28" fill="#0D0D0D"/>
+      <rect x="16" y="22" width="158" height="62" rx="28" fill="#142D43"/>
       <rect x="28" y="32" width="134" height="42" rx="20" fill="url(#g-lens)"/>
-      <path d="M44 43H84" stroke="#B7AB98" stroke-width="5" stroke-linecap="round" opacity=".7"/>
+      <path d="M44 43H84" stroke="#F1E6D2" stroke-width="5" stroke-linecap="round" opacity=".7"/>
     </g>
     <g id="s-brush">
-      <rect x="26" y="70" width="18" height="134" rx="9" fill="#EB5939"/>
-      <rect x="23" y="52" width="24" height="24" rx="3" fill="#9A9083"/>
-      <path d="M23 54C21 28 35 4 35 4C35 4 49 28 47 54Z" fill="#0D0D0D"/>
+      <rect x="26" y="70" width="18" height="134" rx="9" fill="#A54F36"/>
+      <rect x="23" y="52" width="24" height="24" rx="3" fill="#537E9A"/>
+      <path d="M23 54C21 28 35 4 35 4C35 4 49 28 47 54Z" fill="#142D43"/>
     </g>
     <g id="s-bolt">
-      <path d="M70 4L18 82H54L40 140L104 54H66Z" fill="#B7AB98"/>
+      <path d="M70 4L18 82H54L40 140L104 54H66Z" fill="#F1E6D2"/>
       <path d="M70 4L58 54H66L104 54L60 112Z" fill="#C9A45C" opacity=".55"/>
     </g>
     <g id="s-book">
-      <rect x="10" y="14" width="96" height="120" rx="8" fill="#EB5939"/>
-      <rect x="22" y="14" width="10" height="120" fill="#EB5939"/>
+      <rect x="10" y="14" width="96" height="120" rx="8" fill="#A54F36"/>
+      <rect x="22" y="14" width="10" height="120" fill="#A54F36"/>
       <rect x="44" y="36" width="48" height="10" rx="5" fill="#fff" opacity=".85"/>
       <rect x="44" y="54" width="34" height="8" rx="4" fill="#fff" opacity=".6"/>
-      <path d="M30 134H106V144H22Q14 144 14 136" fill="#B7AB98"/>
+      <path d="M30 134H106V144H22Q14 144 14 136" fill="#F1E6D2"/>
     </g>
   </defs>
 </svg>
 
 <header class="top at-hero name-on">
-  <a class="brand" href="#top">Kavish Madan</a>
+  <a class="brand" href="#home">Kavish Madan</a>
   <nav aria-label="Primary navigation">
-    <div class="tabs"><a href="#home" data-tab="home">Builds</a><a href="#code" data-tab="code">Code</a><a href="#awards" data-tab="awards">Awards</a></div>
+    <div class="tabs"><i class="tab-thumb" aria-hidden="true"></i><a href="#home" data-tab="home">Workshop</a><a href="#about" data-tab="aboutme">About</a></div>
     <button class="snd" id="sndBtn" type="button" aria-pressed="false" aria-label="Background music"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17.5V6l10-2v11.5"/><circle cx="6.5" cy="17.5" r="2.5"/><circle cx="16.5" cy="15.5" r="2.5"/></svg><span class="snd-sw" aria-hidden="true"><i></i></span></button>
+    <button class="theme-sw" id="themeBtn" type="button" role="switch" aria-checked="false" aria-label="Dark mode"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path class="s" d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/><circle class="s" cx="12" cy="12" r="4.4"/><path class="m" d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg></i></button>
     <button class="circ" id="menuBtn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="menu"><span></span><span></span></button>
-    <a class="pill" href="#contact">Get in touch</a>
   </nav>
 </header>
 
 <div class="menu" id="menu" hidden data-lenis-prevent>
   <button class="menu-x" type="button" data-mclose aria-label="Close menu"><span></span><span></span></button>
   <ul class="menu-l">
-    <li><a href="#home" data-mclose>Builds</a></li>
+    <li><a href="#home" data-mclose>Workshop</a></li>
+    <li><a href="#builds" data-mclose>Builds</a></li>
     <li><a href="#code" data-mclose>Code</a></li>
     <li><a href="#awards" data-mclose>Awards</a></li>
     <li><button type="button" data-research data-mclose>Research papers</button></li>
@@ -848,10 +857,29 @@ html.intro-hold .obj-labs{visibility:hidden}
 
 <div class="wipe" aria-hidden="true"><span></span></div>
 
+<a class="ws-back" href="#home">← Workshop</a>
 <main id="top">
-<div class="view" id="home" data-label="Builds">
-  <!-- HERO -->
-  <section class="hero" id="hero">
+  <section class="hero workshop-hero" id="hero">
+    <canvas id="workshop3d" aria-label="A workshop with an F1 car, a guitar, a sketchbook, a satellite and a trophy. Each one opens a part of this site."></canvas>
+    <p class="ws-wait" aria-hidden="true">Opening the workshop</p>
+    <nav class="ws-labs" aria-label="Explore the workshop">
+      <a class="ws-lab" data-key="car" href="#builds">Builds</a>
+      <a class="ws-lab" data-key="guitar" href="#about">About me</a>
+      <a class="ws-lab" data-key="tablet" href="#code">Code</a>
+      <a class="ws-lab" data-key="book" href="#b-4x4">Project Strata</a>
+      <a class="ws-lab" data-key="satellite" href="#b-kessler">Kessler model</a>
+      <a class="ws-lab" data-key="trophy" href="#awards">Awards</a>
+      <button class="ws-lab" type="button" data-key="research">Research papers</button>
+      <a class="ws-lab" data-key="tyre" href="#more">More builds</a>
+      <a class="ws-lab" data-key="crate" href="#contact">Contact</a>
+    </nav>
+    <div class="ws-choices" role="group" aria-label="Get in touch">
+      <button class="ws-choice" id="ws-email" type="button">Copy email</button>
+      <a class="ws-choice" id="ws-linkedin" href="https://www.linkedin.com/in/kavishmadan" target="_blank" rel="noopener">Open LinkedIn ↗</a>
+      <button class="ws-exit" id="ws-exit" type="button">← Back to the workshop</button>
+      <p class="ws-toast" id="ws-toast" role="status" aria-live="polite"></p>
+    </div>
+    <p class="ws-hint" aria-hidden="true">Click anything. Drag to look around.</p>
     <div class="hero-in">
       <h1 class="name" aria-label="Kavish Madan"><span class="w">Kavish</span><span class="sp"> </span><span class="w">Madan</span></h1>
     </div>
@@ -877,10 +905,12 @@ html.intro-hold .obj-labs{visibility:hidden}
     </div>
   </section>
 
-  <!-- INTRO -->
+<div class="view" id="home" data-label="Workshop"></div>
+
+<div class="view" id="aboutme" data-label="About" hidden>
   <section class="band b-paper about" id="about">
     <div class="in">
-      <div class="about-intro"><h2 class="hd" aria-label="About me"><span>About</span> <span class="pk">me</span></h2><p>Dubai College.<br>Engineering, guitar and the things in between.</p></div>
+      <div class="about-intro"><div class="about-lead"><h2 class="hd" aria-label="About me"><span>About</span> <span class="pk">me</span></h2><p>Dubai College.<br>Engineering, guitar and the things in between.</p></div><img loading="lazy" class="about-face" src="img/kavish-full.webp" alt="Kavish Madan" width="1800" height="2247" decoding="async"></div>
       <div class="about-composition">
       <div class="about-story">
         <div class="ab-txt">
@@ -894,14 +924,14 @@ html.intro-hold .obj-labs{visibility:hidden}
         </div>
       </div>
       <div class="model-stage" id="about-stage" data-scene="about" data-cur="rotate" tabindex="0" role="group" aria-label="3D collection: guitar, sketchbook and orbital model. Drag or use left and right arrow keys to rotate. Home resets the view.">
-        <div class="stage-fallback" aria-hidden="true"><img src="img/strata-1-sketch.webp" alt="" width="900" height="675" decoding="async"></div>
+        <div class="stage-fallback" aria-hidden="true"><img loading="lazy" src="img/strata-1-sketch.webp" alt="" width="900" height="675" decoding="async"></div>
         <button class="stage-reset" type="button">Reset view</button>
         <div class="stage-caption"><div class="model-tabs" role="group" aria-label="Choose an object"><button type="button" data-model="guitar" aria-pressed="false">Guitar</button><button type="button" data-model="sketch" aria-pressed="false">Sketchbook</button><button type="button" data-model="orbit" aria-pressed="false">Orbit</button></div><p data-model-status aria-live="polite">A few things from the workbench.</p></div>
       </div>
       </div>
       <div class="reveal-panel" data-cur="reveal">
         <div class="reveal-base"><strong>Mostly things<br>that fly.</strong><p>Quadcopters, a dragonfly-inspired wing and a model of low Earth orbit.</p><div class="reveal-illustration" aria-hidden="true"><svg viewBox="0 0 400 240"><g fill="none" stroke="#B7AB98"><ellipse cx="200" cy="120" rx="175" ry="60" transform="rotate(-25 200 120)"/><ellipse cx="200" cy="120" rx="150" ry="95" transform="rotate(30 200 120)"/><ellipse cx="200" cy="120" rx="110" ry="105" transform="rotate(-15 200 120)"/></g><circle cx="200" cy="120" r="49" fill="#6A6054"/><circle cx="333" cy="45" r="8" fill="#B7AB98"/></svg></div></div>
-        <div class="reveal-secret" id="about-secret" aria-hidden="true"><strong>And a few things<br>that don't.</strong><p>A 4×4, a guitar, a food-waste app and a tutoring platform.</p><div class="reveal-illustration" aria-hidden="true"><img src="img/strata-hero.webp" alt="" width="1800" height="1200" decoding="async"></div></div>
+        <div class="reveal-secret" id="about-secret" aria-hidden="true"><strong>And a few things<br>that don't.</strong><p>A 4×4, a guitar, a food-waste app and a tutoring platform.</p><div class="reveal-illustration" aria-hidden="true"><img loading="lazy" src="img/strata-hero.webp" alt="" width="1800" height="1200" decoding="async"></div></div>
         <button class="reveal-toggle" type="button" aria-expanded="false" aria-controls="about-secret">Another side</button>
       </div>
         
@@ -918,7 +948,7 @@ html.intro-hold .obj-labs{visibility:hidden}
     </div>
   </section>
 
-  <div class="torn" data-top="#0D0D0D" data-bot="#0D0D0D" data-seed="41" data-dir="up" style="background:none"></div>
+  <div class="torn" data-top="var(--t-sand)" data-bot="var(--t-sage)" data-seed="41" data-dir="up" style="background:none"></div>
 
   <!-- ABOUT -->
   <section class="intro">
@@ -942,12 +972,13 @@ html.intro-hold .obj-labs{visibility:hidden}
       </div>
     </div>
   </section>
+</div>
 
-  <section id="builds" class="b-navy" style="padding-block:0 clamp(10px,2vw,20px)">
+<div class="view" id="work" data-label="Builds" hidden>
+  <section id="builds" class="b-navy page-head">
     <div class="in"><h2 class="hd"><span>Things I've</span><span class="pk">built</span></h2></div>
   </section>
 
-  <div class="torn" data-top="#0D0D0D" data-bot="#141312" data-seed="3" data-dir="down" style="background:none"></div>
 
   <!-- BUILD: Project Strata (4x4) -->
   <section class="band b-accent" id="b-4x4">
@@ -965,8 +996,8 @@ html.intro-hold .obj-labs{visibility:hidden}
         <div class="b-art">
           <div class="drop"><div class="tilt" style="--r:1.4deg"><div class="peel photo">
             <div class="photo-wrap" data-image-reveal data-cur="reveal">
-              <img src="img/strata-hero.webp" alt="Project Strata, the team's 4×4, on rocks with its orange sliced acrylic body and black TPU Air tyres" decoding="async" width="1800" height="1200">
-              <div class="image-secret" id="strata-sketch-reveal" aria-hidden="true"><img src="img/strata-1-sketch.webp" alt="An early pencil sketch of the Strata body" width="900" height="675" decoding="async"></div>
+              <img loading="lazy" src="img/strata-hero.webp" alt="Project Strata, the team's 4×4, on rocks with its orange sliced acrylic body and black TPU Air tyres" decoding="async" width="1800" height="1200">
+              <div class="image-secret" id="strata-sketch-reveal" aria-hidden="true"><img loading="lazy" src="img/strata-1-sketch.webp" alt="An early pencil sketch of the Strata body" width="900" height="675" decoding="async"></div>
               <button type="button" class="image-reveal-toggle" aria-expanded="false" aria-controls="strata-sketch-reveal">See the sketch</button>
               <span class="pin l" style="--x:50%;--y:31%"><span>Acrylic slices<small>laser cut, they glow</small></span></span>
               <span class="pin r" style="--x:70%;--y:47%"><span>HIPS rear grill</span></span>
@@ -1010,7 +1041,7 @@ html.intro-hold .obj-labs{visibility:hidden}
     </div>
   </section>
 
-  <div class="torn" data-top="#141312" data-bot="#0D0D0D" data-seed="8" data-dir="up" style="background:none"></div>
+  <div class="torn" data-top="var(--t-blush)" data-bot="var(--t-sage)" data-seed="8" data-dir="up" style="background:none"></div>
 
   <!-- BUILD: quadcopters -->
   <section class="band b-paper flip" id="b-quad">
@@ -1054,7 +1085,7 @@ html.intro-hold .obj-labs{visibility:hidden}
               <span class="co ct" style="--cx:50%;--cy:0%">Sensors</span>
               <span class="co r" style="--cx:16.4%;--cy:50%">Code in C</span>
               <span class="co ct" style="--cx:50%;--cy:89%">Circuits</span>
-              <div class="tblock"><span>DWG QUAD-01</span><span>TOP VIEW / NTS</span></div>
+              <div class="tblock" style="left:auto;right:3%;grid-template-columns:auto"><span>DWG QUAD-01</span></div>
             </div>
           </div></div></div>
         </div>
@@ -1075,7 +1106,7 @@ html.intro-hold .obj-labs{visibility:hidden}
     </div>
   </section>
 
-  <div class="torn" data-top="#0D0D0D" data-bot="#141312" data-seed="13" data-dir="down" style="background:none"></div>
+  <div class="torn" data-top="var(--t-sage)" data-bot="var(--t-sky)" data-seed="13" data-dir="down" style="background:none"></div>
 
   <!-- BUILD: Kessler model -->
   <section class="band b-deep" id="b-kessler">
@@ -1144,7 +1175,7 @@ html.intro-hold .obj-labs{visibility:hidden}
     </div>
   </section>
 
-  <div class="torn" data-top="#141312" data-bot="#0D0D0D" data-seed="21" data-dir="up" style="background:none"></div>
+  <div class="torn" data-top="var(--t-sky)" data-bot="var(--t-sand)" data-seed="21" data-dir="up" style="background:none"></div>
 
   <!-- BUILD: dragonfly wing -->
   <section class="band b-char flip" id="b-wing">
@@ -1199,7 +1230,7 @@ html.intro-hold .obj-labs{visibility:hidden}
     </div>
   </section>
 
-  <div class="torn" data-top="#0D0D0D" data-bot="#141312" data-seed="34" data-dir="down" style="background:none"></div>
+  <div class="torn" data-top="var(--t-sand)" data-bot="var(--t-blush)" data-seed="34" data-dir="down" style="background:none"></div>
 
   <!-- MORE BUILDS -->
   <section class="more" id="more">
@@ -1244,7 +1275,9 @@ html.intro-hold .obj-labs{visibility:hidden}
     </div>
   </section>
 
-  <div class="torn" data-top="#141312" data-bot="#141312" data-seed="55" data-dir="down" style="background:none"></div>
+  <div class="torn" data-top="var(--t-blush)" data-bot="var(--t-foot)" data-seed="55" data-dir="down" style="background:none"></div>
+
+</div>
 </div>
 
 <!-- ================= CODE PAGE ================= -->
@@ -1254,7 +1287,7 @@ html.intro-hold .obj-labs{visibility:hidden}
       <div class="journey-view" data-scene="staircase" aria-hidden="true"></div>
       <div class="journey-scene" aria-hidden="true"></div>
       <header class="journey-heading">
-        <a class="back" href="#home">← Back to builds</a>
+        <a class="back" href="#home">← Back to the workshop</a>
         <h1>Code</h1>
         <p>Software I've built: a hackathon app that cuts food waste, my A-level NEA, a troll platformer and the code behind the builds.</p>
       </header>
@@ -1268,7 +1301,7 @@ html.intro-hold .obj-labs{visibility:hidden}
         <div class="chips"><span>React</span><span>TypeScript</span><span>Gemini API</span><span>Leaflet</span></div>
         <div class="journey-actions"><button class="btn cs-open" type="button" data-case="lastbite">Explore LastBite ↗</button><a class="journey-gh" href="https://github.com/robberttorfs/LastBite" target="_blank" rel="noopener" aria-label="LastBite on GitHub"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>GitHub ↗</a></div>
         <a class="journey-next" href="#b-tutortime">Next landing: TutorTime ↓</a>
-        <img class="journey-image" src="img/lb-pantry.webp" alt="LastBite pantry sorted by expiry date, with example items" decoding="async" width="800" height="500">
+        <img loading="lazy" class="journey-image" src="img/lb-pantry.webp" alt="LastBite pantry sorted by expiry date, with example items" decoding="async" width="800" height="500">
       </article>
       <span class="journey-anchor" id="b-tutortime" aria-hidden="true"></span>
       <article class="journey-project" data-project="tutortime" aria-labelledby="landing-tutortime-title">
@@ -1279,7 +1312,7 @@ html.intro-hold .obj-labs{visibility:hidden}
         <div class="chips"><span>Python</span><span>Flask</span><span>SQLite</span><span>PDF invoices</span></div>
         <div class="journey-actions"><button class="btn cs-open" type="button" data-case="tutortime">Explore TutorTime ↗</button><a class="journey-gh" href="https://github.com/KavishM23/TutorTime" target="_blank" rel="noopener" aria-label="TutorTime on GitHub"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>GitHub ↗</a></div>
         <a class="journey-next" href="#b-kungfooled">Next landing: Kung Fooled ↓</a>
-        <img class="journey-image" src="img/tt-match.webp" alt="TutorTime tutors ranked by match score, style and availability" decoding="async" width="620" height="290">
+        <img loading="lazy" class="journey-image" src="img/tt-match.webp" alt="TutorTime tutors ranked by match score, style and availability" decoding="async" width="620" height="290">
       </article>
       <span class="journey-anchor" id="b-kungfooled" aria-hidden="true"></span>
       <article class="journey-project" data-project="kungfooled" aria-labelledby="landing-kungfooled-title">
@@ -1290,7 +1323,7 @@ html.intro-hold .obj-labs{visibility:hidden}
         <div class="chips"><span>JavaScript</span><span>HTML Canvas</span><span>Web Audio</span></div>
         <div class="journey-actions"><button class="btn cs-open" type="button" data-case="kungfooled">Explore Kung Fooled ↗</button><a class="journey-gh" href="https://github.com/KavishM23/kung-fooled" target="_blank" rel="noopener" aria-label="Kung Fooled on GitHub"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>GitHub ↗</a></div>
         <a class="journey-next" href="#more-code">The code behind the builds ↓</a>
-        <img class="journey-image" src="img/kf-arcade.webp" alt="Kung Fooled: the player on a brick rooftop level at dusk" decoding="async" width="1536" height="864">
+        <img loading="lazy" class="journey-image" src="img/kf-arcade.webp" alt="Kung Fooled: the player on a brick rooftop level at dusk" decoding="async" width="1536" height="864">
       </article>
       <nav class="journey-track" aria-label="Project landings"><a href="#b-lastbite" data-journey-stop="lastbite">LastBite</a><a href="#b-tutortime" data-journey-stop="tutortime">TutorTime</a><a href="#b-kungfooled" data-journey-stop="kungfooled">Kung Fooled</a><a href="#more-code">Behind the builds</a></nav>
       <p class="journey-caption" data-flight-status aria-live="polite">Three projects. One descent.</p>
@@ -1329,21 +1362,21 @@ html.intro-hold .obj-labs{visibility:hidden}
     </div>
   </section>
 
-  <div class="torn" data-top="#0D0D0D" data-bot="#141312" data-seed="83" data-dir="up" style="background:none"></div>
+  <div class="torn" data-top="var(--t-sage)" data-bot="var(--t-foot)" data-seed="83" data-dir="up" style="background:none"></div>
 </div>
 
 <!-- ================= AWARDS PAGE ================= -->
 <div class="view" id="awards" data-label="Awards" hidden>
   <section class="phero">
     <div class="in">
-      <a class="back" href="#home">← Back to builds</a>
+      <a class="back" href="#home">← Back to the workshop</a>
       <h1 class="ptitle" aria-label="Awards">Awards</h1>
       <p class="psub">Olympiads, competitions and the academic side, as it appears on my application.</p>
       <div class="model-stage header-model" data-scene="trophy" data-cur="rotate" tabindex="0" role="group" aria-label="3D trophy. Drag or use left and right arrow keys to rotate."><div class="stage-fallback" aria-hidden="true"><svg class="st" viewBox="0 0 200 150"><use href="#s-medal"/></svg></div><div class="stage-caption"><p>A few milestones.</p></div></div>
     </div>
   </section>
 
-  <div class="torn" data-top="#141312" data-bot="#0D0D0D" data-seed="91" data-dir="down" style="background:none"></div>
+  <div class="torn" data-top="var(--t-blush)" data-bot="var(--t-sand)" data-seed="91" data-dir="down" style="background:none"></div>
 
   <section class="band b-paper" id="honors">
     <div class="in">
@@ -1376,7 +1409,7 @@ html.intro-hold .obj-labs{visibility:hidden}
     </div>
   </section>
 
-  <div class="torn" data-top="#0D0D0D" data-bot="#141312" data-seed="93" data-dir="up" style="background:none"></div>
+  <div class="torn" data-top="var(--t-sand)" data-bot="var(--t-sky)" data-seed="93" data-dir="up" style="background:none"></div>
 
   <section class="band b-char" id="academics">
     <div class="in">
@@ -1407,9 +1440,7 @@ html.intro-hold .obj-labs{visibility:hidden}
           <div class="rline tot" role="row"><span>SAT TOTAL</span><span class="v">1520</span><span class="d"></span></div>
           <hr>
           <div class="rline" role="row"><span>AP CALC BC</span><span class="v">5</span><span class="d">MAY 26</span></div>
-          <div class="rline" role="row"><span>SAT RETAKE</span><span class="v">PENDING</span><span class="d">NOV 26</span></div>
           <div class="bar"></div>
-          <p class="thanks">NEXT SITTING NOVEMBER 2026</p>
         </div>
       </div>
       <h3 class="stubs-hd">Beyond the syllabus</h3>
@@ -1424,21 +1455,10 @@ html.intro-hold .obj-labs{visibility:hidden}
     </div>
   </section>
 
-  <div class="torn" data-top="#141312" data-bot="#141312" data-seed="95" data-dir="down" style="background:none"></div>
+  <div class="torn" data-top="var(--t-sky)" data-bot="var(--t-foot)" data-seed="95" data-dir="down" style="background:none"></div>
 </div>
 
 
-  <!-- CONTACT -->
-  <section class="contact" id="contact">
-    <div class="in">
-      <h2 class="talk">Let's talk<span>.</span></h2>
-      <div class="mail">
-        <code id="email">kavish.madan6@gmail.com</code>
-        <button id="copy" type="button">Copy email</button>
-        <a id="mail-linkedin" class="li" href="https://www.linkedin.com/in/kavishmadan" target="_blank" rel="noopener">LinkedIn ↗</a>
-      </div>
-    </div>
-  </section>
 
   <footer class="foot">
     <div class="in">
@@ -1448,7 +1468,7 @@ html.intro-hold .obj-labs{visibility:hidden}
           <div class="bubble warmb" style="--rot:-5deg">Leaving orbit already?</div>
         </div>
         <ul class="navl">
-          <li><a href="#home">Builds</a></li>
+          <li><a href="#builds">Builds</a></li>
           <li><a href="#code">Code</a></li>
           <li><a href="#awards">Awards</a></li>
           <li><a href="#about">About me</a></li>
@@ -1507,7 +1527,7 @@ html.intro-hold .obj-labs{visibility:hidden}
     el.innerHTML=`<svg viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true"><defs>
       <linearGradient id="tu${id}" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="100" y2="0"><stop offset="0" stop-color="#2c2926"/><stop offset=".5" stop-color="#211f1c"/><stop offset=".84" stop-color="#171614"/><stop offset="1" stop-color="#0d0d0d"/></linearGradient>
       <linearGradient id="ts${id}" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="100" y2="0"><stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".4"/></linearGradient>
-      </defs><path class="t-band" fill="rgba(0,0,0,.18)"/><path class="t-sh" fill="url(#ts${id})"/><path class="t-sheet" fill="${el.dataset.top}"/><path class="t-rim" fill="#4A453E" filter="url(#ripFiber)"/><path class="t-curl" fill="url(#tu${id})"/><path class="t-cedge" fill="#4A453E" filter="url(#ripFiber)"/></svg>`;
+      </defs><path class="t-band" fill="rgba(0,0,0,.18)"/><path class="t-sh" fill="url(#ts${id})"/><path class="t-sheet" fill="${el.dataset.top}"/><path class="t-rim" fill="#C8AE92" filter="url(#ripFiber)"/><path class="t-curl" fill="url(#tu${id})"/><path class="t-cedge" fill="#C8AE92" filter="url(#ripFiber)"/></svg>`;
     const q=s=>el.querySelector(s);
     return{el,id,n,up,jit,rim,cj,band:q('.t-band'),sh:q('.t-sh'),sheet:q('.t-sheet'),rimP:q('.t-rim'),curl:q('.t-curl'),cedge:q('.t-cedge'),gu:q('#tu'+id),gs:q('#ts'+id),last:-1};
   });
@@ -1628,9 +1648,12 @@ html.intro-hold .obj-labs{visibility:hidden}
 
   /* ---- header colour responds to the hero; navigation stays anchored at the top ---- */
   const topBar=document.querySelector('.top');
-  const onScroll=()=>{topBar.classList.toggle('at-hero',scrollY<heroEl.clientHeight*.22);
-    const nb=heroEl.offsetParent?nameEl.getBoundingClientRect().bottom:-1;topBar.classList.toggle('name-on',nb>topBar.offsetHeight*.6)};
+  const onScroll=()=>{const atHome=document.documentElement.classList.contains('on-home');topBar.classList.toggle('at-hero',atHome||scrollY<heroEl.clientHeight*.22);topBar.classList.toggle('name-on',atHome)};
   addEventListener('scroll',onScroll,{passive:true});onScroll();
+
+  /* ---- day and night ---- */
+  {const btn=document.getElementById('themeBtn'),R=document.documentElement,sync=()=>btn.setAttribute('aria-checked',R.dataset.theme==='dark');sync();
+   btn.addEventListener('click',()=>{const dark=R.dataset.theme!=='dark';if(dark)R.dataset.theme='dark';else delete R.dataset.theme;try{localStorage.setItem('km-theme',dark?'dark':'light')}catch(e){}sync();dispatchEvent(new CustomEvent('site-theme',{detail:{dark}}))})}
 
   /* ---- menu ---- */
   const menu=document.getElementById('menu'),menuBtn=document.getElementById('menuBtn');
@@ -1760,41 +1783,45 @@ html.intro-hold .obj-labs{visibility:hidden}
   /* ---- pages: Builds (home), Code, Awards share one link; #code / #awards open the others ---- */
   const views=[...document.querySelectorAll('.view')],wipeEl=document.querySelector('.wipe'),rmqView=matchMedia('(prefers-reduced-motion: reduce)');
   let curView=document.querySelector('.view:not([hidden])')||views[0];
-  function markTabs(){document.querySelectorAll('[data-tab]').forEach(a=>{if(a.dataset.tab===curView.id)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')})}
+  function markTabs(){document.querySelectorAll('[data-tab]').forEach(a=>{if(a.dataset.tab===curView.id)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
+    const thumb=document.querySelector('.tab-thumb'),on=document.querySelector('.tabs a[aria-current]');if(thumb){thumb.style.opacity=on?1:0;if(on){thumb.style.setProperty('--x',on.offsetLeft+'px');thumb.style.setProperty('--w',on.offsetWidth+'px')}}}
+  document.fonts?.ready.then(()=>markTabs());addEventListener('resize',()=>markTabs());
   function afterShow(target){
-    const go=()=>{const y=target&&target!==curView?target.getBoundingClientRect().top+scrollY:0;if(window.resetPortfolioScroll)resetPortfolioScroll(y);else{scrollTo({top:y,behavior:'instant'});window.lenis&&lenis.scrollTo(y,{immediate:true,force:true})}
+    const go=()=>{const y=target&&target!==curView?target.getBoundingClientRect().top-curView.getBoundingClientRect().top:0;if(window.resetPortfolioScroll)resetPortfolioScroll(y);else{scrollTo({top:y,behavior:'instant'});window.lenis&&lenis.scrollTo(y,{immediate:true,force:true})}
       if(curView.id==='home'){fitName();placeHead()}
-      onScroll();updateTears();cutAll();if(window.ScrollTrigger)ScrollTrigger.refresh();markTabs()};
+      onScroll();updateTears();cutAll();if(window.ScrollTrigger)ScrollTrigger.refresh();markTabs();window.hero3d?.prepare?.(curView);curView.querySelectorAll('img[loading="lazy"]').forEach(i=>{i.loading='eager'})};
     requestAnimationFrame(()=>requestAnimationFrame(go));setTimeout(go,120);
   }
+  // long labels shrink to fit: the workshop draws the same word at the same size on its screens
+  window.wipeFont=t=>Math.min(innerWidth*.16,224,innerWidth*.84/(Math.max(1,t.length)*.98));
+  window.fitWipe=t=>{const sp=wipeEl.querySelector('span');sp.textContent=t;sp.style.fontSize=window.wipeFont(t)+'px'};
   function wipe(label,mid){
     if(!wipeEl||rmqView.matches){mid();return}
-    wipeEl.querySelector('span').textContent=label;wipeEl.className='wipe in';
+    window.fitWipe(label);wipeEl.className='wipe in';
     let done=false;const half=()=>{if(done)return;done=true;mid();wipeEl.className='wipe out';setTimeout(()=>{wipeEl.className='wipe'},700)};
     wipeEl.addEventListener('animationend',half,{once:true});setTimeout(half,650);
   }
   function showView(v,target,instant){
     if(v===curView){if(target&&target!==v)(window.smoothTo?smoothTo(target):target.scrollIntoView({behavior:rmqView.matches?'auto':'smooth'}));else (window.smoothTo?smoothTo(0):scrollTo({top:0,behavior:rmqView.matches?'auto':'smooth'}));return}
-    const swap=()=>{views.forEach(x=>{x.hidden=x!==v});curView=v;afterShow(target)};
-    instant?swap():wipe(v.dataset.label||'',swap);
+    const R=document.documentElement,toHome=v.id==='home',fromHome=curView.id==='home',ws=window.workshopApi;
+    const swap=()=>{views.forEach(x=>{x.hidden=x!==v});curView=v;R.classList.toggle('on-home',toHome);afterShow(target)};
+    if(instant){swap();return}
+    // into a page: the object carries you there. Back out: the same move in reverse
+    if(fromHome){if(!(ws&&ws.enter(location.hash,swap)))wipe(v.dataset.label||'',swap);return}
+    if(toHome){if(!(ws&&ws.leave(swap,curView.dataset.label)))wipe('Workshop',swap);return}
+    wipe(v.dataset.label||'',swap);
   }
   function route(instant){
-    const id=decodeURIComponent(location.hash.slice(1));const t=id?document.getElementById(id):null;
+    const id=decodeURIComponent(location.hash.slice(1));const t=id?document.getElementById(id):null,ws=window.workshopApi;
+    // Contact isn't a page: it's the crate, in the workshop
+    if(id==='contact'){if(curView.id!=='home')showView(document.getElementById('home'),null,instant);else document.documentElement.classList.add('on-home');ws&&ws.contact();return}
+    ws&&ws.closeContact();
     if(t&&!t.closest('.view')){if(!instant)(window.smoothTo?smoothTo(t):t.scrollIntoView({behavior:rmqView.matches?'auto':'smooth'}));return}
     const v=(t&&t.closest('.view'))||document.getElementById('home');showView(v,t,instant);
   }
-  document.addEventListener('click',e=>{const a=e.target.closest('a[href^="#"]');if(!a)return;if(a.getAttribute('href')===location.hash)setTimeout(()=>route(false),0)});
+  document.addEventListener('click',e=>{const a=e.target.closest('a[href^="#"]');if(!a)return;if(a.getAttribute('href')===location.hash)setTimeout(()=>route(false),0);if(a.dataset.tab){document.querySelectorAll('[data-tab]').forEach(x=>x===a?x.setAttribute('aria-current','page'):x.removeAttribute('aria-current'));const thumb=document.querySelector('.tab-thumb');if(thumb){thumb.style.opacity=1;thumb.style.setProperty('--x',a.offsetLeft+'px');thumb.style.setProperty('--w',a.offsetWidth+'px')}}});
   addEventListener('hashchange',()=>route(false));
   route(true);markTabs();
-
-  /* ---- copy email ---- */
-  const btn=document.getElementById('copy'),em=document.getElementById('email');
-  btn.addEventListener('click',()=>{
-    const t=em.textContent.trim();
-    const ok=()=>{btn.textContent='Copied';setTimeout(()=>btn.textContent='Copy email',1800)};
-    const fb=()=>{const r=document.createRange();r.selectNodeContents(em);const s=getSelection();s.removeAllRanges();s.addRange(r);btn.textContent='Selected, copy it'};
-    try{navigator.clipboard.writeText(t).then(ok,fb)}catch(e){fb()}
-  });
 
   /* ---- scroll choreography ---- */
   if(!window.gsap||!window.ScrollTrigger||reduce)return;
@@ -1825,7 +1852,7 @@ html.intro-hold .obj-labs{visibility:hidden}
   document.querySelectorAll('.strip .print').forEach((el,i)=>gsap.from(el,{y:60,rotation:i%2?8:-8,ease:'power2.out',scrollTrigger:{trigger:el,start:'top 100%',end:'top 72%',scrub:.6}}));
   gsap.utils.toArray('.aw-grid .drop').forEach((el,i)=>gsap.from(el,{y:70,rotation:((i*37)%20)-10,ease:'power2.out',scrollTrigger:{trigger:el,start:'top 100%',end:'top 70%',scrub:.6}}));
   gsap.from('.mb-grid .drop',{y:110,rotation:i=>((i*37)%24)-12,ease:'power2.out',stagger:.06,scrollTrigger:{trigger:'.mb-grid',start:'top 95%',end:'top 30%',scrub:.8}});
-  gsap.from('.tl li',{x:-50,ease:'power2.out',stagger:.06,scrollTrigger:{trigger:'.tl',start:'top 90%',end:'bottom 70%',scrub:.8}});
+  gsap.from('.tl li',{y:26,opacity:.2,ease:'power2.out',stagger:.06,scrollTrigger:{trigger:'.tl',start:'top 90%',end:'bottom 70%',scrub:.8}});
   gsap.from('.talk',{scale:.82,yPercent:20,ease:'power2.out',scrollTrigger:{trigger:'.contact',start:'top 95%',end:'top 45%',scrub:.8}});
   gsap.from('.peek .sk-s',{x:-260,rotation:-30,ease:'power2.out',scrollTrigger:{trigger:'.foot',start:'top 100%',end:'top 50%',scrub:.8}});
 })();
@@ -1842,6 +1869,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 (async function(){
   const hero=document.getElementById('hero'), canvas=document.getElementById('hero3d'), head=document.querySelector('.head');
   if(!hero||!canvas||!head)return;
+  const workshopHero=hero.classList.contains('workshop-hero'); // the workshop has its own renderer; this one keeps drawing the rest of the page
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   const fine=matchMedia('(hover: hover) and (pointer: fine)').matches;
   const batch=root=>PortfolioRender.batchStatic(root,THREE,mergeGeometries);
@@ -2124,7 +2152,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
     {key:'about',   make:makePick,   p:[1.55,-.08,1.35],r:[.22,-.3,.48],     s:.5},
   ];
   const roots={},pickables=[];
-  LAYOUT.forEach((L,i)=>{const o=L.make();const ud=o.userData;ud.key=L.key;ud.base=new THREE.Vector3(...L.p);ud.rot=new THREE.Euler(...L.r);ud.s=L.s;ud.h=0;ud.phase=i*1.7;ud.intro=reduce?1:0;ud.delay=.15+i*.09;
+  (workshopHero?[]:LAYOUT).forEach((L,i)=>{const o=L.make();const ud=o.userData;ud.key=L.key;ud.base=new THREE.Vector3(...L.p);ud.rot=new THREE.Euler(...L.r);ud.s=L.s;ud.h=0;ud.phase=i*1.7;ud.intro=reduce?1:0;ud.delay=.15+i*.09;
     o.scale.setScalar(L.s);o.rotation.copy(ud.rot);o.position.copy(ud.base);cluster.add(o);roots[L.key]=o;
     o.traverse(m=>{if(m.isMesh||m.isInstancedMesh){m.castShadow=true;m.receiveShadow=true;if(L.key!=='cloud'){m.userData.root=o;pickables.push(m)}}});
   });
@@ -2143,7 +2171,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
       if(el.closest('[hidden]'))return;const rect=el.getBoundingClientRect();if(!rect.width||!rect.height||rect.bottom<=0||rect.top>=innerHeight)return;
       if(slot)slot.rect=rect;draws.push({el,world,view,rect});
     }
-    if(heroVisible)measure(hero,scene,camera);for(const slot of atelier.slots)if(slot.visible)measure(slot.el,slot.scene,slot.camera,slot);
+    if(heroVisible&&!workshopHero)measure(hero,scene,camera);for(const slot of atelier.slots)if(slot.visible)measure(slot.el,slot.scene,slot.camera,slot);
     return draws;
   }
   function renderPortfolios(draws=measureScenes()){
@@ -2180,7 +2208,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
   /* ---------- pointer ---------- */
   const ray=new THREE.Raycaster(),ndc=new THREE.Vector2();let px=0,py=0,downAt=null,pendingPick=null;
-  function pick(cx,cy){const r=hero.getBoundingClientRect();if(cx<r.left||cx>r.right||cy<r.top||cy>r.bottom)return null;
+  function pick(cx,cy){if(workshopHero)return null;const r=hero.getBoundingClientRect();if(cx<r.left||cx>r.right||cy<r.top||cy>r.bottom)return null;
     ndc.set((cx-r.left)/r.width*2-1,-((cy-r.top)/r.height)*2+1);ray.setFromCamera(ndc,camera);const hit=ray.intersectObjects(pickables,false)[0];return hit?hit.object.userData.root.userData.key:null}
   const modelLabels={research:'Read',builds:'Builds',kessler:'Orbit',linkedin:'Visit',about:'About'};
   addEventListener('pointermove',e=>{px=e.clientX/innerWidth-.5;py=e.clientY/innerHeight-.5;
@@ -2193,16 +2221,16 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
   const v3=new THREE.Vector3();
   function screenOf(o,y,r=hero.getBoundingClientRect()){v3.set(0,y,0);o.localToWorld(v3);v3.project(camera);return{x:(v3.x*.5+.5)*r.width+r.left,y:(-v3.y*.5+.5)*r.height+r.top}}
-  function openBook(){const b=roots.research;b.userData.openTarget=2.5;const p=screenOf(b,0);setTimeout(()=>{window.openResearch&&window.openResearch(p.x,p.y)},reduce?0:430)}
+  function openBook(){if(workshopHero){window.openResearch&&window.openResearch(innerWidth/2,innerHeight/2);return}const b=roots.research;b.userData.openTarget=2.5;const p=screenOf(b,0);setTimeout(()=>{window.openResearch&&window.openResearch(p.x,p.y)},reduce?0:430)}
   function act(k2){if(k2==='research'){openBook();return}const l=labs[k2];if(l)l.click()}
   // The intro flight lives in the hero scene only while it plays.
   let flight=null;
-  async function flyIntro(onReveal,onDone){flight=window.createConcordeFlight({THREE,scene,camera,sun:key,restoreSun:layout,anisotropy:ANISO});flight.fly(onReveal,onDone);return true}
-  window.hero3d={openBook,closeBook(){roots.research.userData.openTarget=0},flyIntro,endIntro(){if(flight){flight.dispose();flight=null}}};
+  async function flyIntro(onReveal,onDone){if(workshopHero)return false;flight=window.createConcordeFlight({THREE,scene,camera,sun:key,restoreSun:layout,anisotropy:ANISO});flight.fly(onReveal,onDone);return true}
+  window.hero3d={prepare(view){atelier.prepare(view)},openBook,closeBook(){if(roots.research)roots.research.userData.openTarget=0;window.workshopApi&&window.workshopApi.back()},flyIntro,endIntro(){if(flight){flight.dispose();flight=null}}};
   window.dispatchEvent(new Event('hero3d-ready'));
 
   /* ---------- loop: objects stay on the head; only gentle bob, hover and pointer tilt ---------- */
-  let visible=true,heroVisible=true,last=performance.now(),nextPaint=last,t=0,cpx=0,cpy=0,lastTop=-1,lastW=-1,nextShadow=0;
+  let visible=!workshopHero,heroVisible=!workshopHero,last=performance.now(),nextPaint=last,t=0,cpx=0,cpy=0,lastTop=-1,lastW=-1,nextShadow=0;
   const labelState=new Map();
   function update(dt,hr=hero.getBoundingClientRect()){
     t+=dt;
@@ -2240,18 +2268,18 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
   }
   function start(){if(loop.running||!visible||document.hidden||document.documentElement.style.overflow==='hidden')return;last=performance.now();nextPaint=last;probe?.resume();loop.start()}
   function stop(){loop.stop();renderer.setScissorTest(false);renderer.clear()}
-  const sceneObserver=new IntersectionObserver(entries=>{for(const entry of entries){if(entry.target===hero)heroVisible=entry.isIntersecting;else{const slot=atelier.slots.find(s=>s.el===entry.target);if(slot)slot.visible=entry.isIntersecting}}visible=heroVisible||atelier.slots.some(s=>s.visible);visible?start():stop()});
+  const sceneObserver=new IntersectionObserver(entries=>{for(const entry of entries){if(entry.target===hero)heroVisible=!workshopHero&&entry.isIntersecting;else{if(entry.isIntersecting)atelier.build(entry.target);const slot=atelier.slots.find(s=>s.el===entry.target);if(slot)slot.visible=entry.isIntersecting}}visible=heroVisible||atelier.slots.some(s=>s.visible);visible?start():stop()});
   sceneObserver.observe(hero);atelier.slots.forEach(s=>sceneObserver.observe(s.el));
   addEventListener('scroll',()=>{if(visible&&!loop.running)start()},{passive:true});
   document.addEventListener('visibilitychange',()=>{document.hidden?loop.stop():start()});
   new MutationObserver(()=>{document.documentElement.style.overflow==='hidden'?loop.stop():start()}).observe(document.documentElement,{attributes:true,attributeFilter:['style']});
   // Prepare shaders between interactions, using the driver's non-blocking compiler when available.
   if(renderer.extensions.has('KHR_parallel_shader_compile')){
-    const queue=atelier.slots.slice(),idle=fn=>window.requestIdleCallback?requestIdleCallback(fn,{timeout:2000}):setTimeout(fn,400);
+    const queue=workshopHero?[]:atelier.slots.slice(),idle=fn=>window.requestIdleCallback?requestIdleCallback(fn,{timeout:2000}):setTimeout(fn,400);
     const warm=()=>{if(!queue.length)return;if(document.hidden||document.documentElement.classList.contains('intro-run')||document.documentElement.style.overflow==='hidden'){setTimeout(()=>idle(warm),800);return}const slot=queue.shift();renderer.compileAsync(slot.scene,slot.camera).catch(()=>{}).finally(()=>idle(warm))};
     setTimeout(()=>idle(warm),4500);
   }
-  layout();update(0);renderPortfolios();start();
+  layout();if(!workshopHero)update(0);renderPortfolios();start();
 })();
 </script>
 <aside class="np" id="np" hidden aria-label="Music">
@@ -2298,6 +2326,11 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
   label();
 })();
 </script>
+<script src="workshop-kit.js"></script>
+<script src="workshop-car.js"></script>
+<script src="workshop-props.js"></script>
+<script src="workshop-room.js"></script>
+<script type="module" src="workshop-app.js"></script>
 <script src="noir.js"></script>
 <script src="interactions.js"></script>
 <script src="moroccan-gate.js"></script>

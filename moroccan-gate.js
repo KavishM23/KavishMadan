@@ -42,7 +42,7 @@ window.createMasonry=function({THREE,anisotropy=4}){
 
 window.createMoroccanGate=function({THREE,Round,parent,wallLeft,wallRight,wallHeight,masonry,anisotropy=4}){
  const cx=-2.2,w=1.3,turn=.44,R=w/2/Math.cos(turn),archTop=2.5,cy=archTop-R,spring=cy-R*Math.sin(turn),floor=.117,base=floor+.013;
- const sand='#B7AB98',hot='#EB5939',brassInk='#C9A45C',night='#141312';
+ const sand='#D9C8B0',hot='#B5563A',brassInk='#C9A45C',night='#141312';
  const add=(geometry,material,at=[0,0,0],host=parent)=>{const m=new THREE.Mesh(geometry,material);m.position.set(...at);host.add(m);return m};
  const canvas=(cw,ch)=>{const c=document.createElement('canvas');c.width=cw;c.height=ch;return[c,c.getContext('2d')]};
  const texture=(c,rx=1,ry=1,color=true)=>{const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rx,ry);t.anisotropy=anisotropy;if(color)t.colorSpace=THREE.SRGBColorSpace;return t};
