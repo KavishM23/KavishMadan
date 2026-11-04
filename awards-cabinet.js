@@ -98,10 +98,10 @@ window.createTrophyCabinet=function({THREE,Round,environment,reduced,el,anisotro
   add(new THREE.ExtrudeGeometry(star,{depth:.04,bevelEnabled:true,bevelThickness:.015,bevelSize:.015,bevelSegments:2}),mat,g,0,1.5,.6);
   g.scale.setScalar(scale);return g}
  function certificate(it){const g=new THREE.Group();
-  const ct=textTex(600,440,(x,w,h)=>{x.fillStyle='#d4c9b7';x.fillRect(0,0,w,h);x.strokeStyle='#eb5939';x.lineWidth=10;x.strokeRect(22,22,w-44,h-44);x.strokeStyle='rgba(165,79,54,.4)';x.lineWidth=3;x.strokeRect(38,38,w-76,h-76);
-   x.textAlign='center';x.fillStyle='#0d0d0d';x.font='700 54px Caveat, cursive';x.fillText('Certificate of Achievement',w/2,112);x.font='600 24px "IBM Plex Mono", monospace';x.fillText(it.title.toUpperCase(),w/2,170);
+  const ct=textTex(600,440,(x,w,h)=>{x.fillStyle='#d4c9b7';x.fillRect(0,0,w,h);x.strokeStyle='#74464e';x.lineWidth=10;x.strokeRect(22,22,w-44,h-44);x.strokeStyle='rgba(165,79,54,.4)';x.lineWidth=3;x.strokeRect(38,38,w-76,h-76);
+   x.textAlign='center';x.fillStyle='#253449';x.font='700 54px Caveat, cursive';x.fillText('Certificate of Achievement',w/2,112);x.font='600 24px "IBM Plex Mono", monospace';x.fillText(it.title.toUpperCase(),w/2,170);
    x.font='800 86px "League Spartan", sans-serif';x.fillText(it.fig,w/2,278);x.font='600 22px "IBM Plex Mono", monospace';x.fillStyle='#7f766a';x.fillText('K. MADAN',w/2,350);
-   x.fillStyle='#C9962E';x.beginPath();x.arc(w-110,h-100,36,0,Math.PI*2);x.fill();x.fillStyle='#eb5939';x.beginPath();x.moveTo(w-130,h-70);x.lineTo(w-120,h-30);x.lineTo(w-110,h-60);x.lineTo(w-100,h-30);x.lineTo(w-90,h-70);x.fill()});
+   x.fillStyle='#C9962E';x.beginPath();x.arc(w-110,h-100,36,0,Math.PI*2);x.fill();x.fillStyle='#74464e';x.beginPath();x.moveTo(w-130,h-70);x.lineTo(w-120,h-30);x.lineTo(w-110,h-60);x.lineTo(w-100,h-30);x.lineTo(w-90,h-70);x.fill()});
   const fr=new THREE.Group();g.add(fr);fr.position.set(0,1.05,0);fr.rotation.x=-.08;
   add(new Round(1.62,1.24,.08,2,.03),brass,fr);add(new THREE.PlaneGeometry(1.44,1.06),new THREE.MeshStandardMaterial({map:ct,roughness:.85}),fr,0,0,.045);
   const leg=add(new Round(.06,1.1,.05,1,.02),woodEnd,g,0,.55,-.38);leg.rotation.x=.35;return g}
@@ -111,9 +111,9 @@ window.createTrophyCabinet=function({THREE,Round,environment,reduced,el,anisotro
   const body=add(geo,cm,g,0,.34,0);body.renderOrder=4;
   const lt=textTex(512,256,(x,w,h)=>{x.clearRect(0,0,w,h);x.fillStyle='rgba(20,45,67,.85)';x.textAlign='center';x.textBaseline='middle';x.font='800 150px "League Spartan", sans-serif';x.fillText(label,w/2,h/2)});
   const tp=add(new THREE.PlaneGeometry(.66,.33),new THREE.MeshBasicMaterial({map:lt,transparent:true,depthWrite:false}),g,0,1.1,0);tp.renderOrder=3;
-  add(new Round(1.0,.34,.6,3,.05),new THREE.MeshPhysicalMaterial({color:0x0d0d0d,roughness:.3,clearcoat:1}),g,0,.17,0);return g}
+  add(new Round(1.0,.34,.6,3,.05),new THREE.MeshPhysicalMaterial({color:0x253449,roughness:.3,clearcoat:1}),g,0,.17,0);return g}
  function scoreBlock(label){const g=new THREE.Group();
-  const lt=textTex(640,360,(x,w,h)=>{x.fillStyle='#0d0d0d';x.fillRect(0,0,w,h);x.fillStyle='#b7ab98';x.textAlign='center';x.textBaseline='middle';x.font='800 150px "League Spartan", sans-serif';x.fillText(label,w/2,h/2-20);x.font='600 30px "IBM Plex Mono", monospace';x.fillStyle='#b7ab98';x.fillText('SENIOR MATHS CHALLENGE',w/2,h-60)});
+  const lt=textTex(640,360,(x,w,h)=>{x.fillStyle='#253449';x.fillRect(0,0,w,h);x.fillStyle='#253449';x.textAlign='center';x.textBaseline='middle';x.font='800 150px "League Spartan", sans-serif';x.fillText(label,w/2,h/2-20);x.font='600 30px "IBM Plex Mono", monospace';x.fillStyle='#253449';x.fillText('SENIOR MATHS CHALLENGE',w/2,h-60)});
   const flip=add(new Round(1.5,.86,.24,3,.04),new THREE.MeshPhysicalMaterial({color:0x080808,roughness:.4,clearcoat:.6}),g,0,.95,0);flip.rotation.x=-.12;
   const face=add(new THREE.PlaneGeometry(1.4,.78),new THREE.MeshBasicMaterial({map:lt,toneMapped:false}),flip,0,0,.125);
   [-.55,.55].forEach(x=>add(new Round(.07,.55,.07,1,.02),brass,g,x,.3,0));add(new Round(1.3,.08,.5,2,.03),woodEnd,g,0,.04,0);return g}
@@ -123,30 +123,30 @@ window.createTrophyCabinet=function({THREE,Round,environment,reduced,el,anisotro
   add(new Round(1.5,.98,.05,3,.03),alu,lid,0,.49,0);
   const img=new THREE.TextureLoader().load('img/lb-landing.webp');img.colorSpace=THREE.SRGBColorSpace;img.anisotropy=anisotropy;
   add(new THREE.PlaneGeometry(1.38,.86),new THREE.MeshBasicMaterial({map:img,toneMapped:false,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1}),lid,0,.49,.045);
-  const ros=rosette('#eb5939','#b7ab98','TOP 7');ros.position.set(.62,.42,.48);ros.scale.setScalar(.55);g.add(ros);g.scale.setScalar(1.3);return g}
+  const ros=rosette('#74464e','#253449','TOP 7');ros.position.set(.62,.42,.48);ros.scale.setScalar(.55);g.add(ros);g.scale.setScalar(1.3);return g}
  function rosette(c1,c2,label){const g=new THREE.Group(),m1=new THREE.MeshStandardMaterial({color:c1,roughness:.7,side:THREE.DoubleSide});
   for(let i=0;i<24;i++){const p=add(new THREE.PlaneGeometry(.16,.5),m1,g,0,0,0);p.rotation.z=i/24*Math.PI*2;p.translateY(.22);p.rotation.x=.05}
-  const ct=textTex(256,256,(x,w,h)=>{x.fillStyle=c2;x.beginPath();x.arc(w/2,h/2,w/2,0,Math.PI*2);x.fill();x.fillStyle='#0d0d0d';x.textAlign='center';x.textBaseline='middle';x.font='800 64px "League Spartan", sans-serif';x.fillText(label,w/2,h/2+4)});
+  const ct=textTex(256,256,(x,w,h)=>{x.fillStyle=c2;x.beginPath();x.arc(w/2,h/2,w/2,0,Math.PI*2);x.fill();x.fillStyle='#253449';x.textAlign='center';x.textBaseline='middle';x.font='800 64px "League Spartan", sans-serif';x.fillText(label,w/2,h/2+4)});
   add(new THREE.CircleGeometry(.24,40),new THREE.MeshStandardMaterial({map:ct,roughness:.6}),g,0,0,.08);
   [-1,1].forEach(sd=>{const t=add(new THREE.PlaneGeometry(.16,.6),m1,g,sd*.09,-.48,-.01);t.rotation.z=sd*.18});return g}
  function pennant(){const g=new THREE.Group();add(new THREE.CylinderGeometry(.025,.025,2.1,12),brass,g,-.55,1.05,0);add(new THREE.SphereGeometry(.05,16,12),brass,g,-.55,2.12,0);
-  const ft=textTex(512,256,(x,w,h)=>{x.fillStyle='#141312';x.beginPath();x.moveTo(0,0);x.lineTo(w,h/2);x.lineTo(0,h);x.closePath();x.fill();x.fillStyle='#fff';x.font='800 70px "League Spartan", sans-serif';x.textBaseline='middle';x.fillText('YYGS',30,h/2+4);x.font='600 22px "IBM Plex Mono", monospace';x.fillText('YALE',34,h/2+52)});
+  const ft=textTex(512,256,(x,w,h)=>{x.fillStyle='#e8e4da';x.beginPath();x.moveTo(0,0);x.lineTo(w,h/2);x.lineTo(0,h);x.closePath();x.fill();x.fillStyle='#fff';x.font='800 70px "League Spartan", sans-serif';x.textBaseline='middle';x.fillText('YYGS',30,h/2+4);x.font='600 22px "IBM Plex Mono", monospace';x.fillText('YALE',34,h/2+52)});
   const geo=new THREE.PlaneGeometry(1.4,.7,24,1);const flag=add(geo,new THREE.MeshStandardMaterial({map:ft,roughness:.75,side:THREE.DoubleSide,transparent:true,alphaTest:.5}),g,.15,1.6,0);
   const base=geo.attributes.position.array.slice();g.userData.wave=t=>{const a=geo.attributes.position;for(let i=0;i<a.count;i++){const x=base[i*3]+.7;a.array[i*3+2]=Math.sin(x*3.2-t*2.4)*.05*x}a.needsUpdate=true};
   add(new Round(.6,.1,.5,2,.03),woodEnd,g,-.55,.05,0);return g}
  function medalPair(){const g=new THREE.Group(),s=stand();g.add(s);[-.42,-.14,.14,.42].forEach((x,i)=>{const m=new THREE.Group();m.position.set(x,1.12-Math.abs(x)*.25,-.18+i*.01);m.rotation.z=x*-.35;g.add(m);
-   const rb=ribbon('#0d0d0d','#b7ab98',.7);m.add(rb);const d=medalDisc(gold,faceTex(['J','I','S','★'][i],'UKMT',GOLD),.24);d.position.y=-.02;m.add(d)});g.userData.swing=g.children[1];return g}
+   const rb=ribbon('#253449','#253449',.7);m.add(rb);const d=medalDisc(gold,faceTex(['J','I','S','★'][i],'UKMT',GOLD),.24);d.position.y=-.02;m.add(d)});g.userData.swing=g.children[1];return g}
  const kinds=[
   ()=>certificate(items[0]),
   ()=>medalPair(),
   ()=>scoreBlock(items[2].fig),
   ()=>cup(gold,'RANK 1',1.05),
   ()=>crystal(items[4].fig),
-  ()=>hungMedal(gold,faceTex('11','CHALLENGEME',GOLD),['#eb5939','#b7ab98']),
+  ()=>hungMedal(gold,faceTex('11','CHALLENGEME',GOLD),['#74464e','#253449']),
   ()=>cup(bronze,'3RD',.82),
   ()=>laptop(),
   ()=>pennant(),
-  ()=>hungMedal(silver,faceTex('DofE','SILVER',SILV),['#3a3733','#b7ab98'])
+  ()=>hungMedal(silver,faceTex('DofE','SILVER',SILV),['#3a3733','#253449'])
  ];
  const bays=items.map((it,i)=>{const cx=(i+.5)*BW,bay=new THREE.Group();bay.position.set(cx,-H/2,0);world.add(bay);
   const plinth=new THREE.Group();bay.add(plinth);
@@ -196,3 +196,4 @@ window.createTrophyCabinet=function({THREE,Round,environment,reduced,el,anisotro
  addEventListener('resize',measure);measure();if(live)show(0);
  return slot;
 };
+

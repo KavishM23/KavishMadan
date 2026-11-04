@@ -42,7 +42,7 @@ window.createMasonry=function({THREE,anisotropy=4}){
 
 window.createMoroccanGate=function({THREE,Round,parent,wallLeft,wallRight,wallHeight,masonry,anisotropy=4}){
  const cx=-2.2,w=1.3,turn=.44,R=w/2/Math.cos(turn),archTop=2.5,cy=archTop-R,spring=cy-R*Math.sin(turn),floor=.117,base=floor+.013;
- const sand='#B7AB98',hot='#EB5939',brassInk='#C9A45C',night='#141312';
+ const sand='#253449',hot='#74464e',brassInk='#C9A45C',night='#e8e4da';
  const add=(geometry,material,at=[0,0,0],host=parent)=>{const m=new THREE.Mesh(geometry,material);m.position.set(...at);host.add(m);return m};
  const canvas=(cw,ch)=>{const c=document.createElement('canvas');c.width=cw;c.height=ch;return[c,c.getContext('2d')]};
  const texture=(c,rx=1,ry=1,color=true)=>{const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rx,ry);t.anisotropy=anisotropy;if(color)t.colorSpace=THREE.SRGBColorSpace;return t};
@@ -93,9 +93,9 @@ window.createMoroccanGate=function({THREE,Round,parent,wallLeft,wallRight,wallHe
  const brass=new THREE.MeshStandardMaterial({color:0xc9a45c,metalness:1,roughness:.32,envMapIntensity:.9});
  const iron=new THREE.MeshStandardMaterial({color:0x151412,metalness:.7,roughness:.42});
  const cedar=new THREE.MeshStandardMaterial({color:0x3a2416,roughness:.62,envMapIntensity:.35});
- const copper=new THREE.MeshStandardMaterial({color:0xeb5939,metalness:.55,roughness:.36});
+ const copper=new THREE.MeshStandardMaterial({color:0x74464e,metalness:.55,roughness:.36});
  const stoneSand=new THREE.MeshStandardMaterial({color:0xb7ab98,roughness:.48,envMapIntensity:.4});
- const glazed=new THREE.MeshPhysicalMaterial({color:0xa83a1f,roughness:.3,clearcoat:.8,clearcoatRoughness:.2,side:THREE.DoubleSide,envMapIntensity:.6});
+ const glazed=new THREE.MeshPhysicalMaterial({color:0x74464e,roughness:.3,clearcoat:.8,clearcoatRoughness:.2,side:THREE.DoubleSide,envMapIntensity:.6});
 
  const archPoints=(grow=0,bottom=.06)=>{const half=w/2+grow,r=R+grow,a=Math.acos(half/r),p=[new THREE.Vector2(cx-half,bottom)];for(let i=0;i<=56;i++){const t=Math.PI+a-(Math.PI+2*a)*i/56;p.push(new THREE.Vector2(cx+Math.cos(t)*r,cy+Math.sin(t)*r))}p.push(new THREE.Vector2(cx+half,bottom));return p};
  const archHole=(grow=0,bottom=.06)=>new THREE.Path(archPoints(grow,bottom));
@@ -209,7 +209,7 @@ window.createMoroccanGate=function({THREE,Round,parent,wallLeft,wallRight,wallHe
  // what the open doors let out: a star medallion on the floor, a pool of light, warm lamps
  const medallion=add(new THREE.CircleGeometry(.72,48),tile(.9,.9),[cx,floor+.004,1.02]);medallion.rotation.x=-Math.PI/2;
  add(new THREE.RingGeometry(.72,.75,64).rotateX(-Math.PI/2),brass,[cx,floor+.005,1.02]);
- const [spillArt,spillInk]=canvas(128,128),fade=spillInk.createRadialGradient(64,128,0,64,128,64);fade.addColorStop(0,'rgba(255,195,135,.5)');fade.addColorStop(.55,'rgba(235,110,70,.16)');fade.addColorStop(1,'rgba(235,89,57,0)');spillInk.fillStyle=fade;spillInk.fillRect(0,0,128,128);
+ const [spillArt,spillInk]=canvas(128,128),fade=spillInk.createRadialGradient(64,128,0,64,128,64);fade.addColorStop(0,'rgba(255,195,135,.5)');fade.addColorStop(.55,'rgba(235,110,70,.16)');fade.addColorStop(1,'rgba(116,70,78,0)');spillInk.fillStyle=fade;spillInk.fillRect(0,0,128,128);
  const spill=add(new THREE.PlaneGeometry(1.9,1.9),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(spillArt),transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false}),[cx,floor+.012,.95]);spill.rotation.x=-Math.PI/2;
  const hallLight=new THREE.PointLight(0xffb37a,3,4,2);hallLight.position.set(cx,1.75,hallZ+.1);parent.add(hallLight);
  const porchLight=new THREE.PointLight(0xffb37a,0,6,2);porchLight.position.set(cx,1.15,.8);parent.add(porchLight);
@@ -218,3 +218,4 @@ window.createMoroccanGate=function({THREE,Round,parent,wallLeft,wallRight,wallHe
  swing(0);
  return{swing};
 };
+
