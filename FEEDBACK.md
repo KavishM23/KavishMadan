@@ -150,5 +150,5 @@ The newly added recessed backing intersected the laptop lid as it turned; its pr
 ## 4 November 2026 — Kung Fooled and GitHub links
 
 1. **Third landing:** The Code staircase now has LastBite, TutorTime and Kung Fooled, at q .2, .5 and .8, with holds at p .11–.24, .38–.51 and .65–.78. The section is taller to fit (640svh), and the scroll gates in smooth-scroll.js match. The Kung Fooled landing has a case study with six screens captured from the game (img/kf-*.webp, 2× nearest-neighbour upscale).
-2. **GitHub links:** LastBite (github.com/robberttorfs/LastBite, the team repo) and Kung Fooled (github.com/KavishM23/kung-fooled) link from their landings and case studies. TutorTime has no public repo, so its case study hides the link.
+2. **GitHub links:** LastBite (github.com/robberttorfs/LastBite, the team repo) and Kung Fooled (github.com/KavishM23/kung-fooled) link from their landings and case studies. TutorTime was added the same day at github.com/KavishM23/TutorTime, without .env, the database or generated invoices. Its data is dummy data.
 3. **Wording:** The Kung Fooled copy describes the game only, taken from its README. It makes no claim about who wrote what, because the repo's history includes AI-authored commits.
