@@ -227,6 +227,7 @@ async function start(){
  function slots(){return stacked()?[[0,1.37,.17],[0,.93,.17]]:[[-.238,.98,.17],[.238,.98,.17]]}
  const tablePose=new THREE.Vector3(),carStart=V(CAR.pos);
  const carCurve=new THREE.CubicBezierCurve3(carStart.clone(),V([1.5,0,1.0]),V([1.15,0,5.2]),V([2.5,0,15]));
+ const carDistance=carCurve.getLength(),carWheelStart=[];
  const tyreStart=P.tyre.position.clone();
  const surf=(key,pre,pts=[])=>()=>{ // approach a surface square-on, pause, then push until it fills the screen
   const s=panels[key].cover(),a=s.c.clone().addScaledVector(s.n,s.d*pre);
@@ -251,13 +252,15 @@ async function start(){
     l.position.set(slot[0][0]*up,.2+(slot[0][1]-.2)*up,slot[0][2]*up);l.rotation.set(-.2*(1-up),0,0);
     t.position.set(slot[1][0]*ur,.2+(slot[1][1]-.2)*ur,-.14+(slot[1][2]+.14)*ur);t.rotation.x=-.5*(1-ur);t.rotation.y=0;
    }},
-  car:{label:'Builds',dur:2.5,finish:'sweep',own:true,
+  car:{label:'Builds',dur:3.2,finish:'sweep',own:true,
+   prep(){carParts.spins.forEach((w,i)=>{carWheelStart[i]=w.rotation.x})},
    route:from=>({path:[from.p,V([-1.3,1.25,7.2]),V([-.9,.85,6.6]),V([-.5,.8,6.2])],look:[from.t,V([.5,.4,-.3]),V([.9,.5,1.6]),V([2.3,.5,7.4])],up:Y}),
    act(e){
-    const pre=seg(e,.05,.42),go=Math.pow(clamp((e-.36)/.64),2.3),rig=P.car;
-    rig.position.y=Math.sin(e*90)*.0035*pre*(1-go);rig.rotation.x=-.012*pre*(1-go);
-    const q=carCurve.getPoint(go),d=carCurve.getTangent(Math.min(.999,go+.001));rig.position.x=q.x;rig.position.z=q.z;rig.rotation.y=go>0?Math.atan2(d.x,d.z):CAR.rot;
-    carParts.spins.forEach(w=>{w.rotation.x=-e*e*170});carParts.fronts.forEach(w=>{w.rotation.y=-.1*go});
+    const pre=seg(e,.05,.42),go=seg(e,.3,1),rig=P.car;
+    rig.position.y=Math.sin(e*45)*.0018*pre*(1-go);rig.rotation.x=-.009*pre*(1-go);
+    const q=carCurve.getPointAt(go),d=carCurve.getTangentAt(go),heading=Math.atan2(d.x,d.z),turn=seg(go,0,.12);
+    rig.position.x=q.x;rig.position.z=q.z;rig.rotation.y=CAR.rot+(heading-CAR.rot)*turn;
+    carParts.spins.forEach((w,i)=>{const radius=i<2?.356:.362;w.rotation.x=carWheelStart[i]-carDistance*go/(radius*CAR.scale)});carParts.fronts.forEach(w=>{w.rotation.y=-.1*seg(go,0,.3)});
     carParts.flap.rotation.x=-seg(e,.3,.5)*.62;
    }},
   tyre:{label:'More',dur:2.6,finish:'iris',own:true,
