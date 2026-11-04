@@ -464,6 +464,23 @@ Workshop.props=function(THREE,kit,carParts){
   const pegT=canvasTexture(1024,448,(g,w,h)=>{g.fillStyle='#c9d4cc';g.fillRect(0,0,w,h);g.fillStyle='rgba(30,44,44,.42)';for(let y=14;y<h;y+=25)for(let x=14;x<w;x+=25){g.beginPath();g.arc(x,y,3.2,0,7);g.fill()}});
   add(root,box(2.5,1.1,.022,new THREE.MeshStandardMaterial({map:pegT,roughness:.8}),[0,1.86,-.425],.004));
   add(root,box(2.56,.03,.03,top,[0,2.42,-.42],.004));add(root,box(2.56,.03,.03,top,[0,1.3,-.42],.004));
+  // A pair of framed workshop sketches above the tools adds depth to the left wall.
+  const sketch=canvasTexture(1024,512,(g,w,h)=>{
+   g.fillStyle='#e9dfcc';g.fillRect(0,0,w,h);g.strokeStyle='rgba(66,104,113,.18)';g.lineWidth=1;
+   for(let x=0;x<w;x+=32){g.beginPath();g.moveTo(x,0);g.lineTo(x,h);g.stroke()}
+   for(let y=0;y<h;y+=32){g.beginPath();g.moveTo(0,y);g.lineTo(w,y);g.stroke()}
+   g.strokeStyle='#46636a';g.lineWidth=4;g.lineCap='round';
+   g.beginPath();g.ellipse(300,260,168,74,-.13,0,Math.PI*2);g.ellipse(300,260,110,43,-.13,0,Math.PI*2);g.moveTo(125,328);g.lineTo(450,192);g.moveTo(155,165);g.lineTo(443,350);g.stroke();
+   g.lineWidth=2;g.strokeStyle='rgba(67,90,95,.6)';g.strokeRect(540,120,305,240);g.beginPath();g.moveTo(570,320);g.lineTo(625,250);g.lineTo(685,280);g.lineTo(742,170);g.lineTo(817,215);g.stroke();
+   g.fillStyle='#a65c44';for(let i=0;i<3;i++)g.fillRect(560,398+i*16,180-i*34,4);
+  },{scale:.6});
+  const frameMat=std('#6b5140',.68),paperMat=new THREE.MeshStandardMaterial({map:sketch,roughness:.92});
+  add(root,box(1.42,.62,.035,frameMat,[-.38,2.85,-.415],.008));
+  add(root,mesh(new THREE.PlaneGeometry(1.34,.54),paperMat,[-.38,2.85,-.394]));
+  // Small shelf and labelled storage tins, all tucked behind the bench.
+  add(root,box(.66,.035,.19,top,[.84,2.65,-.34],.006));
+  const tins=[std('#6a8580',.62,.2),std('#bc7755',.66,.15),std('#c5b18f',.7,.15)];
+  tins.forEach((m,i)=>{const x=.63+i*.21;add(root,mesh(new THREE.CylinderGeometry(.075,.075,.18,16),m,[x,2.755,-.34]));add(root,mesh(new THREE.CylinderGeometry(.078,.078,.014,16),steel,[x,2.851,-.34]));add(root,box(.085,.035,.003,std('#e9dfcc',.9),[x,2.76,-.263],.002))});
   const metal=std('#a9adb0',.32,.95),grip=std('#a5513a',.5),gripT=std('#2f6a70',.5),wood=std('#a8784c',.6);const hz=-.395;
   [.4,.34,.28,.23,.18].forEach((l,i)=>{const x=-1.08+i*.1;add(root,box(.022,l,.008,metal,[x,2.26-l/2,hz],.003));add(root,mesh(new THREE.TorusGeometry(.027-.002*i,.009,8,16,4.6),metal,[x,2.27,hz],[0,0,1.1]))});
   add(root,box(.03,.34,.02,wood,[-.36,1.99,hz],.006));add(root,box(.14,.05,.04,metal,[-.36,2.17,hz],.008));
