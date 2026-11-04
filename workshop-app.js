@@ -14,7 +14,7 @@ const BASE={rest:{p:[.52,2.62,9.35],t:[.15,.95,-.5]},far:{p:[1.1,7.2,19.5],t:[0,
 /* ---- small sounds, made on the spot; they only ever follow a click ---- */
 const Sound=(()=>{
  let ac=null;
- const ctx=()=>{try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();ac.resume?.();return ac}catch(e){return null}};
+ const ctx=()=>{if(window.siteMuted)return null;try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();ac.resume?.();return ac}catch(e){return null}};
  const out=(a,g)=>{const n=a.createGain();n.gain.value=g;n.connect(a.destination);return n};
  function pluck(a,freq,when,gain){
   const rate=a.sampleRate,len=Math.round(rate*2.4),buf=a.createBuffer(1,len,rate),d=buf.getChannelData(0),p=Math.round(rate/freq),line=new Float32Array(p);

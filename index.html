@@ -798,6 +798,7 @@ html.intro-hold .obj-labs{visibility:hidden}
   <a class="brand" href="#home">Kavish Madan</a>
   <nav aria-label="Primary navigation">
     <div class="tabs"><i class="tab-thumb" aria-hidden="true"></i><a href="#home" data-tab="home">Workshop</a><a href="#about" data-tab="aboutme">About</a></div>
+    <button class="amb" id="ambBtn" type="button" aria-pressed="true" aria-label="Turn sound off"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="b" d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5Z"/><path class="w" d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/><path class="x" d="m16 9.5 5 5m0-5-5 5"/></svg></button>
     <button class="snd" id="sndBtn" type="button" aria-pressed="false" aria-label="Background music"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17.5V6l10-2v11.5"/><circle cx="6.5" cy="17.5" r="2.5"/><circle cx="16.5" cy="15.5" r="2.5"/></svg><span class="snd-sw" aria-hidden="true"><i></i></span></button>
     <button class="theme-sw" id="themeBtn" type="button" role="switch" aria-checked="false" aria-label="Dark mode"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path class="s" d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/><circle class="s" cx="12" cy="12" r="4.4"/><path class="m" d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg></i></button>
     <button class="circ" id="menuBtn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="menu"><span></span><span></span></button>
@@ -2312,7 +2313,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
   const mark=v=>{btn.setAttribute('aria-pressed',String(v));btn.classList.toggle('on',v)};
   function label(){now.textContent=TRACKS[cur].t;list.querySelectorAll('button').forEach((b,i)=>b.setAttribute('aria-current',String(i===cur)))}
   function pick(i,play){cur=(i+TRACKS.length)%TRACKS.length;label();if(ctrl){wantPlay=play;ctrl.loadUri('spotify:track:'+TRACKS[cur].id)}}
-  function setOn(v){on=v;mark(v);card.hidden=!v;if(v){if(ctrl)ctrl.play();else{wantPlay=true;load()}}else if(ctrl)ctrl.pause()}
+  function setOn(v){on=v;mark(v);card.hidden=!v;dispatchEvent(new CustomEvent('site-music',{detail:{on:v}}));if(v){if(ctrl)ctrl.play();else{wantPlay=true;load()}}else if(ctrl)ctrl.pause()}
   function load(){if(loading)return;loading=true;
     window.onSpotifyIframeApiReady=api=>{api.createController(document.getElementById('spotp'),{uri:'spotify:track:'+TRACKS[cur].id,width:'100%',height:80},c=>{ctrl=c;
       c.addListener('ready',()=>{if(wantPlay&&on){wantPlay=false;c.play()}});
@@ -2326,6 +2327,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
   label();
 })();
 </script>
+<script src="ambient.js"></script>
 <script src="workshop-kit.js"></script>
 <script src="workshop-car.js"></script>
 <script src="workshop-props.js"></script>

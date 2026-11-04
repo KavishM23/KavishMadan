@@ -235,3 +235,6 @@ The flat cards in School & academics went back to real paper on the dark ground:
 - A switch in the top bar flips the whole site between the Moroccan pastels and a deep night version, and it remembers the choice. In the workshop the sun goes down, a warm lamp comes on and the window turns to dusk.
 - Scenes on other pages are built the first time they are needed, not at load. The workshop frees its render buffers while you are on a page, stops drawing when nothing moves, and the hidden hero's models are no longer built.
 - The left of the room now has a workbench, pegboard, stool, sill plant and a Moroccan rug. If anything in the room moves, run tools/bake-workshop.html again.
+
+## Room tone
+Quiet ambient music now plays behind the site. It is made in the browser rather than a downloaded track, so there is nothing to licence and nothing extra to load. It fades in after the first click or key press because browsers block sound before that, fades out while Spotify plays, and the speaker button in the top bar turns off all site sound. Change `VOLUME` in ambient.js to make it louder or quieter.
