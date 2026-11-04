@@ -152,3 +152,10 @@ The newly added recessed backing intersected the laptop lid as it turned; its pr
 1. **Third landing:** The Code staircase now has LastBite, TutorTime and Kung Fooled, at q .2, .5 and .8, with holds at p .11–.24, .38–.51 and .65–.78. The section is taller to fit (640svh), and the scroll gates in smooth-scroll.js match. The Kung Fooled landing has a case study with six screens captured from the game (img/kf-*.webp, 2× nearest-neighbour upscale).
 2. **GitHub links:** LastBite (github.com/robberttorfs/LastBite, the team repo) and Kung Fooled (github.com/KavishM23/kung-fooled) link from their landings and case studies. TutorTime was added the same day at github.com/KavishM23/TutorTime, without .env, the database or generated invoices. Its data is dummy data.
 3. **Wording:** The Kung Fooled copy describes the game only, taken from its README. It makes no claim about who wrote what, because the repo's history includes AI-authored commits.
+
+## 4 November 2026 — scrolling that always moves
+
+1. **Feedback:** "Really hard to scroll." The gates added earlier held the page at about 20 edges, needed 180 px of push at each, ignored momentum and locked input for up to 1.65 s per transition.
+2. **Rule now:** Input always moves the page straight away; nothing is held, blocked or locked. This supersedes the gate entries above. Lenis lerp is slightly quicker at 0.11.
+3. **Kept:** Transitions are not left half-done. About 0.24 s after you stop inside one, it eases on in the direction you were scrolling (up to 0.9 s). Any new input cancels that at once. Direction is read from the input itself.
+4. **Checked on the real page:** One long flick travels 1,724 px, and continuous scrolling crosses the whole Code page in 2.6 s with no stalled frames.
