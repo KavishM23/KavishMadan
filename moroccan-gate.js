@@ -208,7 +208,7 @@ window.createMoroccanGate=function({THREE,Round,parent,wallLeft,wallRight,wallHe
  const hallLight=new THREE.PointLight(0xffb37a,3,4,2);hallLight.position.set(cx,1.75,hallZ+.1);parent.add(hallLight);
  const porchLight=new THREE.PointLight(0xffb37a,0,6,2);porchLight.position.set(cx,1.15,.8);parent.add(porchLight);
 
- const swing=open=>{const a=open*1.72;for(const {pivot,side} of pivots)pivot.rotation.y=-side*a;spill.material.opacity=open;porchLight.intensity=open*3.6;hallLight.intensity=3+open*2.6};
+ const swing=(open,flare=0)=>{const a=open*1.72;for(const {pivot,side} of pivots)pivot.rotation.y=-side*a;spill.material.opacity=Math.min(1,open+flare*.6);porchLight.intensity=open*3.6+flare*10;hallLight.intensity=3+open*2.6+flare*5};
  swing(0);
  return{swing};
 };

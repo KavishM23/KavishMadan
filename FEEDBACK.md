@@ -199,3 +199,7 @@ The plain doorway was too simple, and objects were being sliced along a line nea
 ## Real materials on the stairs and gateway
 From further down the stairs the back of the doorway was a flat red box. It is now a proper small building: brick walls, a stone plinth and string course, a tiled roof, stepped merlons along the wall, and a lit window with an iron grille. The hall also sits on the landing slab instead of hanging off it.
 Brick, limestone and flagstone are drawn in code with matching height maps. Treads vary slightly from step to step, and the scene has real cast shadows from one light. They are drawn once and redrawn only while the doors swing, so scrolling stays cheap.
+
+## The door opens on scroll and the staircase comes out of it
+The Code page now opens on the closed gateway alone, with nothing below the landing. Scrolling swings the doors, tied directly to scroll. Once they are open, the staircase slides out of the hall through the doorway as one ribbon, crosses the landing and corkscrews down the column, so every tread lands at the same moment. Rails, column, screens and the landing pad appear as it passes, and the drone flies out too.
+The burst runs on a clock, so it never holds the page, and the camera waits for it before normal scrolling takes over. Scrolling back closes the doors and draws the stairs back in.

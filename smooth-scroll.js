@@ -15,7 +15,7 @@
   if(root.classList.contains('cabinet-ready')&&cab&&cab.offsetParent){const T=top(cab),D=cab.offsetHeight-vh,N=cab.querySelectorAll('.cab-dots button').length;
    for(let i=0;i<N-1;i++)z.push([T+D*(i+.38)/(N-1),T+D*(i+1)/(N-1)])}
   const cj=document.getElementById('code-journey');
-  if(root.classList.contains('spiral-ready')&&cj&&cj.offsetParent){const T=top(cj),D=cj.offsetHeight-vh;[[.02,.11],[.24,.38],[.51,.65],[.78,.995]].forEach(([a,b])=>z.push([T+D*a,T+D*b]))}
+  if(root.classList.contains('spiral-ready')&&cj&&cj.offsetParent){const T=top(cj),D=cj.offsetHeight-vh;[[.012,.062],[.075,.16],[.24,.38],[.51,.65],[.78,.995]].forEach(([a,b])=>z.push([T+D*a,T+D*b]))}
   const limit=Math.max(0,root.scrollHeight-vh);
   return z.map(([a,b])=>[Math.round(Math.max(0,Math.min(limit,a))),Math.round(Math.max(0,Math.min(limit,b)))]).filter(([a,b])=>b-a>40).sort((p,q)=>p[0]-q[0]);
  }

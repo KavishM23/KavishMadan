@@ -150,6 +150,8 @@ html.spiral-ready .journey-sticky::before{content:"";position:absolute;inset:0;z
 .cab-sticky::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,var(--bg-1) 31%,transparent 41%),linear-gradient(180deg,var(--bg-1) 78px,transparent 170px)}
 .cab-card,.cab-dots,.cab-hint{z-index:2}
 
+html.spiral-ready .journey-caption{color:var(--sand)}
+
 /* scroll-filled statements: words wake from dim to full as they pass */
 [data-fill] .fw{color:rgba(183,171,152,.16);transition:color .25s linear}
 [data-fill] .fw.on{color:var(--sand)}
