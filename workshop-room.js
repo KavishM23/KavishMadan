@@ -132,8 +132,9 @@ Workshop.room=function(THREE,kit,{bakes=null}={}){
      vec3 V=normalize(cameraPosition-vW);float f=.05+.95*pow(1.-max(V.y,0.),5.);
      float rough=texture2D(tRough,vUv).r;
      vec2 s=gl_FragCoord.xy/uRes;s.y=1.-s.y;s+=vec2(bx-b,by-b)*.05;
-     vec3 m=textureLod(tMirror,s,1.2+rough*3.2).rgb;
-     float k=clamp(f*(1.25-rough)*uMirror,0.,.6);c=c*(1.-k*.45)+m*k;
+     float edge=smoothstep(0.,.018,s.x)*smoothstep(0.,.018,s.y)*smoothstep(0.,.018,1.-s.x)*smoothstep(0.,.018,1.-s.y);
+     vec3 m=textureLod(tMirror,clamp(s,vec2(.001),vec2(.999)),1.2+rough*3.2).rgb;
+     float k=clamp(f*(1.25-rough)*uMirror*edge,0.,.6);c=c*(1.-k*.45)+m*k;
     }
     #endif
     gl_FragColor=vec4(c,1.);

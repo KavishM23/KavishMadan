@@ -155,7 +155,9 @@ export function reflectionsFrom(renderer,scene,hide,p=[.2,1.1,-.2]){
 /* Two sets of the same chain: a light one while the camera moves, and a full one for the frame it stops on. */
 export function buildComposer(renderer,scene,camera,w,h,{ao=true,samples=4,aoDiv=2,aoSamples=12,denoise=8,smaa=false}={}){
  const rt=new THREE.WebGLRenderTarget(w,h,{type:THREE.HalfFloatType,samples});
- const composer=new EffectComposer(renderer,rt);composer.setSize(w,h);
+ // w and h are already physical pixels; applying the renderer's pixel ratio a
+ // second time misaligns the reflection and makes moving frames unnecessarily large.
+ const composer=new EffectComposer(renderer,rt);composer.setPixelRatio(1);composer.setSize(w,h);
  composer.addPass(new RenderPass(scene,camera));
  let gtao=null;
  if(ao){

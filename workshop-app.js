@@ -22,15 +22,23 @@ const Sound=(()=>{
   for(let i=0,k=0;i<len;i++,k=(k+1)%p){const s=line[k];d[i]=s;line[k]=(s+line[(k+1)%p])*.4965}
   const src=a.createBufferSource(),f=a.createBiquadFilter();src.buffer=buf;f.type='lowpass';f.frequency.value=2600;src.connect(f).connect(out(a,gain));src.start(when);
  }
+ function texture(a,{duration=.12,frequency=1800,gain=.035,type='bandpass'}={}){
+  const count=Math.ceil(a.sampleRate*duration),buffer=a.createBuffer(1,count,a.sampleRate),data=buffer.getChannelData(0);
+  for(let i=0;i<count;i++)data[i]=(Math.random()*2-1)*Math.pow(1-i/count,2);
+  const source=a.createBufferSource(),filter=a.createBiquadFilter(),level=out(a,gain);source.buffer=buffer;filter.type=type;filter.frequency.value=frequency;filter.Q.value=.7;source.connect(filter).connect(level);source.start();
+ }
  return {
   strum(){const a=ctx();if(!a)return;[82.41,123.47,164.81,207.65,246.94,329.63].forEach((f,i)=>pluck(a,f,a.currentTime+i*.022,.13))}, // an open E major
   ting(){const a=ctx();if(!a)return;for(const [f,g] of [[1760,.05],[2794,.03],[4186,.012]]){const o=a.createOscillator(),n=out(a,g);o.frequency.value=f;o.connect(n);n.gain.exponentialRampToValueAtTime(.0001,a.currentTime+1.3);o.start();o.stop(a.currentTime+1.3)}},
   thud(){const a=ctx();if(!a)return;const o=a.createOscillator(),n=out(a,.3);o.frequency.setValueAtTime(90,a.currentTime);o.frequency.exponentialRampToValueAtTime(38,a.currentTime+.2);o.connect(n);n.gain.exponentialRampToValueAtTime(.0001,a.currentTime+.26);o.start();o.stop(a.currentTime+.27)},
   rev(){const a=ctx();if(!a)return;const o=a.createOscillator(),f=a.createBiquadFilter(),n=out(a,.075),t=a.currentTime;o.type='sawtooth';f.type='lowpass';f.frequency.setValueAtTime(420,t);f.frequency.linearRampToValueAtTime(1900,t+.5);o.frequency.setValueAtTime(70,t);o.frequency.exponentialRampToValueAtTime(330,t+.5);o.frequency.exponentialRampToValueAtTime(90,t+1.1);o.connect(f).connect(n);n.gain.setValueAtTime(.075,t+.5);n.gain.exponentialRampToValueAtTime(.0001,t+1.15);o.start();o.stop(t+1.2)},
-  tick(){const a=ctx();if(!a)return;const o=a.createOscillator(),n=out(a,.05);o.type='triangle';o.frequency.value=1250;o.connect(n);n.gain.exponentialRampToValueAtTime(.0001,a.currentTime+.09);o.start();o.stop(a.currentTime+.1)}
+  tick(){const a=ctx();if(!a)return;texture(a,{duration:.055,frequency:2200,gain:.045})},
+  paper(){const a=ctx();if(!a)return;texture(a,{duration:.24,frequency:1350,gain:.055})},
+  metal(){const a=ctx();if(!a)return;texture(a,{duration:.07,frequency:3100,gain:.035});const o=a.createOscillator(),n=out(a,.018),t=a.currentTime;o.frequency.value=1550;o.connect(n);n.gain.exponentialRampToValueAtTime(.0001,t+.17);o.start(t);o.stop(t+.18)},
+  wood(){const a=ctx();if(!a)return;texture(a,{duration:.1,frequency:600,gain:.07});const o=a.createOscillator(),n=out(a,.035),t=a.currentTime;o.frequency.setValueAtTime(170,t);o.frequency.exponentialRampToValueAtTime(90,t+.08);o.connect(n);n.gain.exponentialRampToValueAtTime(.0001,t+.1);o.start(t);o.stop(t+.11)}
  };
 })();
-const VOICE={guitar:'strum',car:'rev',trophy:'ting',tyre:'thud',pencil:'tick',pick:'tick',book:'tick',tablet:'tick',satellite:'tick',research:'tick'};
+const VOICE={guitar:'strum',car:'rev',trophy:'ting',tyre:'thud',pencil:'wood',pick:'wood',book:'paper',tablet:'tick',satellite:'metal',research:'paper',crate:'wood',cases:'wood'};
 
 let started=false;
 const EMAIL='kavish.madan6@gmail.com',emailBtn=document.getElementById('ws-email'),linkedinA=document.getElementById('ws-linkedin'),toastEl=document.getElementById('ws-toast');
@@ -147,7 +155,7 @@ async function start(){
  const ray=new THREE.Raycaster(),ndc=new THREE.Vector2();
  function pick(x,y){const r=hero.getBoundingClientRect();if(x<r.left||x>r.right||y<r.top||y>r.bottom)return null;ndc.set((x-r.left)/r.width*2-1,-((y-r.top)/r.height)*2+1);ray.setFromCamera(ndc,camera);const hit=ray.intersectObjects(proxies,false)[0];return hit?hit.object.userData.key:null}
  const v=new THREE.Vector3();
- function place(key){const l=labs[key],m=proxies.find(o=>o.userData.key===key);if(!l||!m)return;v.copy(m.userData.top).project(camera);const r=hero.getBoundingClientRect();l.style.setProperty('--lx',((v.x*.5+.5)*r.width).toFixed(1)+'px');l.style.setProperty('--ly',((-v.y*.5+.5)*r.height).toFixed(1)+'px')}
+ function place(key){const l=labs[key],m=proxies.find(o=>o.userData.key===key);if(!l||!m)return;v.copy(m.userData.top).project(camera);const r=hero.getBoundingClientRect(),half=l.offsetWidth/2+12;const x=clamp((v.x*.5+.5)*r.width,half,Math.max(half,r.width-half)),y=clamp((-v.y*.5+.5)*r.height,105,r.height-40);l.style.setProperty('--lx',x.toFixed(1)+'px');l.style.setProperty('--ly',y.toFixed(1)+'px')}
  function hover(key){
   if(key===hoverKey)return;hoverKey=key;if(key==='satellite')flightData||=buildFlight();
   for(const k in labs)labs[k].classList.toggle('on',k===key);
