@@ -7,7 +7,7 @@ My maker portfolio: things I've built, the code behind them, and my awards.
 ## Pages
 
 - **Builds:** Project Strata (Land Rover 4×4 in Schools, 2nd in the UAE), anti-drone quadcopters, my Kessler orbital debris model and a dragonfly-inspired UAV wing.
-- **Code:** LastBite (UAE InnovAIte Hackathon finalist) and TutorTime (my A-level Computer Science NEA).
+- **Code:** LastBite (UAE InnovAIte Hackathon finalist), TutorTime (my A-level Computer Science NEA) and Kung Fooled (a troll platformer).
 - **Awards:** olympiads, competitions and academics.
 
 ## How it's built

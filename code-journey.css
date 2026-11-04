@@ -21,7 +21,7 @@
 .cs-story{color:var(--ink);max-width:72ch;margin:24px 0}
 .cs-story p{font-size:1rem;line-height:1.55;margin:0 0 12px}
 
-html.spiral-ready .code-journey{height:470svh;min-height:2900px}
+html.spiral-ready .code-journey{height:640svh;min-height:3900px}
 html.spiral-ready .journey-sticky{position:sticky;top:0;height:100svh;min-height:620px;padding:0;overflow:hidden}
 html.spiral-ready .journey-scene{display:block;position:absolute;left:32%;right:-1%;top:65px;bottom:0;pointer-events:none}
 html.spiral-ready .journey-heading{position:absolute;top:clamp(108px,16vh,170px);left:max(28px,4vw);max-width:37%;transition:opacity .35s,translate .6s}
@@ -55,7 +55,7 @@ html.spiral-ready #more-code{padding-top:clamp(70px,9vw,130px);scroll-margin-top
 @media(min-width:1500px){html.spiral-ready .journey-project{top:25vh}html.spiral-ready .journey-scene{left:30%;right:2%}}
 @media(max-width:980px){html.spiral-ready .journey-scene{left:29%;right:-8%}html.spiral-ready .journey-project{width:35%;left:28px}html.spiral-ready .journey-project h2{font-size:clamp(2.6rem,6vw,4rem)}html.spiral-ready .journey-heading{left:28px}html.spiral-ready .journey-project .chips{display:none}html.spiral-ready .journey-spine{left:12px}}
 @media(max-width:650px){
- html.spiral-ready .code-journey{height:430svh;min-height:2600px}
+ html.spiral-ready .code-journey{height:590svh;min-height:3500px}
  html.spiral-ready .journey-sticky{height:100svh;min-height:620px}
  html.spiral-ready .journey-scene{left:0;right:0;top:72px;bottom:34%}
  html.spiral-ready .journey-heading{top:100px;left:20px;max-width:75%;pointer-events:none}
@@ -80,3 +80,17 @@ html.spiral-ready #more-code{padding-top:clamp(70px,9vw,130px);scroll-margin-top
 /* Give the staircase its own space in a split pane. */
 @media(min-width:651px) and (max-width:1100px){html.spiral-ready .journey-scene{left:42%;right:0}}
 @media(max-width:650px){html.spiral-ready .journey-scene{left:2%;right:-2%}}
+
+/* Project actions: open the case study, or go straight to the code */
+.journey-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px}
+.journey-gh{display:inline-flex;align-items:center;gap:7px;min-height:44px;color:inherit;font:600 .9rem var(--f-b);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+.journey-gh svg{width:17px;height:17px;flex-shrink:0}
+.journey-gh:hover{color:var(--accent)}
+.journey-project:not(.is-current) .journey-gh:hover{color:var(--hot)}
+.cs-repo{display:inline-block;margin-top:.5rem;color:var(--ink);font-weight:600}
+.cs-repo[hidden]{display:none}
+@media (max-width:650px){
+ html.spiral-ready .journey-track{left:16px;right:16px;gap:10px;justify-content:space-between}
+ html.spiral-ready .journey-track a{font-size:.7rem;white-space:nowrap;gap:5px}
+ html.spiral-ready .journey-caption{display:none}
+}

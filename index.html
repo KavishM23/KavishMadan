@@ -846,7 +846,7 @@ html.intro-hold .obj-labs{visibility:hidden}
     <div class="cs-story" id="cs-story"></div>
     <div class="cs-cols">
       <div><h3>How it works</h3><ul id="cs-how"></ul></div>
-      <div><h3>Built with</h3><div class="chips" id="cs-tech"></div><p class="cs-note" id="cs-note"></p></div>
+      <div><h3>Built with</h3><div class="chips" id="cs-tech"></div><p class="cs-note" id="cs-note"></p><a class="cs-repo" id="cs-repo" href="#" target="_blank" rel="noopener" hidden>View the code on GitHub ↗</a></div>
     </div>
   </div>
 </div>
@@ -1202,7 +1202,7 @@ html.intro-hold .obj-labs{visibility:hidden}
         </div></div>
       </div>
       <div class="doors">
-        <a class="door" href="#code"><div class="tilt" style="--r:-1.2deg"><div class="peel pk"><span class="cat">Next page</span><h3>Code</h3><p>LastBite, TutorTime and the code behind the builds.</p><span class="go">Open the code page<b>→</b></span></div></div></a>
+        <a class="door" href="#code"><div class="tilt" style="--r:-1.2deg"><div class="peel pk"><span class="cat">Next page</span><h3>Code</h3><p>LastBite, TutorTime, Kung Fooled and the code behind the builds.</p><span class="go">Open the code page<b>→</b></span></div></div></a>
         <a class="door" href="#awards"><div class="tilt" style="--r:1.4deg"><div class="peel nv"><span class="cat">Next page</span><h3>Awards</h3><p>Olympiads, grades and test scores.</p><span class="go">Open the awards page<b>→</b></span></div></div></a>
       </div>
     </div>
@@ -1262,7 +1262,7 @@ html.intro-hold .obj-labs{visibility:hidden}
       <header class="journey-heading">
         <a class="back" href="#home">← Back to builds</a>
         <h1>Code</h1>
-        <p>Software I've written: a hackathon app that cuts food waste, my A-level NEA, and the code behind the builds.</p>
+        <p>Software I've built: a hackathon app that cuts food waste, my A-level NEA, a troll platformer and the code behind the builds.</p>
       </header>
       <div class="journey-spine" aria-hidden="true"><i></i></div>
       <span class="journey-anchor" id="b-lastbite" aria-hidden="true"></span>
@@ -1272,7 +1272,7 @@ html.intro-hold .obj-labs{visibility:hidden}
         <p class="project-line">A pantry app that tells you what's about to go off, and what to cook with it.</p>
         <p class="project-proof">Finalist. Top 7 of 60+ teams.</p>
         <div class="chips"><span>React</span><span>TypeScript</span><span>Gemini API</span><span>Leaflet</span></div>
-        <button class="btn cs-open" type="button" data-case="lastbite">Explore LastBite ↗</button>
+        <div class="journey-actions"><button class="btn cs-open" type="button" data-case="lastbite">Explore LastBite ↗</button><a class="journey-gh" href="https://github.com/robberttorfs/LastBite" target="_blank" rel="noopener" aria-label="LastBite on GitHub"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>GitHub ↗</a></div>
         <a class="journey-next" href="#b-tutortime">Next landing: TutorTime ↓</a>
         <img class="journey-image" src="img/lb-pantry.webp" alt="LastBite pantry sorted by expiry date, with example items" decoding="async" width="800" height="500">
       </article>
@@ -1284,11 +1284,22 @@ html.intro-hold .obj-labs{visibility:hidden}
         <p class="project-proof">Solo build. Three-factor tutor matching.</p>
         <div class="chips"><span>Python</span><span>Flask</span><span>SQLite</span><span>PDF invoices</span></div>
         <button class="btn cs-open" type="button" data-case="tutortime">Explore TutorTime ↗</button>
-        <a class="journey-next" href="#more-code">The code behind the builds ↓</a>
+        <a class="journey-next" href="#b-kungfooled">Next landing: Kung Fooled ↓</a>
         <img class="journey-image" src="img/tt-match.webp" alt="TutorTime tutors ranked by match score, style and availability" decoding="async" width="620" height="290">
       </article>
-      <nav class="journey-track" aria-label="Project landings"><a href="#b-lastbite" data-journey-stop="lastbite">LastBite</a><a href="#b-tutortime" data-journey-stop="tutortime">TutorTime</a><a href="#more-code">Behind the builds</a></nav>
-      <p class="journey-caption" data-flight-status aria-live="polite">Two projects. One descent.</p>
+      <span class="journey-anchor" id="b-kungfooled" aria-hidden="true"></span>
+      <article class="journey-project" data-project="kungfooled" aria-labelledby="landing-kungfooled-title">
+        <div class="project-context">Browser game</div>
+        <h2 id="landing-kungfooled-title">Kung Fooled</h2>
+        <p class="project-line">A troll platformer dressed as a 90s arcade fighter. The stage will betray you.</p>
+        <p class="project-proof">10 art styles. 40 levels.</p>
+        <div class="chips"><span>JavaScript</span><span>HTML Canvas</span><span>Web Audio</span></div>
+        <div class="journey-actions"><button class="btn cs-open" type="button" data-case="kungfooled">Explore Kung Fooled ↗</button><a class="journey-gh" href="https://github.com/KavishM23/kung-fooled" target="_blank" rel="noopener" aria-label="Kung Fooled on GitHub"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>GitHub ↗</a></div>
+        <a class="journey-next" href="#more-code">The code behind the builds ↓</a>
+        <img class="journey-image" src="img/kf-arcade.webp" alt="Kung Fooled: the player on a brick rooftop level at dusk" decoding="async" width="1536" height="864">
+      </article>
+      <nav class="journey-track" aria-label="Project landings"><a href="#b-lastbite" data-journey-stop="lastbite">LastBite</a><a href="#b-tutortime" data-journey-stop="tutortime">TutorTime</a><a href="#b-kungfooled" data-journey-stop="kungfooled">Kung Fooled</a><a href="#more-code">Behind the builds</a></nav>
+      <p class="journey-caption" data-flight-status aria-live="polite">Three projects. One descent.</p>
     </div>
   </section>
 
@@ -1756,7 +1767,16 @@ html.intro-hold .obj-labs{visibility:hidden}
 
   /* ---- "see it in depth" case studies ---- */
   const CASES={
-    lastbite:{story:["LastBite keeps track of what's in your fridge, freezer and cupboards and sorts it all by expiry date, so whatever's about to go off is right at the top.", "Hit Cook Something and Gemini writes recipes around the things expiring first. You can scan barcodes to add food, see the money and CO2 you've saved, and if you can't use something in time it shows the nearest places in the UAE to donate it.", "We built it for the UAE InnovAIte Hackathon and made the final, top 7 out of 60+ teams."],tag:'UAE InnovAIte Hackathon',title:'LastBite',line:'A pantry app that tells you what is about to go off, and what to cook with it. Top 7 of 60+ teams.',
+    kungfooled:{story:["Run from the left of each stage to the exit door. The stage will betray you. Nothing gives a trap away before it goes off, so you learn each one by dying to it, and respawn is instant.", "There are ten style realms with four levels each, from full-colour arcade to four Game Boy greens, Edo woodblock prints, VHS and cyberpunk. Each one brings its own rule, K.O. card and sounds.", "A realm runs level, level, street fight, level, level, boss. Clearing them pays coins for outfits, upgrades and special moves in the Dojo."],tag:'Browser game',title:'Kung Fooled',line:'A troll platformer dressed as a late-90s arcade fighter. Learn each trap by dying to it.',repo:'https://github.com/KavishM23/kung-fooled',
+      shots:[{src:'img/kf-title.webp',w:1536,h:864,url:'kung fooled / title',cap:'A troll platformer. Allegedly.'},
+             {src:'img/kf-arcade.webp',w:1536,h:864,url:'kung fooled / arcade',cap:'Arcade, the full-colour realm.'},
+             {src:'img/kf-retro.webp',w:1536,h:864,url:'kung fooled / retro',cap:'Retro: silent-film black and white.'},
+             {src:'img/kf-woodblock.webp',w:1536,h:864,url:'kung fooled / woodblock',cap:'Woodblock, in the style of Edo prints.'},
+             {src:'img/kf-cyber.webp',w:1536,h:864,url:'kung fooled / cyber',cap:'Cyber, the last realm.'},
+             {src:'img/kf-map.webp',w:1536,h:864,url:'kung fooled / realms',cap:'Every realm is open from the start.'}],
+      how:['Trap floors look exactly like real floor, and a fake exit looks exactly like the real one.','A retry looks exactly like the first try, so what you learned by dying stays true.','Stand still for 3.5 seconds and the floor drops away.','Each level has four parts and three checkpoint doors.','A checker tool tests all 40 layouts: checkpoint order, grounded terrain and trap outcomes.','It is plain scripts with no build step, so it runs straight from a file.'],
+      tech:['JavaScript','HTML Canvas','Web Audio'],note:'Screens are captured from the game.'},
+    lastbite:{story:["LastBite keeps track of what's in your fridge, freezer and cupboards and sorts it all by expiry date, so whatever's about to go off is right at the top.", "Hit Cook Something and Gemini writes recipes around the things expiring first. You can scan barcodes to add food, see the money and CO2 you've saved, and if you can't use something in time it shows the nearest places in the UAE to donate it.", "We built it for the UAE InnovAIte Hackathon and made the final, top 7 out of 60+ teams."],tag:'UAE InnovAIte Hackathon',title:'LastBite',line:'A pantry app that tells you what is about to go off, and what to cook with it. Top 7 of 60+ teams.',repo:'https://github.com/robberttorfs/LastBite',
       shots:[{src:'img/lb-landing.webp',w:800,h:500,url:'lastbite / home',cap:'The landing page.'},
              {src:'img/lb-pantry.webp',w:800,h:500,url:'lastbite / pantry',cap:'The pantry, sorted by days left. Example items.'},
              {src:'img/lb-visual.webp',w:800,h:500,url:'lastbite / pantry / visual',cap:'Visual mode: fridge, pantry and freezer at a glance.'},
@@ -1782,6 +1802,7 @@ html.intro-hold .obj-labs{visibility:hidden}
     document.getElementById('cs-how').innerHTML=C.how.map(h=>`<li>${esc(h)}</li>`).join('');
     document.getElementById('cs-tech').innerHTML=C.tech.map(t=>`<span>${esc(t)}</span>`).join('');
     document.getElementById('cs-note').textContent=C.note;
+    const csRepo=document.getElementById('cs-repo');csRepo.hidden=!C.repo;if(C.repo)csRepo.href=C.repo;
     document.getElementById('cs-story').innerHTML=(C.story||[]).map(p=>`<p>${esc(p)}</p>`).join('');
     csThumbs.innerHTML=C.shots.map((s,k)=>`<button type="button" data-k="${k}" aria-label="${esc(s.cap)}"><img src="${s.src}" alt="" width="${s.w}" height="${s.h}" loading="lazy"></button>`).join('');
     csShow(shot||0);cs.hidden=false;cs.scrollTop=0;lockScroll(true);setTimeout(()=>cs.querySelector('.cs-x').focus({preventScroll:true}),40)}
