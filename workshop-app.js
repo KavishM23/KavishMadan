@@ -8,7 +8,7 @@ const phone=matchMedia('(max-width: 760px)').matches||!matchMedia('(hover: hover
 const params=new URLSearchParams(location.search);
 const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2,damp=(a,b,k,dt)=>a+(b-a)*(1-Math.exp(-k*dt)),smooth=t=>t*t*(3-2*t);
 const V=a=>new THREE.Vector3(...a),frame=()=>new Promise(r=>requestAnimationFrame(r)),home=()=>R.classList.contains('on-home');
-const fail=()=>{hero.classList.add('ws-failed');hero.classList.remove('ws-loading');if(wantContact)hero.classList.add('ws-contact');dispatchEvent(new Event('hero3d-failed'))};
+const fail=()=>{hero.classList.add('ws-failed');hero.classList.remove('ws-loading');if(wantContact)hero.classList.add('ws-contact');dispatchEvent(new Event('hero3d-failed'));dispatchEvent(new Event('workshop-failed'))};
 const BASE={rest:{p:[.52,2.62,9.35],t:[.15,.95,-.5]},far:{p:[1.1,7.2,19.5],t:[0,1.45,0]}};
 
 /* ---- small sounds, made on the spot; they only ever follow a click ---- */
@@ -75,10 +75,10 @@ async function start(){
  await frame();
 
  /* ---- sizing ---- */
- let W=1,H=1,best=null,fast=null,chainKey='',fastScale=.8,ratio=1,ao=!phone&&!params.has('noao'),fastAO=ao,settleAt=0;
+ let W=1,H=1,best=null,fast=null,chainKey='',fastScale=.9,ratio=1,ao=!phone&&!params.has('noao'),fastAO=ao,settleAt=0;
  function size(){
   const r=hero.getBoundingClientRect();W=Math.max(1,Math.round(r.width));H=Math.max(1,Math.round(r.height));
-  ratio=Math.min(devicePixelRatio||1,phone?1.5:1.6,Math.sqrt(2500000/(W*H)));
+  ratio=Math.min(devicePixelRatio||1,phone?1.5:2,Math.sqrt((phone?2500000:4500000)/(W*H)));
   renderer.setPixelRatio(ratio);renderer.setSize(W,H,false);camera.aspect=W/H;camera.updateProjectionMatrix();
   const pw=Math.round(W*ratio),ph=Math.round(H*ratio);
   const fw=Math.round(pw*fastScale),fh=Math.round(ph*fastScale),key=[pw,ph,fw,fh,fastAO].join();
@@ -404,7 +404,7 @@ async function start(){
    camUpdate(dt);if(hoverKey)place(hoverKey);if(focusKey)place(focusKey);
    draw(fast);dirty=false;settleAt=now+170;
    // keep it smooth on slower machines: shed detail from the moving frames, never from the still one
-   if(++samples>30){samples=0;slow=frameTime/30>30?slow+1:0;frameTime=0;if(slow>=2&&(fastAO||fastScale>.5)){slow=0;if(fastAO)fastAO=false;else fastScale=Math.max(.5,fastScale-.14);size()}}
+   if(++samples>30){samples=0;slow=frameTime/30>30?slow+1:0;frameTime=0;if(slow>=2&&(fastAO||fastScale>.68)){slow=0;if(fastAO)fastAO=false;else fastScale=Math.max(.68,fastScale-.11);size()}}
    frameTime+=(now-lastDraw);lastDraw=now;
   }else if(settleAt&&now>=settleAt){settleAt=0;lastDraw=now;draw(best)}
   hero.classList.toggle('ws-moving',intro<1);
@@ -423,7 +423,7 @@ async function start(){
  new ResizeObserver(()=>{if(!visible())return;size();frameFor(W/H);wake()}).observe(hero);size();frameFor(W/H);setNight(R.dataset.theme==='dark');
  document.addEventListener('visibilitychange',wake);
  play(.016,0);camUpdate(.016);draw(best);if(!home())freeChains();
- hero.classList.remove('ws-loading');hero.classList.add('ws-ready');api.ready=true;
+ hero.classList.remove('ws-loading','ws-failed');hero.classList.add('ws-ready');api.ready=true;
  if(location.hash==='#contact'){wantContact=true;intro=1}
  dispatchEvent(new Event('workshop-ready'));wake();
 }

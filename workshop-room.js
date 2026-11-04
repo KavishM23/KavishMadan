@@ -92,15 +92,14 @@ Workshop.room=function(THREE,kit,{bakes=null}={}){
  }
  const backMap=plaster(4096,1544,601,(g,w,h,R)=>{
   // the name, stencilled straight onto the wall
-  const size=h*.19,cx=w*.5,cy=h*.31;
+  const size=h*.175,cx=w*.515,cy=h*.245;
   const c=document.createElement('canvas');c.width=w;c.height=Math.round(size*1.5);const x=c.getContext('2d');
   x.font=`800 ${size}px "League Spartan",Arial,sans-serif`;x.textAlign='center';x.textBaseline='middle';x.fillStyle='#1E3A40';
   try{x.letterSpacing=`${-size*.012}px`}catch(e){}
   x.fillText('KAVISH MADAN',cx,c.height/2+size*.05);
   x.globalCompositeOperation='destination-out';
-  for(let i=0;i<60000;i++){x.fillStyle=`rgba(0,0,0,${R()*.5})`;x.fillRect(R()*w,R()*c.height,1+R()*4,1+R()*3)}
-  for(let i=0;i<70;i++){const px=R()*w,py=R()*c.height,r=20+R()*120,gr=x.createRadialGradient(px,py,0,px,py,r);gr.addColorStop(0,`rgba(0,0,0,${.1+R()*.26})`);gr.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=gr;x.fillRect(px-r,py-r,r*2,r*2)}
-  g.globalAlpha=.86;g.drawImage(c,0,cy-c.height/2);g.globalAlpha=1;
+  for(let i=0;i<18000;i++){x.fillStyle=`rgba(0,0,0,${R()*.2})`;x.fillRect(R()*w,R()*c.height,1+R()*3,1+R()*2)}
+  g.globalAlpha=.96;g.drawImage(c,0,cy-c.height/2);g.globalAlpha=1;
  });
  const sideMap=plaster(2840,1544,877);
  const plasterBump=canvasTexture(1024,512,(g,w,h)=>{

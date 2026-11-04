@@ -860,6 +860,32 @@ html.intro-hold .obj-labs{visibility:hidden}
 
 <a class="ws-back" href="#home">← Workshop</a>
 <main id="top">
+  <section class="ws-loader" id="ws-loader" aria-label="Welcome to the workshop">
+    <div class="ws-loader-card">
+      <p class="ws-loader-kicker">KAVISH MADAN <span> / </span> WORKSHOP</p>
+      <h1>Welcome in.</h1>
+      <p class="ws-loader-lead">Take a look around and explore the things I’ve made.</p>
+      <div class="ws-loader-guide">
+        <p class="ws-guide-pointer"><span aria-hidden="true">↔</span><b>Look around</b> Move your cursor or drag the room.</p>
+        <p class="ws-guide-touch"><span aria-hidden="true">↔</span><b>Look around</b> Drag to explore the room.</p>
+        <p><span aria-hidden="true">✳</span><b>Explore</b> Select an object to open its story.</p>
+      </div>
+      <div class="ws-loader-status" role="status" aria-live="polite"><span class="ws-loader-dot" aria-hidden="true"></span><span id="ws-loader-status">Preparing the workshop…</span></div>
+      <button type="button" id="ws-loader-enter" disabled>Enter workshop <span aria-hidden="true">↗</span></button>
+    </div>
+  </section>
+  <script>
+  (function(){
+    const panel=document.getElementById('ws-loader'),button=document.getElementById('ws-loader-enter'),status=document.getElementById('ws-loader-status');
+    if(!document.documentElement.classList.contains('on-home')){panel.hidden=true;return}
+    let ready=false;
+    function available(ok){if(ready)return;ready=true;clearTimeout(timeout);status.textContent=ok?'The workshop is ready.':'The workshop is taking longer than expected.';button.disabled=false;button.firstChild.textContent=ok?'Enter workshop ':'Continue to the site ';panel.classList.add('is-ready');if(!ok)document.getElementById('hero')?.classList.add('ws-failed')}
+    const timeout=setTimeout(()=>available(false),20000);
+    addEventListener('workshop-ready',()=>available(true),{once:true});addEventListener('workshop-failed',()=>available(false),{once:true});
+    button.addEventListener('click',()=>{panel.hidden=true;document.querySelector('.top a[data-tab="home"]')?.focus({preventScroll:true})});
+    addEventListener('hashchange',()=>{if(location.hash&&location.hash!=='#home')panel.hidden=true});
+  })();
+  </script>
   <section class="hero workshop-hero" id="hero">
     <canvas id="workshop3d" aria-label="A workshop with an F1 car, a guitar, a sketchbook, a satellite and a trophy. Each one opens a part of this site."></canvas>
     <p class="ws-wait" aria-hidden="true">Opening the workshop</p>
