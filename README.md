@@ -1,6 +1,6 @@
 # Kavish Madan
 
-My maker portfolio: things I've built, the code behind them, and my awards. The opening is an interactive miniature workshop, with a navy and ivory F1 car, a sunburst Gibson Les Paul-style guitar, a Project Strata 4×4 sketchbook, research notes, tablets, a satellite, tyre and trophy.
+My maker portfolio: things I've built, the code behind them, and my awards.
 
 **Live site:** https://KavishM23.github.io/KavishMadan/
 
@@ -14,13 +14,10 @@ My maker portfolio: things I've built, the code behind them, and my awards. The 
 
 One static page, no build step. The hero's 3D objects are modelled in [three.js](https://threejs.org), scroll effects use [GSAP](https://gsap.com), and the torn-paper transitions are SVG drawn from scroll position. Open `index.html` in a browser, or serve the folder with any static server.
 
-`workshop-models.js` models the F1 car, Gibson-style guitar, open 4×4 sketchbook and workshop furniture. The opening reuses the detailed research book, tyre, satellite and tablets. Select objects to navigate; dragging rotates the collection, and Reset view restores its orientation. Camera approaches run before model navigation, while visible links provide keyboard, touch and WebGL fallback navigation. Back to workshop returns from each section. Hover motion uses a small damped spring response; the car and other substantial objects remain grounded.
-
-`workshop.css` loads after the earlier styles and sets the shared daylight palette: warm ivory, navy ink, brushed aluminium and muted burgundy. Project photographs retain their real colors. `moroccan-gate.js` models the doorway at the top of the staircase and draws the brick, limestone and flagstone textures. `noir.js` fills the big statements word by word on scroll. `models.js` supplies the additional About, Code and Awards objects, including the same Gibson-style guitar; they share the hero's WebGL renderer. `interactions.js` and `interactions.css` provide the contextual cursor, pointer lenses, touch/keyboard reveal controls and collection layout. The former portrait and Concorde intro are retired. Design decisions are recorded in `FEEDBACK.md`.
+`moroccan-gate.js` models the doorway at the top of the staircase and draws the brick, limestone and flagstone textures. `noir.css` sets the art direction (near-black, sand, one orange) and loads last; `noir.js` fills the big statements word by word on scroll. `models.js` supplies the additional About, Code and Awards objects; they share the hero's WebGL renderer. `interactions.js` and `interactions.css` provide the contextual cursor, pointer lenses, touch/keyboard reveal controls and collection layout. The intro in `concorde.js` is a modelled Concorde that shares the hero's scene and is removed once it has flown. Design decisions are recorded in `FEEDBACK.md`.
 
 `code-journey.js` and `code-journey.css` turn the Code page into a scroll-driven spiral staircase with LastBite and TutorTime landings and a following drone. Short-screen, reduced-motion and WebGL fallbacks retain a normal project layout. The final code-behind-the-builds section is preserved.
 
 `render-performance.js` batches static model details, manages a single cancellable render loop and adapts framebuffer density under sustained load. The 3D loop targets 60 fps and pauses offscreen, in background tabs and behind open overlays. Static camera bounds are cached; the staircase steps and posts use instancing. Geometry detail, the book notes and the page grain are retained.
 
 Run the controller and scroll regression tests with `node --test tests/*.test.cjs`. For local profiling, append `?profile=1` before the page hash; the canvas's `data-performance` attribute reports rolling frame intervals, update/render CPU time and draw counts. Detailed profiling is disabled on ordinary visits. Timing varies with the browser, GPU and other work on the device.
-

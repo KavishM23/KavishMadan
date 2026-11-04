@@ -2,21 +2,21 @@
 window.createCodeStaircase=function({THREE,Round,environment,makeDrone,reduced,el,anisotropy=4}){
  const masonry=window.createMasonry({THREE,anisotropy});
  const journey=document.getElementById('code-journey');
- const scene=new THREE.Scene();scene.environment=environment;scene.fog=new THREE.Fog(0xf0ede5,18,40);
- scene.add(new THREE.HemisphereLight(0xb7ab98,0x253449,.9));
+ const scene=new THREE.Scene();scene.environment=environment;scene.fog=new THREE.Fog(0x0d0d0d,18,40);
+ scene.add(new THREE.HemisphereLight(0xb7ab98,0x0d0d0d,.9));
  const key=new THREE.DirectionalLight(0xfff0dc,2.8);key.position.set(-7,10,9);key.target.position.set(0,-3.4,0);scene.add(key,key.target);
  // Real shadows from one light. The stairs never move, so the map is drawn once and redrawn only while the doors swing.
  key.castShadow=true;{const shadowSize=innerWidth<=650?1024:2048;key.shadow.mapSize.set(shadowSize,shadowSize)}key.shadow.bias=-.0004;key.shadow.normalBias=.025;key.shadow.autoUpdate=false;key.shadow.needsUpdate=true;
  {const c=key.shadow.camera;c.left=-8.5;c.right=8.5;c.top=9.5;c.bottom=-9.5;c.near=1;c.far=46}
- const fill=new THREE.DirectionalLight(0x74464e,1.5);fill.position.set(8,3,-7);scene.add(fill);
+ const fill=new THREE.DirectionalLight(0xeb5939,1.5);fill.position.set(8,3,-7);scene.add(fill);
  const camera=new THREE.PerspectiveCamera(43,1,.1,80);
  const treadTexture={map:masonry.limestone.map,bumpMap:masonry.limestone.bumpMap,bumpScale:1.5};
- const stone=new THREE.MeshStandardMaterial({...treadTexture,color:0xb8b3a8,roughness:.78,metalness:0,envMapIntensity:.55});
+ const stone=new THREE.MeshStandardMaterial({...treadTexture,color:0x665f56,roughness:.78,metalness:0,envMapIntensity:.55});
  const edge=new THREE.MeshStandardMaterial({...treadTexture,color:0x9c9284,roughness:.7,metalness:0,envMapIntensity:.55});
  const metal=new THREE.MeshStandardMaterial({color:0x1e1c1a,roughness:.3,metalness:.75});
- const copper=new THREE.MeshStandardMaterial({color:0x74464e,roughness:.35,metalness:.6});
+ const copper=new THREE.MeshStandardMaterial({color:0xeb5939,roughness:.35,metalness:.6});
  const brass=new THREE.MeshStandardMaterial({color:0xc9a45c,metalness:1,roughness:.34,envMapIntensity:.8});
- const columnStone=new THREE.MeshStandardMaterial({map:masonry.limestone.map,bumpMap:masonry.limestone.bumpMap,bumpScale:1.6,color:0xc5beb0,roughness:.72,envMapIntensity:.45});
+ const columnStone=new THREE.MeshStandardMaterial({map:masonry.limestone.map,bumpMap:masonry.limestone.bumpMap,bumpScale:1.6,color:0x5a544c,roughness:.72,envMapIntensity:.45});
  const accent=new THREE.MeshStandardMaterial({color:0xb7ab98,roughness:.4,emissive:0x6a6054,emissiveIntensity:.25});
  const world=new THREE.Group();scene.add(world);
  const start=-.4,total=Math.PI*3.2,drop=11.3,steps=90,outer=3.45;
@@ -153,4 +153,3 @@ window.createCodeStaircase=function({THREE,Round,environment,makeDrone,reduced,e
  if(live){requestAnimationFrame(()=>{const i=['#b-lastbite','#b-tutortime','#b-kungfooled'].indexOf(location.hash);if(i>=0)markers[i].scrollIntoView({behavior:'instant'})})}
  return slot;
 };
-

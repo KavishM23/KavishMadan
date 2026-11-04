@@ -1,2 +1,0 @@
-(()=>{const hero=document.getElementById('hero');hero.querySelectorAll('.scene-hotspots a').forEach(a=>a.addEventListener('click',e=>{if(e.ctrlKey||e.metaKey||e.shiftKey||matchMedia('(prefers-reduced-motion: reduce)').matches)return;e.preventDefault();hero.classList.add('is-entering');setTimeout(()=>{location.hash=a.hash;setTimeout(()=>hero.classList.remove('is-entering'),600)},420)}));addEventListener('hashchange',()=>{if(location.hash==='#home')hero.classList.remove('is-entering')});})();
-
