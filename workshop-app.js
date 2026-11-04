@@ -266,7 +266,7 @@ async function start(){
     P.tyre.position.x=tyreStart.x+dx*roll;P.tyre.position.z=tyreStart.z+dz*roll;P.tyre.rotation.y=Math.atan2(dx,dz)*tip;
     b.rotation.set(roll*Math.hypot(dx,dz)/(.362*s),0,tip*Math.PI/2);b.position.y=.2+tip*.162+Math.sin(tip*Math.PI)*.05;
    }},
-  guitar:{label:'About',dur:3.5,finish:'pick',hold:true,
+  guitar:{label:'About',dur:3.5,finish:'cut',hold:true,
    // Hold a complete view of the instrument instead of flying through its hardware.
    route:from=>{const g=P.guitar.position,depth=camera.aspect<1?5.2:4.3,o=a=>new THREE.Vector3(g.x+a[0],a[1],g.z+a[2]),target=o([0,.96,0]);return {path:[from.p,o([1.3,1.65,6.2]),o([.65,1.18,depth]),o([.5,1.12,depth])],look:[from.t,target,target.clone(),target.clone()],up:Y}},
    act(){}},
@@ -334,8 +334,8 @@ async function start(){
  }
  /* hand over to the real page: the full-screen wipe takes the place of whatever now fills the view */
  function takeover(m,next){
-  window.fitWipe(m.label);wipeEl.className='wipe still '+(m.finish==='sweep'?'sweep':m.finish==='iris'?'dusk':m.finish==='pick'?'pick-sweep':'cut');
-  setTimeout(()=>{next();setTimeout(()=>{wipeEl.className='wipe out';setTimeout(()=>{wipeEl.className='wipe'},760)},140)},m.finish==='sweep'?640:m.finish==='iris'?340:m.finish==='pick'?700:190);
+  window.fitWipe(m.label);wipeEl.className='wipe still '+(m.finish==='sweep'?'sweep':m.finish==='iris'?'dusk':'cut');
+  setTimeout(()=>{next();setTimeout(()=>{wipeEl.className='wipe out';setTimeout(()=>{wipeEl.className='wipe'},760)},140)},m.finish==='sweep'?640:m.finish==='iris'?340:190);
  }
  function arrive(){const s=stage,m=s.m;s.dir=0;if(m.finish==='contact'){contactOn=true;hero.classList.add('ws-contact');placeChoices();setTimeout(()=>emailBtn.focus({preventScroll:true}),60);return}if(m.finish==='overlay')window.openResearch?.(innerWidth/2,innerHeight/2);else takeover(m,s.done)}
  function placeChoices(){
