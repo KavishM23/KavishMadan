@@ -118,7 +118,7 @@ async function start(){
  const models={};
  for(const key of ['car','guitar','tablet','book','satellite','trophy','tyre','crate','pencil','pick','plant'])models[key]={o:items[key],h:0,goal:0,p:99};
  for(const key in shelfPlays)models[key]={o:shelfPlays[key],h:0,goal:0,p:99};
- function react(key){const m=models[key];if(!m)return;m.p=0;m.o.userData.click?.();if(VOICE[key])Sound[VOICE[key]]();wake()}
+ function react(key){const m=models[key];if(!m)return;m.p=0;m.o.userData.click?.();if(VOICE[key]){try{Sound[VOICE[key]]()}catch(e){console.warn('Workshop sound unavailable',e)}}wake()}
  function play(dt,time){
   let busy=false;
   for(const key in models){
@@ -171,7 +171,7 @@ async function start(){
   if(!home())return;px=e.clientX/innerWidth-.5;py=e.clientY/innerHeight-.5;dirty=true;
   if(down&&!stage){const dx=e.clientX-down.x,dy=e.clientY-down.y;if(!dragging&&Math.hypot(dx,dy)>7){dragging=true;canvas.style.cursor='grabbing';hover(null)}
    if(dragging){yawGoal=clamp(down.yaw-dx*.0036,-.46,.46);pitchGoal=clamp(down.pitch+dy*.0012,-.05,.17)}}
-  else if(e.pointerType==='mouse'||!e.pointerType)pending=e.target===canvas?[e.clientX,e.clientY]:null;
+  else if(e.pointerType==='mouse'||!e.pointerType){const lab=e.target.closest?.('.ws-lab');if(lab){pending=null;hover(lab.dataset.key)}else pending=e.target===canvas?[e.clientX,e.clientY]:null}
   wake();
  },{passive:true});
  let down=null;
@@ -182,7 +182,8 @@ async function start(){
   if(!d||was||!api.ready||stage)return;
   const k=pick(e.clientX,e.clientY);if(k)activate(k);
  });
- canvas.addEventListener('pointerleave',()=>{pending=null;if(!down)hover(null)});
+ canvas.addEventListener('pointerleave',e=>{pending=null;if(!down&&!e.relatedTarget?.closest?.('.ws-lab'))hover(null)});
+ document.querySelector('.ws-labs')?.addEventListener('pointerleave',e=>{if(!down&&e.relatedTarget!==canvas)hover(null)});
  canvas.addEventListener('pointercancel',()=>{down=null;dragging=false});
 
  /* ---- walking into a page ----
