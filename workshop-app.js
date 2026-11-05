@@ -41,15 +41,9 @@ const Sound=(()=>{
 const VOICE={guitar:'strum',car:'rev',trophy:'ting',tyre:'thud',pencil:'wood',pick:'wood',book:'paper',tablet:'tick',satellite:'metal',research:'paper',crate:'wood',cases:'wood'};
 
 let started=false;
-const EMAIL='kavish.madan6@gmail.com',emailBtn=document.getElementById('ws-email'),linkedinA=document.getElementById('ws-linkedin'),toastEl=document.getElementById('ws-toast');
-let wantContact=location.hash==='#contact',toastTimer=0;
-function toast(text){toastEl.textContent=text;toastEl.classList.add('on');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toastEl.classList.remove('on'),3200)}
-function copyEmail(){
- const done=()=>toast('Copied '+EMAIL);
- const fallback=()=>{const t=document.createElement('textarea');t.value=EMAIL;t.style.cssText='position:fixed;opacity:0';document.body.append(t);t.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}t.remove();ok?done():toast(EMAIL)};
- try{navigator.clipboard.writeText(EMAIL).then(done,fallback)}catch(e){fallback()}
-}
-emailBtn.addEventListener('click',()=>{copyEmail();api.pulse?.('email')});
+const emailBtn=document.getElementById('ws-email'),linkedinA=document.getElementById('ws-linkedin');
+let wantContact=location.hash==='#contact';
+emailBtn.addEventListener('click',()=>{api.pulse?.('email')});
 const api={ready:false,enter(){return false},leave(){start();return false},back(){},contact(){wantContact=true;if(hero.classList.contains('ws-failed'))hero.classList.add('ws-contact');else start()},closeContact(){wantContact=false},start};
 window.workshopApi=api;
 
@@ -398,7 +392,7 @@ async function start(){
    if(stage.dir>0&&stage.v>=1)arrive();
   }
   let acting=play(dt,time);
-  if(contactOn){ // the thing under the pointer leans out towards you; a copied letter gives a small shake
+  if(contactOn){ // the thing under the pointer leans out towards you; the selected letter gives a small shake
    liftE=damp(liftE,choiceKey==='email'?1:0,9,dt);liftL=damp(liftL,choiceKey==='linkedin'?1:0,9,dt);pulseE+=dt;
    crate.letter.position.z=slot[0][2]+liftE*.035;crate.card.position.z=slot[1][2]+liftL*.035;crate.card.userData.press(liftL);
    crate.letter.position.y=slot[0][1]+Math.sin(time*1.3)*.006;crate.card.position.y=slot[1][1]+Math.sin(time*1.1+1)*.008;crate.card.rotation.y=Math.sin(time*.7)*.035;acting=true;

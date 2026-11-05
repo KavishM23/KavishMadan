@@ -416,7 +416,7 @@ Workshop.props=function(THREE,kit,carParts){
    g.fillStyle='#e8dfc9';g.fillRect(0,0,W,H);g.strokeStyle='rgba(120,100,70,.5)';g.lineWidth=4;g.beginPath();g.moveTo(0,0);g.lineTo(W/2,H*.44);g.lineTo(W,0);g.stroke();
    g.fillStyle='#6d2530';g.beginPath();g.arc(W/2,H*.42,58,0,7);g.fill();g.fillStyle='#e8dfc9';g.font='700 56px "League Spartan",Arial,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('KM',W/2,H*.43);
    g.fillStyle='#2c3038';g.font='500 46px "IBM Plex Mono",Menlo,monospace';g.fillText('kavish.madan6@gmail.com',W/2,H*.73);
-   g.fillStyle='#7a6f5c';g.font='500 28px "IBM Plex Mono",Menlo,monospace';g.fillText('click to copy',W/2,H*.85);
+   g.fillStyle='#7a6f5c';g.font='500 28px "IBM Plex Mono",Menlo,monospace';g.fillText('click to email',W/2,H*.85);
   });
   add(letter,box(.42,.28,.012,new THREE.MeshStandardMaterial({map:env,roughness:.8}),[0,0,0],.003));
   // the LinkedIn tablet that used to float out of the portrait, lying in the crate until it's wanted
