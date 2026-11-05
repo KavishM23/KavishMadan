@@ -91,8 +91,8 @@ async function init(){
  selectScene=key=>{const p=projects[key];desired.set(p.x-2.1,4.5,9.4);desiredLook.set(p.x-1,1.9,-.2);needs=true};
  resetScene=()=>{desired.set(0,8.4,23);desiredLook.set(0,1.7,-.2);needs=true};
  function frame(now){raf=0;if(!visible||document.hidden)return;const dt=Math.min(.05,(now-(last||now))/1000);last=now;const f=reduce?1:1-Math.exp(-3.8*dt);camera.position.lerp(desired,f);look.lerp(desiredLook,f);camera.lookAt(look);const moving=camera.position.distanceTo(desired)>.012||look.distanceTo(desiredLook)>.012;
-  if(selected&&!reduce){t+=dt;stations[selected].userData.tick?.(t)}
-  if(moving||needs||selected&&!reduce){renderer.render(scene,camera);needs=false}if(moving||selected&&!reduce)raf=requestAnimationFrame(frame);
+  const animated=!!(selected&&!reduce&&stations[selected].userData.tick);if(animated){t+=dt;stations[selected].userData.tick(t)}
+  if(moving||needs||animated){renderer.render(scene,camera);needs=false}if(moving||animated)raf=requestAnimationFrame(frame);
  }
  wake=()=>{if(visible&&!document.hidden&&!raf){last=0;raf=requestAnimationFrame(frame)}};
  canvas.addEventListener('pointermove',e=>{const r=canvas.getBoundingClientRect();pointer.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(pointer,camera);const hit=ray.intersectObjects(active)[0],key=hit?.object.userData.station||null;canvas.style.cursor=key?'pointer':'default';if(key!==hovered){hovered=key;Object.entries(stations).forEach(([k,g])=>g.userData.glow.emissiveIntensity=k===key?.8:0);needs=true;wake()}});
