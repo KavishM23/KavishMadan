@@ -684,6 +684,7 @@ html.intro-hold .obj-labs{visibility:hidden}
 <link rel="stylesheet" href="awards-cabinet.css">
 <link rel="stylesheet" href="noir.css">
 <link rel="stylesheet" href="workshop.css">
+<link rel="stylesheet" href="portfolio-refinement.css">
 </head>
 <body>
 <!-- sticker art (reused below) -->
@@ -1036,7 +1037,17 @@ html.intro-hold .obj-labs{visibility:hidden}
 
 <div class="view" id="work" data-label="Builds" hidden>
   <section id="builds" class="b-navy page-head">
-    <div class="in"><h2 class="hd"><span>Things I've</span><span class="pk">built</span></h2></div>
+    <div class="in builds-intro">
+      <p class="builds-eyebrow">Selected work · Engineering &amp; research</p>
+      <h2 class="hd"><span>Things I've</span> <span class="pk">built.</span></h2>
+      <p class="builds-deck">From an off-road car to the space around our planet. A closer look at the ideas, experiments and people behind the work.</p>
+      <nav class="builds-index" aria-label="Explore builds">
+        <a href="#b-4x4"><span>01</span> Project Strata <b aria-hidden="true">↘</b></a>
+        <a href="#b-quad"><span>02</span> Anti-drone quads <b aria-hidden="true">↘</b></a>
+        <a href="#b-kessler"><span>03</span> Kessler model <b aria-hidden="true">↘</b></a>
+        <a href="#b-wing"><span>04</span> Dragonfly wing <b aria-hidden="true">↘</b></a>
+      </nav>
+    </div>
   </section>
 
 
@@ -1894,10 +1905,10 @@ html.intro-hold .obj-labs{visibility:hidden}
 
   document.querySelectorAll('.band[id^="b-"]').forEach(b=>{
     const flip=b.classList.contains('flip');
-    gsap.from(b.querySelector('.b-title'),{yPercent:40,ease:'power2.out',scrollTrigger:{trigger:b,start:'top 90%',end:'top 40%',scrub:.8}});
-    gsap.from(b.querySelectorAll('.b-stats .drop'),{y:80,rotation:i=>i?12:-10,ease:'power2.out',stagger:.08,scrollTrigger:{trigger:b,start:'top 80%',end:'top 25%',scrub:.8}});
+    gsap.from(b.querySelector('.b-title'),{y:24,ease:'power2.out',scrollTrigger:{trigger:b,start:'top 90%',end:'top 50%',scrub:.6}});
+    gsap.from(b.querySelectorAll('.b-stats .drop'),{y:20,ease:'power2.out',stagger:.05,scrollTrigger:{trigger:b,start:'top 80%',end:'top 35%',scrub:.6}});
     const art=b.querySelector('.b-art .drop');
-    gsap.from(art,{x:flip?-120:120,rotation:flip?-6:6,ease:'power2.out',scrollTrigger:{trigger:b,start:'top 90%',end:'top 35%',scrub:.8}});
+    gsap.from(art,{y:28,ease:'power2.out',scrollTrigger:{trigger:b,start:'top 90%',end:'top 40%',scrub:.6}});
     const lines=b.querySelectorAll('.bp-art .ln');
     if(lines.length)gsap.fromTo(lines,{strokeDasharray:'1 1',strokeDashoffset:1},{strokeDashoffset:0,duration:1.6,ease:'power2.inOut',stagger:.025,
       scrollTrigger:{trigger:art,start:'top 80%',toggleActions:'play none none none'},onComplete:()=>lines.forEach(l=>l.style.strokeDasharray='none')});
@@ -1905,7 +1916,7 @@ html.intro-hold .obj-labs{visibility:hidden}
     if(pipe)gsap.from(pipe.querySelectorAll('span'),{y:30,ease:'power2.out',stagger:.06,scrollTrigger:{trigger:pipe,start:'top 95%',end:'top 70%',scrub:.6}});
   });
 
-  document.querySelectorAll('.strip .print').forEach((el,i)=>gsap.from(el,{y:60,rotation:i%2?8:-8,ease:'power2.out',scrollTrigger:{trigger:el,start:'top 100%',end:'top 72%',scrub:.6}}));
+  document.querySelectorAll('.strip .print').forEach(el=>gsap.from(el,{y:24,ease:'power2.out',scrollTrigger:{trigger:el,start:'top 100%',end:'top 78%',scrub:.6}}));
   gsap.utils.toArray('.aw-grid .drop').forEach((el,i)=>gsap.from(el,{y:70,rotation:((i*37)%20)-10,ease:'power2.out',scrollTrigger:{trigger:el,start:'top 100%',end:'top 70%',scrub:.6}}));
   gsap.from('.mb-grid .drop',{y:110,rotation:i=>((i*37)%24)-12,ease:'power2.out',stagger:.06,scrollTrigger:{trigger:'.mb-grid',start:'top 95%',end:'top 30%',scrub:.8}});
   gsap.from('.tl li',{y:26,opacity:.2,ease:'power2.out',stagger:.06,scrollTrigger:{trigger:'.tl',start:'top 90%',end:'bottom 70%',scrub:.8}});

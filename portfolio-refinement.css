@@ -1,0 +1,57 @@
+/* Project stories: generous editorial spacing and image-led sections, with
+   the workshop's warm palette and existing interactive models retained. */
+#work .page-head{padding-block:calc(env(safe-area-inset-top,0px) + clamp(120px,15vh,175px)) clamp(40px,5vw,70px)}
+.builds-intro{max-width:1320px}
+.builds-eyebrow{margin:0 0 24px;color:var(--hot);font:600 .72rem/1.4 var(--f-m);letter-spacing:.12em;text-transform:uppercase}
+#work .builds-intro .hd{margin:0;text-align:left;font-size:clamp(4.2rem,9.4vw,9.4rem);line-height:.88;letter-spacing:-.055em;text-transform:none}
+#work .builds-intro .hd span{display:inline;text-transform:none}
+.builds-deck{max-width:42ch;margin:clamp(22px,3vw,36px) 0 0;color:var(--sand-lo);font:600 clamp(1.05rem,1.65vw,1.4rem)/1.45 var(--f-b);text-wrap:pretty}
+.builds-index{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin-top:clamp(42px,6vw,82px);border-top:1px solid var(--line)}
+.builds-index a{display:flex;align-items:center;gap:10px;min-height:66px;padding:12px 16px 12px 0;border-bottom:1px solid var(--line);color:var(--sand);font:700 .89rem/1.25 var(--f-b);text-decoration:none;transition:color .25s ease}
+.builds-index a span{color:var(--hot);font:500 .67rem var(--f-m)}
+.builds-index a b{margin-left:auto;font-size:1.1rem;font-weight:400;transition:transform .25s ease}
+.builds-index a:hover,.builds-index a:focus-visible{color:var(--hot)}
+.builds-index a:hover b{transform:translate(3px,3px)}
+#work .band{padding-block:clamp(76px,10vw,150px) clamp(100px,12vw,180px);scroll-margin-top:90px}
+#work .band .in,#work .more .in{max-width:1360px}
+#work .b-grid,#work .b-low,#work .strip{max-width:1280px}
+#work .b-title{font-size:clamp(3.1rem,6.2vw,6.3rem);line-height:.94;letter-spacing:-.045em;text-transform:none}
+#work .b-line{font-size:clamp(1.08rem,1.55vw,1.35rem);font-weight:600;line-height:1.45}
+#work .b-stats{gap:12px}
+#work .b-stats .drop{width:auto;min-width:150px;flex:0 1 210px}
+#work .peel.stat{min-height:100%;padding:20px 22px;border-radius:20px;background:var(--t-card)}
+#work .stat .n{font-size:clamp(2rem,2.8vw,2.8rem);letter-spacing:-.045em}
+#work .stat .l{font-size:.86rem;line-height:1.35}
+/* Give the featured build a single large image, with its description above. */
+#work #b-4x4 .b-grid{grid-template-columns:minmax(0,1fr);gap:clamp(34px,4vw,56px)}
+#work #b-4x4 .b-grid>div:first-child{max-width:760px}
+#work #b-4x4 .b-title{font-size:clamp(4rem,8.5vw,8.5rem);margin:.3em 0 .18em}
+#work #b-4x4 .b-line{max-width:38ch}
+#work #b-4x4 .peel.photo{padding:0;overflow:hidden;border:0;border-radius:clamp(18px,2.5vw,32px);background:var(--t-card)}
+#work #b-4x4 .photo-wrap{aspect-ratio:16/9;border-radius:0}
+#work #b-4x4 .photo-cap{margin:0;padding:16px 22px}
+#work .strip-hd{text-align:left;text-transform:none;font-size:clamp(2.1rem,4.2vw,4rem);margin-top:clamp(80px,10vw,140px)}
+#work .strip{gap:18px}
+#work .print{border-radius:20px;background:var(--t-card)}
+#work .print img{border-radius:0}
+#work .print figcaption{padding:20px 22px 24px}
+#work .print b{font-size:1rem;letter-spacing:0;text-transform:none}
+#work .print p{max-height:none;opacity:1;overflow:visible;margin-top:9px;font-size:.9rem}
+#work .peel.bp{border-radius:24px;overflow:hidden}
+#work .b-low{padding-top:26px;border-top:1px solid var(--line)}
+#work .story summary{font:700 .92rem var(--f-b);letter-spacing:0;text-transform:none}
+#work .chips span:not(.lbl){padding:.48rem .8rem;background:rgb(var(--ink-rgb) / .035)}
+#work .more .hd,#more-code .hd,#honors .hd,#academics .hd{text-transform:none;letter-spacing:-.045em}
+#work .more .hd span,#more-code .hd span,#honors .hd span,#academics .hd span{text-transform:none}
+#work .peel.mb,#more-code .peel.mb,#awards .peel.aw{border-radius:22px;padding:clamp(24px,3vw,38px);box-shadow:0 10px 30px rgb(var(--ink-rgb) / .035)}
+#work .mb h3,#more-code .mb h3{font-size:clamp(1.45rem,2vw,2rem);letter-spacing:-.035em;line-height:1.05}
+#work .door .peel{border-radius:24px;padding:clamp(28px,4vw,48px)}
+/* Carry the typography and calmer controls through the existing 3D pages. */
+#code .journey-heading h1,#code .journey-project h2,#awards .ptitle,#about .hd span{text-transform:none;letter-spacing:-.05em}
+#code .journey-project .project-line,#awards .psub{line-height:1.5}
+#code .journey-project .btn{letter-spacing:0;text-transform:none;font:700 .9rem var(--f-b)}
+#awards .cab-title{text-transform:none;line-height:1.12}
+#awards .cab-text{line-height:1.55}
+@media(max-width:800px){.builds-index{grid-template-columns:repeat(2,minmax(0,1fr))}.builds-index a:nth-child(odd){padding-right:20px}#work #b-4x4 .photo-wrap{aspect-ratio:4/3}}
+@media(max-width:520px){#work .page-head{padding-top:115px}.builds-eyebrow{font-size:.62rem}.builds-deck{font-size:1.05rem}.builds-index{margin-top:36px}.builds-index a{font-size:.78rem;min-height:62px;gap:6px}.builds-index a span{font-size:.59rem}#work .b-stats .drop{min-width:0;flex:1 1 130px}#work #b-4x4 .photo-wrap{aspect-ratio:1/1}#work .strip{grid-template-columns:1fr 1fr;gap:10px}#work .print figcaption{padding:15px}#work .print p{font-size:.8rem}#work .pin>span{font-size:.5rem}}
+@media(prefers-reduced-motion:reduce){.builds-index a,.builds-index a b{transition:none}}
