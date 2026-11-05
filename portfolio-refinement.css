@@ -128,3 +128,9 @@
 #work :is(#b-kessler,#b-quad) .project-laptop .bp-art svg{width:100%;height:100%;overflow:hidden}
 #work :is(#b-kessler,#b-quad) .project-laptop-bar{height:clamp(20px,2vw,30px)}
 @media(max-width:900px){#work :is(#b-kessler,#b-quad) .b-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* Keep the paper edges close to each project without covering the next heading. */
+#work{--tearH:clamp(140px,18vh,220px)}
+#work .band{padding-bottom:clamp(56px,6vw,84px)}
+#work .torn + .band,#work .torn + .more{padding-top:calc(var(--tearH) * .46 + clamp(52px,5vw,72px))}
+#work .torn + .foot{padding-top:calc(var(--tearH) * .46 + clamp(40px,4vw,56px))}
