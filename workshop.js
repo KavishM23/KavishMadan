@@ -8,6 +8,7 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { SMAAPass } from 'three/addons/postprocessing/SMAAPass.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { installMP44 } from './workshop-mp44.js';
 
 const Grade={
  uniforms:{tDiffuse:{value:null},uTime:{value:0},uVignette:{value:.2},uGrain:{value:.024},uLift:{value:1},uIris:{value:3},uStars:{value:0},uAspect:{value:1.6},uDark:{value:0},uBg:{value:new THREE.Color(.86,.77,.65)}},
@@ -116,6 +117,7 @@ export async function buildScene({renderer,bakes,texScale=1}){
  const scene=new THREE.Scene();scene.background=new THREE.Color('#efe4d3');
  const room=Workshop.room(THREE,kit,{bakes});scene.add(room.root);
  const car=Workshop.car(THREE,kit),carRig=new THREE.Group();
+ try{await installMP44(car)}catch(error){console.warn('Could not load the MP4/4 model; using the workshop car instead.',error)}
  car.position.z=1.7;carRig.add(car);carRig.scale.setScalar(CAR.scale);carRig.position.set(...CAR.pos);carRig.rotation.y=CAR.rot;scene.add(carRig);
  const props=Workshop.props(THREE,kit,car.userData.parts);
  const pages=await LOAD('img/workshop-sketchbook.webp');
