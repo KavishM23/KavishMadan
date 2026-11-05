@@ -84,7 +84,7 @@ async function start(){
   const fw=Math.round(pw*fastScale),fh=Math.round(ph*fastScale),key=[pw,ph,fw,fh,fastAO].join();
   if(key!==chainKey){
    chainKey=key;best?.dispose();fast?.dispose();
-   best=buildComposer(renderer,scene,camera,pw,ph,{ao,samples:2,aoDiv:2,aoSamples:16,denoise:12});
+   best=buildComposer(renderer,scene,camera,pw,ph,{ao,samples:phone?2:4,aoDiv:2,aoSamples:16,denoise:12});
    fast=buildComposer(renderer,scene,camera,fw,fh,{ao:fastAO,samples:0,aoDiv:2.6,aoSamples:6,denoise:4,smaa:true});
    mirrorGate.reset();
   }

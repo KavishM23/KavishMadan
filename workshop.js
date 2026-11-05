@@ -117,7 +117,7 @@ export async function buildScene({renderer,bakes,texScale=1}){
  const scene=new THREE.Scene();scene.background=new THREE.Color('#efe4d3');
  const room=Workshop.room(THREE,kit,{bakes});scene.add(room.root);
  const car=Workshop.car(THREE,kit),carRig=new THREE.Group();
- try{await installMP44(car)}catch(error){console.warn('Could not load the MP4/4 model; using the workshop car instead.',error)}
+ try{await installMP44(car,{anisotropy})}catch(error){console.warn('Could not load the MP4/4 model; using the workshop car instead.',error)}
  car.position.z=1.7;carRig.add(car);carRig.scale.setScalar(CAR.scale);carRig.position.set(...CAR.pos);carRig.rotation.y=CAR.rot;scene.add(carRig);
  const props=Workshop.props(THREE,kit,car.userData.parts);
  const pages=await LOAD('img/workshop-sketchbook.webp');
