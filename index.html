@@ -1039,20 +1039,20 @@ html.intro-hold .obj-labs{visibility:hidden}
     <div class="testlab-stage" id="testlab-stage">
       <canvas id="testlab-canvas" aria-hidden="true"></canvas>
       <div class="testlab-shade" aria-hidden="true"></div>
-      <div class="testlab-intro"><p>THE WORKSHOP / TEST LAB</p><h1 id="testlab-title">Ideas in motion.</h1><span>Four projects. Four ways to test an idea.</span></div>
+      <div class="testlab-intro"><p>THE WORKSHOP / PROJECT MACHINE</p><h1 id="testlab-title">Pick a project.</h1><span>Choose an object to see the story behind it.</span></div>
       <div class="testlab-card" id="testlab-card" hidden aria-live="polite">
         <span class="testlab-card-tag" id="testlab-tag"></span><h2 id="testlab-name"></h2><p id="testlab-desc"></p>
         <a id="testlab-link" href="#b-4x4">Explore the project <span aria-hidden="true">↗</span></a>
-        <button id="testlab-back" type="button" aria-label="Back to the lab">← Back to the lab</button>
+        <button id="testlab-back" type="button" aria-label="Back to the machine">← Back to the machine</button>
       </div>
-      <nav class="testlab-nav" aria-label="Explore the test lab">
-        <button type="button" data-lab="strata"><span>01</span> Terrain course</button>
-        <button type="button" data-lab="drone"><span>02</span> Flight cage</button>
-        <button type="button" data-lab="orbit"><span>03</span> Mission control</button>
-        <button type="button" data-lab="wing"><span>04</span> Wind tunnel</button>
+      <nav class="testlab-nav" aria-label="Choose a project">
+        <button type="button" data-lab="strata"><span>01</span> Strata 4×4</button>
+        <button type="button" data-lab="drone"><span>02</span> Quadcopter</button>
+        <button type="button" data-lab="orbit"><span>03</span> Kessler model</button>
+        <button type="button" data-lab="wing"><span>04</span> Dragonfly wing</button>
       </nav>
-      <p class="testlab-hint" id="testlab-hint">Click a station or use the controls below <span aria-hidden="true">↗</span></p>
-      <p class="testlab-fallback" id="testlab-fallback" hidden>Choose a station above to explore its project.</p>
+      <p class="testlab-hint" id="testlab-hint">Choose a project on the machine or below <span aria-hidden="true">↗</span></p>
+      <p class="testlab-fallback" id="testlab-fallback" hidden>Choose a project above to explore its story.</p>
     </div>
     <a class="testlab-skip" href="#b-4x4">See all projects <span aria-hidden="true">↓</span></a>
   </section>
@@ -2377,7 +2377,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 <script src="workshop-props.js"></script>
 <script src="workshop-room.js"></script>
 <script type="module" src="workshop-app.js"></script>
-<script type="module" src="builds-lab.js"></script>
+<script src="builds-lab.js"></script>
 <script src="noir.js"></script>
 <script src="interactions.js"></script>
 <script src="moroccan-gate.js"></script>

@@ -8,9 +8,10 @@ function setup(){
  const buttons=['strata','drone','orbit','wing'].map(key=>Object.assign(element(),{dataset:{lab:key}}));
  const document={getElementById:id=>ids[id],querySelectorAll:()=>buttons};
  class IntersectionObserver{constructor(callback){this.callback=callback}observe(){}}
+ const window={events:{},addEventListener(k,fn){this.events[k]=fn}},location={hash:'#builds'};
  const source=fs.readFileSync('builds-lab.js','utf8').replace(/^import .*;\s*$/gm,'');
- vm.runInNewContext(source,{document,matchMedia:()=>({matches:false}),IntersectionObserver});
- return {ids,buttons};
+ vm.runInNewContext(source,{document,window,location,matchMedia:()=>({matches:false}),IntersectionObserver});
+ return {ids,buttons,window,location};
 }
 test('each lab station opens its matching project without WebGL',()=>{
  const {ids,buttons}=setup();
@@ -19,4 +20,8 @@ test('each lab station opens its matching project without WebGL',()=>{
   assert.equal(buttons.filter(b=>b.attributes['aria-pressed']==='true').length,1);
  }
  ids['testlab-back'].events.click();assert.equal(ids['testlab-card'].hidden,true);assert.equal(ids['testlab-hint'].hidden,false);assert.ok(buttons.every(b=>b.attributes['aria-pressed']==='false'));
+});
+
+test('returning to Builds resets a prior selection',()=>{
+ const {ids,buttons,window,location}=setup();buttons[2].events.click();assert.equal(ids['testlab-card'].hidden,false);location.hash='#builds';window.events.hashchange();assert.equal(ids['testlab-card'].hidden,true);assert.equal(buttons[2].attributes['aria-pressed'],'false');
 });
