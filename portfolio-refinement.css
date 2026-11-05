@@ -110,7 +110,7 @@
 #work .project-laptop .co{font-size:clamp(.58rem,1vw,.82rem);letter-spacing:.03em}
 @media(max-width:620px){
  #work :is(#b-kessler,#b-quad) .b-grid{gap:24px}
- #work .torn + .band{padding-top:clamp(130px,34vw,165px)}
+ #work .torn + .band{padding-top:clamp(180px,48vw,210px)}
  .project-laptop{width:112%;margin-inline:-6%}
  .project-laptop-bar{height:22px;padding-inline:7px;gap:6px}
  .project-laptop-bar b{font-size:.6rem}
