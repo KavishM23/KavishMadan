@@ -134,3 +134,13 @@
 #work .band{padding-bottom:clamp(56px,6vw,84px)}
 #work .torn + .band,#work .torn + .more{padding-top:calc(var(--tearH) * .46 + clamp(52px,5vw,72px))}
 #work .torn + .foot{padding-top:calc(var(--tearH) * .46 + clamp(40px,4vw,56px))}
+
+/* Cool slate and warm stone keep the builds cohesive in both themes. */
+#work{--t-blush:#dfd7c8;--t-sage:#d2dadc;--t-sky:#c4d1d7;--t-sand:#e9e2d5;--t-card:#f4efe6;--t-ink:#1d3443;--t-ink2:#506773;--t-terra:#8a7058;--t-teal:#486779;--t-maj:#405f78;--t-saf:#9a7e58}
+[data-theme="dark"] #work{--t-blush:#1a2935;--t-sage:#172938;--t-sky:#1b3041;--t-sand:#14232e;--t-card:#263a47;--t-ink:#eff2ed;--t-ink2:#b9c8ce;--t-terra:#c2ad8b;--t-teal:#a8c1d0;--t-maj:#a8c1d0;--t-saf:#d1bd96}
+#work .project-laptop-bar{background:#142331;color:#d4e1e9}
+#work .project-laptop-bar i{background:#718b9a}
+#work .project-laptop-bar i:first-child{background:#a5b9c3}
+#work #b-wing .peel.bp{padding:0;border:0;border-radius:20px;background:#10202e;background-image:none}
+#work #b-wing .bp-art{overflow:hidden;border-radius:20px}
+#work{--sand:var(--t-ink);--sand-hi:var(--t-ink);--sand-lo:var(--t-ink2);--ink:var(--t-ink);--ink-2:var(--t-ink2);--hot:var(--t-terra);--bp-line:var(--t-ink)}
