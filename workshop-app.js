@@ -86,6 +86,7 @@ async function start(){
    chainKey=key;best?.dispose();fast?.dispose();
    best=buildComposer(renderer,scene,camera,pw,ph,{ao,samples:2,aoDiv:2,aoSamples:16,denoise:12});
    fast=buildComposer(renderer,scene,camera,fw,fh,{ao:fastAO,samples:0,aoDiv:2.6,aoSamples:6,denoise:4,smaa:true});
+   mirrorGate.reset();
   }
   mirror?.size(pw,ph);dirty=true;
  }
@@ -112,16 +113,17 @@ async function start(){
   cases:{userData:{playFor:.7,play:(h,p)=>{const k=p<.7?Math.sin(p/.7*Math.PI)*.07:0;lids.forEach((l,i)=>{l.rotation.x=-smooth(clamp(h*1.4-i*.09))*.3-k})}}}
  };
  const models={};
+ const animatedHover=new Set(['guitar','tablet','satellite','trophy','tyre','plant']);
  for(const key of ['car','guitar','tablet','book','satellite','trophy','tyre','crate','pencil','pick','plant'])models[key]={o:items[key],h:0,goal:0,p:99};
  for(const key in shelfPlays)models[key]={o:shelfPlays[key],h:0,goal:0,p:99};
  function react(key){const m=models[key];if(!m)return;m.p=0;m.o.userData.click?.();if(VOICE[key]){try{Sound[VOICE[key]]()}catch(e){console.warn('Workshop sound unavailable',e)}}wake()}
  function play(dt,time){
   let busy=false;
   for(const key in models){
-   const m=models[key],u=m.o.userData;m.h=damp(m.h,m.goal,6.5,dt);if(Math.abs(m.h-m.goal)<.002)m.h=m.goal;m.p+=dt;
+   const m=models[key],u=m.o.userData,before=m.h;m.h=damp(m.h,m.goal,6.5,dt);if(Math.abs(m.h-m.goal)<.002)m.h=m.goal;m.p+=dt;
    if(stage?.key===key&&stage.m.own)continue;
    const running=u.play?.(m.h,m.p,dt,time);
-   if(m.goal>0||m.h>0||m.p<(u.playFor||0)||running===true)busy=true;
+   if(PortfolioRender.modelNeedsFrame({before,after:m.h,goal:m.goal,animated:animatedHover.has(key),elapsed:m.p,duration:u.playFor||0,running}))busy=true;
   }
   return busy;
  }
@@ -377,10 +379,11 @@ async function start(){
  /* ---- the loop runs only while the workshop can be seen and something is happening ---- */
  const visible=()=>home()||!!(stage&&stage.dir===1);
  let slow=0,samples=0,frameTime=0,lastDraw=0;
- function draw(chain){if(!chain){size();chain=fast}const night=R.dataset.theme==='dark',g=chain.grade.uniforms;g.uBg.value.setRGB(night?.008:.86,night?.018:.77,night?.022:.65);const [iris,stars]=stage?.m.iris?stage.m.iris(smooth(stage.v)):[3,0];g.uIris.value=iris;g.uStars.value=stars;g.uAspect.value=W/H;g.uDark.value=stage?.m.dark?1:0;mirror?.render(chain.w,chain.h);chain.composer.render()}
+ const mirrorGate=PortfolioRender.createFrameGate(42);
+ function draw(chain){if(!chain){size();chain=fast}const night=R.dataset.theme==='dark',g=chain.grade.uniforms;g.uBg.value.setRGB(night?.008:.86,night?.018:.77,night?.022:.65);const [iris,stars]=stage?.m.iris?stage.m.iris(smooth(stage.v)):[3,0];g.uIris.value=iris;g.uStars.value=stars;g.uAspect.value=W/H;g.uDark.value=stage?.m.dark?1:0;if(mirror&&mirrorGate.due(performance.now(),chain===best))mirror.render(chain.w,chain.h);chain.composer.render()}
  let freeTimer=0;
- function freeChains(){best?.dispose();fast?.dispose();best=fast=null;chainKey='';mirror?.free();renderer.renderLists.dispose()}
- function wake(){clearTimeout(freeTimer);if(!best&&visible())size();dirty=true;if(!running&&visible()&&!document.hidden){running=true;last=performance.now();requestAnimationFrame(tick)}}
+ function freeChains(){best?.dispose();fast?.dispose();best=fast=null;chainKey='';mirror?.free();mirrorGate.reset();renderer.renderLists.dispose()}
+ function wake(){clearTimeout(freeTimer);if(!best&&visible())size();dirty=true;if(!running&&visible()&&!document.hidden){running=true;last=performance.now();lastDraw=last;samples=0;frameTime=0;requestAnimationFrame(tick)}}
  function tick(now){
   if(!visible()||document.hidden){running=false;if(!home())freeTimer=setTimeout(freeChains,1800);return}
   const dt=Math.min(.05,(now-last)/1000);last=now;time+=dt;

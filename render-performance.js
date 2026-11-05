@@ -1,5 +1,14 @@
 /* Shared rendering optimizations. The geometry and artwork stay at their authored detail. */
 window.PortfolioRender={
+ // Keep animating while a hover is settling, a click is playing, or the
+ // hovered model has a continuous animation of its own.
+ modelNeedsFrame({before,after,goal,animated,elapsed,duration,running}){
+  return before!==after||((goal>0||after>0)&&animated)||elapsed<duration||running===true;
+ },
+ createFrameGate(interval){
+  let last=-Infinity;
+  return{due(now,force=false){if(!force&&now-last<interval)return false;last=now;return true},reset(){last=-Infinity}};
+ },
  batchStatic(root,THREE,merge){
   const parents=[];root.traverse(o=>{if(o.isGroup)parents.push(o)});
   for(const parent of parents){

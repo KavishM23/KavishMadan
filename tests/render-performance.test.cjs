@@ -2,7 +2,7 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
 const scope={window:{}};vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../render-performance.js'),'utf8'),scope);
-const {createLoop,createQuality}=scope.window.PortfolioRender;
+const {createLoop,createQuality,modelNeedsFrame,createFrameGate}=scope.window.PortfolioRender;
 function clock(){
  let id=0,time=0;const frames=new Map(),timers=new Map(),draws=[];
  const options={raf:fn=>{frames.set(++id,fn);return id},caf:key=>frames.delete(key),timer:(fn,delay)=>{timers.set(++id,{fn,at:time+delay});return id},clearTimer:key=>timers.delete(key),now:()=>time};
@@ -36,4 +36,18 @@ test('startup and a single compilation stall do not lower image quality',()=>{
 });
 test('sustained recovery restores density gradually, within its viewport ceiling',()=>{
  const q=createQuality(1.7);let now=0;for(let i=0;i<600;i++)q.sample(33.33,now+=33.33);assert.equal(q.density,1);for(let i=0;i<2000;i++)q.sample(16.67,now+=16.67);assert.equal(q.density,1.7);
+});
+test('stationary hover rests while moving and animated models keep updating',()=>{
+ const state={before:1,after:1,goal:1,animated:false,elapsed:3,duration:1,running:false};
+ assert.equal(modelNeedsFrame(state),false);
+ assert.equal(modelNeedsFrame({...state,animated:true}),true);
+ assert.equal(modelNeedsFrame({...state,before:.8}),true);
+ assert.equal(modelNeedsFrame({...state,goal:0,after:0,before:0,elapsed:.5}),true);
+ assert.equal(modelNeedsFrame({...state,goal:0,after:0,before:0,running:true}),true);
+});
+test('reflection updates are rate-limited but final frames and resets refresh them',()=>{
+ const gate=createFrameGate(42);
+ assert.equal(gate.due(0),true);assert.equal(gate.due(16),false);assert.equal(gate.due(42),true);
+ assert.equal(gate.due(43,true),true);assert.equal(gate.due(44),false);
+ gate.reset();assert.equal(gate.due(45),true);
 });
