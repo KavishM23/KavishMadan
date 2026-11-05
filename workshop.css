@@ -18,6 +18,11 @@ html.on-home .workshop-hero{visibility:visible;pointer-events:auto}
 html.on-home body{overflow:hidden}
 html.on-home .contact,html.on-home .foot{display:none}
 /* the wipe taking over from a surface that already fills the screen, from the dark, or chasing the car */
+.ws-car-flame{position:fixed;inset:0;z-index:99;pointer-events:none;overflow:hidden;opacity:1;transition:opacity .5s ease}
+.ws-car-flame[hidden]{display:none}
+.ws-car-flame.is-fading{opacity:0}
+.ws-fire-fill{position:absolute;inset:0;background:#e77d45;opacity:var(--fire-fill,0)}
+.ws-fire-shape{position:absolute;left:var(--fire-x,50%);top:var(--fire-y,60%);width:180px;height:230px;transform:translate(-50%,-88%) scale(var(--fire-scale,0));transform-origin:50% 88%;filter:drop-shadow(0 0 12px #ef934d88)}
 .wipe.still{visibility:visible;transform:none}
 .wipe.still.cut{animation:wsIn .16s ease both}
 .wipe.still.dusk{animation:wsIn .3s ease both}

@@ -1,6 +1,6 @@
 /* Runs the workshop: the home screen, what each model does when touched, and the walk into each page. */
 import * as THREE from 'three';
-import {buildScene,lightScene,reflectionsFrom,buildComposer,createMirror,TARGETS,TOYS,CAR} from './workshop.js';
+import {buildScene,lightScene,reflectionsFrom,buildComposer,createMirror,flatten,TARGETS,TOYS,CAR} from './workshop.js';
 
 const R=document.documentElement,hero=document.getElementById('hero'),canvas=document.getElementById('workshop3d');
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -228,6 +228,13 @@ async function start(){
  const tablePose=new THREE.Vector3(),carStart=V(CAR.pos);
  const carCurve=new THREE.CubicBezierCurve3(carStart.clone(),V([1.5,0,1.0]),V([1.15,0,5.2]),V([2.5,0,15]));
  const carDistance=carCurve.getLength(),carWheelStart=[];
+ let carFlame=null;const exhaustPoint=new THREE.Vector3();
+ function flameOverlay(){
+  if(carFlame)return carFlame;
+  const el=document.createElement('div');el.className='ws-car-flame';el.hidden=true;el.setAttribute('aria-hidden','true');
+  el.innerHTML='<div class="ws-fire-fill"></div><svg class="ws-fire-shape" viewBox="0 0 180 230" aria-hidden="true"><path fill="#c84d31" d="M90 226C20 218 9 177 36 137 33 172 57 167 50 128 45 92 77 75 74 18 103 48 100 76 118 92 132 104 134 78 130 60 175 105 186 164 159 199 143 220 116 226 90 226Z"/><path fill="#ef934d" d="M90 224C40 215 34 187 55 157 55 178 71 173 68 145 66 123 84 104 84 73 108 99 102 119 117 132 128 141 132 127 132 114 157 152 160 182 145 201 133 217 112 224 90 224Z"/><path fill="#f9df9c" d="M91 222C62 216 57 196 72 176 71 188 82 185 81 170 80 154 91 145 91 130 110 151 107 167 117 175 125 181 126 172 126 167 142 194 128 219 91 222Z"/></svg>';
+  document.body.appendChild(el);carFlame=el;return el;
+ }
  // The exit sits behind the starting camera, outside the normal workshop view.
  // It becomes visible naturally as the camera moves around the car.
  let carExit=null;
@@ -241,14 +248,20 @@ async function start(){
   box(5.7,.52,.46,concrete,1.1,3.29,doorZ);box(4.8,.11,.5,metal,1.1,3.02,doorZ);
   box(4.7,.035,.7,edge,1.1,.018,doorZ);
   // A segmented overhead shutter lifts as the car prepares to drive.
-  const shutter=new THREE.Group();shutter.position.set(1.1,2.27,doorZ+.04);group.add(shutter);
+  const shutter=new THREE.Group();shutter.userData.moving=true;shutter.position.set(1.1,2.27,doorZ+.04);group.add(shutter);
   const panel=new THREE.BoxGeometry(4.65,.18,.08);
   for(let i=0;i<7;i++){const slat=new THREE.Mesh(panel,metal);slat.position.y=i*.19;shutter.add(slat)}
-  // Extend the ground into a short driveway, with restrained lane markings.
+  // The pit lane leads onto a track with kerbs, barriers and grandstands.
   box(6,.035,6.4,concrete,1.1,-.025,6.9);
-  box(6,.035,17,road,1.1,-.025,18.6);
-  for(let z=11.7;z<25;z+=2.6)box(.055,.006,1.1,stripe,1.1,-.003,z);
-  group.visible=false;scene.add(group);carExit={group,shutter};return carExit;
+  const grass=new THREE.MeshStandardMaterial({color:'#536752',roughness:1}),red=new THREE.MeshStandardMaterial({color:'#ab5143',roughness:.85}),cream=new THREE.MeshStandardMaterial({color:'#e6d8bf',roughness:.85}),stand=new THREE.MeshStandardMaterial({color:'#5f7073',roughness:.8});
+  box(35,.04,22,grass,1.1,-.05,20.6);box(8,.035,22,road,1.1,-.025,20.6);
+  for(let z=11.5;z<31;z+=2){for(const x of [-2.9,5.1]){box(.26,.018,1,red,x,.002,z);box(.26,.018,1,cream,x,.002,z+1)}}
+  for(const x of [-3.8,6]){box(.12,.45,22,metal,x,.29,20.6);box(.14,.07,22,edge,x,.56,20.6);for(let z=12;z<31;z+=2.8)box(.08,.9,.08,metal,x,.49,z)}
+  for(let z=12;z<30;z+=2.6)box(.055,.006,1.1,stripe,1.1,-.003,z);
+  for(const x of [-7,9.2]){for(let row=0;row<4;row++){box(4,.26,8,stand,x,.4+row*.31,21+row*.36);box(4,.045,8,edge,x,.55+row*.31,21+row*.36)}box(.16,3.1,.16,metal,x-1.8,1.55,17.2);box(.16,3.1,.16,metal,x+1.8,1.55,17.2);box(4.4,.12,9,metal,x,3.1,21)}
+  box(.18,4,.2,metal,-3.7,2,27);box(.18,4,.2,metal,5.9,2,27);box(9.8,.45,.3,metal,1.1,3.85,27);
+  const sky=new THREE.Mesh(new THREE.PlaneGeometry(90,30),new THREE.MeshBasicMaterial({color:'#87a3ad',side:THREE.DoubleSide}));sky.position.set(1,10,32);group.add(sky);
+  flatten(group);group.visible=false;scene.add(group);carExit={group,shutter};return carExit;
  }
  const tyreStart=P.tyre.position.clone();
  const surf=(key,pre,pts=[])=>()=>{ // approach a surface square-on, pause, then push until it fills the screen
@@ -274,8 +287,8 @@ async function start(){
     l.position.set(slot[0][0]*up,.2+(slot[0][1]-.2)*up,slot[0][2]*up);l.rotation.set(-.2*(1-up),0,0);
     t.position.set(slot[1][0]*ur,.2+(slot[1][1]-.2)*ur,-.14+(slot[1][2]+.14)*ur);t.rotation.x=-.5*(1-ur);t.rotation.y=0;
    }},
-  car:{label:'Builds',dur:4.4,finish:'sweep',own:true,
-   prep(){garageExit();carParts.spins.forEach((w,i)=>{carWheelStart[i]=w.rotation.x})},
+  car:{label:'Builds',dur:4.8,finish:'flame',own:true,
+   prep(){garageExit();const fire=flameOverlay();fire.hidden=true;fire.classList.remove('is-fading');carParts.spins.forEach((w,i)=>{carWheelStart[i]=w.rotation.x})},
    route:from=>({path:[from.p,V([-3.1,2.05,3.0]),V([-2.1,1.55,-2.0]),V([-.8,1.4,.4])],look:[from.t,V([.4,.55,-.3]),V([.8,.65,3.5]),V([1.4,.8,10.1])],up:Y}),
    act(e){
     const pre=seg(e,.05,.52),go=seg(e,.52,1),rig=P.car;
@@ -287,6 +300,7 @@ async function start(){
     rig.position.x=q.x;rig.position.z=q.z;rig.rotation.y=CAR.rot+(heading-CAR.rot)*turn;
     carParts.spins.forEach((w,i)=>{const radius=i<2?.356:.362;w.rotation.x=carWheelStart[i]-carDistance*go/(radius*CAR.scale)});carParts.fronts.forEach(w=>{w.rotation.y=-.1*seg(go,0,.3)});
     carParts.flap.rotation.x=-seg(e,.3,.5)*.62;
+    if(carFlame){const fire=seg(e,.8,1);carFlame.hidden=fire<=0;if(fire>0){rig.updateWorldMatrix(true,false);exhaustPoint.set(0,.59,-2.3);rig.localToWorld(exhaustPoint).project(camera);carFlame.style.setProperty('--fire-x',clamp(exhaustPoint.x*.5+.5,0,1)*100+'%');carFlame.style.setProperty('--fire-y',clamp(-exhaustPoint.y*.5+.5,0,1)*100+'%');carFlame.style.setProperty('--fire-scale',String(.12+fire*24));carFlame.style.setProperty('--fire-fill',String(seg(fire,.68,1)))} }
    }},
   tyre:{label:'More',dur:2.6,finish:'iris',own:true,
    route:from=>({path:[from.p,V([2.6,1.25,5.1]),V([2.4,.62,3.9]),V([2.34,.42,3.55])],look:[from.t,V([3.1,.3,1.6]),V([3.05,.34,1.8]),V([2.5,.36,2.6])],up:Y}),
@@ -364,6 +378,7 @@ async function start(){
  }
  /* hand over to the real page: the full-screen wipe takes the place of whatever now fills the view */
  function takeover(m,next){
+  if(m.finish==='flame'){next();carFlame?.classList.add('is-fading');setTimeout(()=>{if(carFlame){carFlame.hidden=true;carFlame.classList.remove('is-fading')}},600);return}
   window.fitWipe(m.label);wipeEl.className='wipe still '+(m.finish==='sweep'?'sweep':m.finish==='iris'?'dusk':'cut');
   setTimeout(()=>{next();setTimeout(()=>{wipeEl.className='wipe out';setTimeout(()=>{wipeEl.className='wipe'},760)},140)},m.finish==='sweep'?640:m.finish==='iris'?340:190);
  }
