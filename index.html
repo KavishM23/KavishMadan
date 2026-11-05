@@ -1134,32 +1134,18 @@ html.intro-hold .obj-labs{visibility:hidden}
               <div class="project-laptop-screen"><div class="project-laptop-bar"><span aria-hidden="true"><i></i><i></i><i></i></span><b>Quadcopter / systems overview</b></div>
           <div class="drop"><div class="tilt" style="--r:-1deg"><div class="peel bp" data-cur="inspect">
             <div class="bp-art">
-              <svg viewBox="0 0 720 400" aria-hidden="true">
-                <circle class="faint" cx="210" cy="90" r="70"/><circle class="faint" cx="510" cy="90" r="70"/>
-                <circle class="faint" cx="210" cy="310" r="70"/><circle class="faint" cx="510" cy="310" r="70"/>
-                <path d="M360 200L210 90M360 200L510 90M360 200L210 310M360 200L510 310" class="ln" pathLength="1" style="stroke-width:16"/>
-                <path d="M360 200L210 90M360 200L510 90M360 200L210 310M360 200L510 310" stroke="#2A2622" stroke-width="11" stroke-linecap="round" fill="none"/>
-                <rect class="ln fill" pathLength="1" x="290" y="145" width="140" height="110" rx="22"/>
-                <rect class="ln" pathLength="1" x="318" y="168" width="84" height="58" rx="4"/>
-                <path class="faint" d="M326 176H394"/>
-                <rect class="ln th" pathLength="1" x="344" y="190" width="26" height="18" rx="2"/>
-                <rect class="ln" pathLength="1" x="344" y="120" width="32" height="16" rx="4"/>
-                <circle class="ln th" pathLength="1" cx="353" cy="128" r="4"/><circle class="ln th" pathLength="1" cx="367" cy="128" r="4"/>
-                <path class="ac" stroke-dasharray="3 4" d="M322 222C290 250 250 280 222 298M398 222C430 250 470 280 498 298M322 172C290 150 250 120 222 102M398 172C430 150 470 120 498 102"/>
-                <circle class="ln fill" pathLength="1" cx="210" cy="90" r="16"/><circle class="ln fill" pathLength="1" cx="510" cy="90" r="16"/>
-                <circle class="ln fill" pathLength="1" cx="210" cy="310" r="16"/><circle class="ln fill" pathLength="1" cx="510" cy="310" r="16"/>
-                <g class="prop" style="transform-origin:210px 90px"><path class="ln th" pathLength="1" d="M150 90Q210 78 270 90Q210 102 150 90Z"/></g>
-                <g class="prop" style="transform-origin:510px 90px;animation-duration:1.2s"><path class="ln th" pathLength="1" d="M450 90Q510 78 570 90Q510 102 450 90Z"/></g>
-                <g class="prop" style="transform-origin:210px 310px;animation-duration:1.3s"><path class="ln th" pathLength="1" d="M150 310Q210 298 270 310Q210 322 150 310Z"/></g>
-                <g class="prop" style="transform-origin:510px 310px;animation-duration:1.5s"><path class="ln th" pathLength="1" d="M450 310Q510 298 570 310Q510 322 450 310Z"/></g>
-                <path class="ac" d="M402 196L598 200M360 120L360 32M330 210L122 200M290 256L356 350"/>
-                <circle class="dot" cx="402" cy="196" r="4"/><circle class="dot" cx="360" cy="120" r="4"/><circle class="dot" cx="330" cy="210" r="4"/><circle class="dot" cx="290" cy="256" r="4"/>
+              <svg viewBox="0 0 720 400" role="img" aria-labelledby="quad-screen-title quad-screen-desc">
+                <title id="quad-screen-title">Quadcopter prototype systems</title><desc id="quad-screen-desc">A conceptual top view of a quadcopter with its controller, sensors, circuitry and C code identified.</desc>
+                <defs><linearGradient id="quad-bg" x2="1" y2="1"><stop stop-color="#122b38"/><stop offset="1" stop-color="#08151f"/></linearGradient><radialGradient id="quad-glow"><stop stop-color="#375d69" stop-opacity=".45"/><stop offset="1" stop-color="#122b38" stop-opacity="0"/></radialGradient><g id="quad-rotor"><circle r="69" fill="#8db5c5" fill-opacity=".035" stroke="#91b6c1" stroke-opacity=".4"/><circle r="56" fill="none" stroke="#91b6c1" stroke-opacity=".2" stroke-dasharray="3 7"/><path d="M-54 0 Q-30-14 0-6 Q30-14 54 0 Q30 14 0 6 Q-30 14-54 0Z" fill="#a7cad2" fill-opacity=".36"/><path d="M0-54 Q14-30 6 0 Q14 30 0 54 Q-14 30-6 0 Q-14-30 0-54Z" fill="#a7cad2" fill-opacity=".23"/><circle r="12" fill="#d9e7e8"/><circle r="5" fill="#436575"/></g></defs>
+                <rect width="720" height="400" fill="url(#quad-bg)"/><circle cx="278" cy="215" r="240" fill="url(#quad-glow)"/>
+                <g fill="none" stroke="#a6c9d2" stroke-opacity=".09"><path d="M0 100H720M0 200H720M0 300H720M120 0V400M240 0V400M360 0V400M480 0V400M600 0V400"/></g>
+                <g font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" fill="#d9e8eb"><text x="25" y="33" font-size="16" font-weight="700" letter-spacing="2">QUADCOPTER SYSTEMS</text><text x="25" y="55" font-size="12" fill="#9dbbc4">PROTOTYPE SCHEMATIC · NOT TO SCALE</text></g>
+                <g stroke-linecap="round"><path d="M278 205L157 105M278 205L399 105M278 205L157 305M278 205L399 305" stroke="#6e8d98" stroke-width="16"/><path d="M278 205L157 105M278 205L399 105M278 205L157 305M278 205L399 305" stroke="#c3d6d9" stroke-opacity=".6" stroke-width="3"/></g>
+                <use href="#quad-rotor" x="157" y="105"/><use href="#quad-rotor" x="399" y="105"/><use href="#quad-rotor" x="157" y="305"/><use href="#quad-rotor" x="399" y="305"/>
+                <rect x="229" y="158" width="98" height="94" rx="18" fill="#203d4a" stroke="#b2ced2" stroke-width="2"/><rect x="245" y="174" width="66" height="62" rx="7" fill="#0d222d" stroke="#83b2bd"/><rect x="261" y="189" width="34" height="31" rx="4" fill="#aacbd0"/><g stroke="#8db9c1" stroke-width="2"><path d="M253 180v-7m10 7v-7m10 7v-7m10 7v-7m10 7v-7m10 7v-7M253 237v-7m10 7v-7m10 7v-7m10 7v-7m10 7v-7m10 7v-7"/></g>
+                <path d="M329 205H463" stroke="#e6aa8f" stroke-width="2"/><circle cx="329" cy="205" r="4" fill="#e6aa8f"/>
+                <g font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif"><rect x="476" y="88" width="216" height="231" rx="12" fill="#ffffff" fill-opacity=".055" stroke="#b6d2d8" stroke-opacity=".2"/><text x="495" y="119" fill="#a9c5cc" font-size="13" font-weight="700" letter-spacing="1">SYSTEM COMPONENTS</text><path d="M495 133H672M495 189H672M495 245H672" stroke="#aac9d2" stroke-opacity=".2"/><text x="495" y="158" fill="#f2f5f1" font-size="19" font-weight="600">Arduino</text><text x="495" y="178" fill="#a9c5cc" font-size="13">Controller</text><text x="495" y="214" fill="#f2f5f1" font-size="19" font-weight="600">Sensors + circuits</text><text x="495" y="234" fill="#a9c5cc" font-size="13">Wiring and inputs</text><text x="495" y="270" fill="#f2f5f1" font-size="19" font-weight="600">C code</text><text x="495" y="291" fill="#a9c5cc" font-size="13">Prototype programming</text></g>
               </svg>
-              <span class="co" style="--cx:83.6%;--cy:50%">Arduino<small>the controller</small></span>
-              <span class="co ct" style="--cx:50%;--cy:0%">Sensors</span>
-              <span class="co r" style="--cx:16.4%;--cy:50%">Code in C</span>
-              <span class="co ct" style="--cx:50%;--cy:89%">Circuits</span>
-              <div class="tblock" style="left:auto;right:3%;grid-template-columns:auto"><span>DWG QUAD-01</span></div>
             </div>
           </div></div></div>
               </div>
@@ -1206,35 +1192,16 @@ html.intro-hold .obj-labs{visibility:hidden}
               <div class="project-laptop-screen"><div class="project-laptop-bar"><span aria-hidden="true"><i></i><i></i><i></i></span><b>Kessler model / simulation overview</b></div>
           <div class="drop"><div class="tilt" style="--r:1deg"><div class="peel bp" data-cur="inspect">
             <div class="bp-art">
-              <svg viewBox="0 0 720 400" aria-hidden="true">
-                <defs><clipPath id="vbk"><rect width="720" height="400"/></clipPath></defs>
-                <g clip-path="url(#vbk)">
-                  <circle class="ln" pathLength="1" cx="360" cy="640" r="330" style="fill:rgba(255,255,255,.05)"/>
-                  <circle class="ln th" pathLength="1" cx="360" cy="640" r="375"/>
-                  <circle class="ln" pathLength="1" cx="360" cy="640" r="385"/>
-                  <circle class="faint" cx="360" cy="640" r="415" style="stroke-dasharray:6 6;stroke:rgba(234,240,255,.7)"/>
-                  <g id="kdots"></g>
-                </g>
-                <path class="ac" d="M352 247L368 263M368 247L352 263M360 243V267M348 255H372" stroke-width="2"/>
-                <path class="ln th" pathLength="1" d="M80 64L640 64M80 57V71M192 59V69M304 59V69M416 59V69M528 59V69M640 57V71"/>
-                <rect class="ln th" pathLength="1" x="80" y="128" width="560" height="12" rx="6"/>
-                <rect class="acf" x="80" y="128" width="506.8" height="12" rx="6"/>
-                <path class="ln th" pathLength="1" d="M586.8 122V146"/>
-                <path class="ac" d="M160 276L96 262M160 311L96 300M160 323L96 338"/>
-                <circle class="dot" cx="160" cy="276" r="3.5"/><circle class="dot" cx="160" cy="311" r="3.5"/><circle class="dot" cx="160" cy="323" r="3.5"/>
+              <svg viewBox="0 0 720 400" role="img" aria-labelledby="kessler-screen-title kessler-screen-desc">
+                <title id="kessler-screen-title">Kessler model: conceptual view of three orbital shells</title><desc id="kessler-screen-desc">Earth surrounded by shells at 450, 550 and 850 kilometres. The simulation runs for 200 years. Avoidance needed at 550 kilometres ranges from zero to 90.5 percent depending on orbital overlap.</desc>
+                <defs><linearGradient id="orbit-bg" x2="1" y2="1"><stop stop-color="#152e42"/><stop offset="1" stop-color="#07141f"/></linearGradient><radialGradient id="earth-fill" cx="35%" cy="25%"><stop stop-color="#83bdc6"/><stop offset=".57" stop-color="#397889"/><stop offset="1" stop-color="#173b50"/></radialGradient><clipPath id="earth-clip"><circle cx="235" cy="215" r="66"/></clipPath></defs>
+                <rect width="720" height="400" fill="url(#orbit-bg)"/><g stroke="#96becd" stroke-opacity=".08"><path d="M0 100H720M0 200H720M0 300H720M120 0V400M240 0V400M360 0V400M480 0V400M600 0V400"/></g>
+                <g font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif"><text x="25" y="33" fill="#e5f1f1" font-size="16" font-weight="700" letter-spacing="2">LOW EARTH ORBIT</text><text x="25" y="55" fill="#a3c2ce" font-size="12">CONCEPTUAL ORBIT VIEW · NOT TO SCALE</text></g>
+                <g fill="none" stroke-width="1.7"><ellipse cx="235" cy="215" rx="170" ry="88" transform="rotate(-28 235 215)" stroke="#eaa78e" stroke-opacity=".9"/><ellipse cx="235" cy="215" rx="153" ry="83" transform="rotate(27 235 215)" stroke="#98d7e3" stroke-opacity=".9"/><ellipse cx="235" cy="215" rx="132" ry="74" transform="rotate(-6 235 215)" stroke="#c8e2dc" stroke-opacity=".9"/></g>
+                <circle cx="235" cy="215" r="66" fill="url(#earth-fill)" stroke="#aad5df" stroke-opacity=".65" stroke-width="2"/><g clip-path="url(#earth-clip)" fill="#b8d8c6" fill-opacity=".75"><path d="M169 183l25-17 20 5 8 12-11 9-2 12-14 3-8 16-13-9-12-3zM217 214l16 4 8 15-4 11 8 13-12 19-13-8-4-20-9-14zM242 168l17-14 22 12 4 13 16 6-5 13-17-2-9 9-15-7-3-11-13-4zM268 225l19-5 16 11-5 14-18 3-8 10-10-14z"/><path d="M175 202Q235 185 300 202M172 228Q235 243 298 228M235 149v132" fill="none" stroke="#e4f2e9" stroke-opacity=".25"/></g>
+                <g fill="#d9eef0"><circle cx="99" cy="159" r="3"/><circle cx="337" cy="125" r="3"/><circle cx="387" cy="194" r="3"/><circle cx="108" cy="255" r="2.5"/><circle cx="355" cy="282" r="3"/><circle cx="264" cy="317" r="2.5"/></g><g fill="#f3b194"><circle cx="103" cy="235" r="3.5"/><circle cx="318" cy="104" r="3"/><circle cx="379" cy="252" r="3.5"/></g>
+                <g font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif"><rect x="444" y="76" width="249" height="247" rx="12" fill="#fff" fill-opacity=".055" stroke="#b9d9e3" stroke-opacity=".2"/><text x="465" y="108" fill="#a9c8d0" font-size="13" font-weight="700" letter-spacing="1">SIMULATION OVERVIEW</text><path d="M465 122H672M465 202H672" stroke="#bbd6df" stroke-opacity=".22"/><text x="465" y="153" fill="#eaf2ee" font-size="28" font-weight="700">200 years</text><text x="465" y="177" fill="#a9c8d0" font-size="14">simulated per run</text><text x="465" y="235" fill="#eab19b" font-size="27" font-weight="700">0–90.5%</text><text x="465" y="257" fill="#eaf2ee" font-size="14">avoidance at 550 km</text><text x="465" y="278" fill="#a9c8d0" font-size="12">depends on orbital overlap</text><circle cx="73" cy="367" r="4" fill="#c8e2dc"/><text x="85" y="372" fill="#c7dcdf" font-size="14">450 km</text><circle cx="180" cy="367" r="4" fill="#98d7e3"/><text x="192" y="372" fill="#c7dcdf" font-size="14">550 km</text><circle cx="287" cy="367" r="4" fill="#eaa78e"/><text x="299" y="372" fill="#c7dcdf" font-size="14">850 km</text></g>
               </svg>
-              <span class="co" style="--cx:11.1%;--cy:9%">Year 0</span>
-              <span class="co ct" style="--cx:50%;--cy:4.5%">200-year simulation</span>
-              <span class="co r" style="--cx:88.9%;--cy:9%">Year 200</span>
-              <span class="co" style="--cx:11.1%;--cy:27%">Avoidance needed at 550 km</span>
-              <span class="co" style="--cx:11.1%;--cy:40%">0%</span>
-              <span class="co ct" style="--cx:81.5%;--cy:37.5%">90.5%</span>
-              <span class="co" style="--cx:3.3%;--cy:65.5%">850 km</span>
-              <span class="co" style="--cx:3.3%;--cy:75%">550 km</span>
-              <span class="co" style="--cx:3.3%;--cy:84.5%">450 km</span>
-              <span class="co ct" style="--cx:61%;--cy:57%">Collision</span>
-              <span class="co ct" style="--cx:50%;--cy:86%">Earth</span>
-              <div class="tblock"><span>DWG KESSLER-01</span><span>PYTHON / NTS</span></div>
             </div>
           </div></div></div>
               </div>
@@ -1666,16 +1633,6 @@ html.intro-hold .obj-labs{visibility:hidden}
   const bubbles=[...document.querySelectorAll('.bubble')];
   const cutAll=()=>bubbles.forEach(cutBubble);
   cutAll();addEventListener('resize',cutAll);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(cutAll);
-
-  /* ---- debris dots on the Kessler blueprint ---- */
-  (function(){
-    const g=document.getElementById('kdots');if(!g)return;const R=rng(77);let s='';
-    [[375,14,1.6],[385,22,2],[415,12,1.6]].forEach(([r,n,sz])=>{
-      const tmax=Math.acos(240/r);
-      for(let i=0;i<n;i++){const t=(R()*2-1)*tmax;const x=360+r*Math.sin(t),y=640-r*Math.cos(t);s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(sz*(.7+R()*.6)).toFixed(1)}" fill="#B7AB98"/>`}
-    });
-    g.innerHTML=s;
-  })();
 
   /* ---- links you can fill in ---- */
   const LINKEDIN_URL = 'https://www.linkedin.com/in/kavishmadan';
