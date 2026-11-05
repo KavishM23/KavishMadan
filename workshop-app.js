@@ -228,6 +228,26 @@ async function start(){
  const tablePose=new THREE.Vector3(),carStart=V(CAR.pos);
  const carCurve=new THREE.CubicBezierCurve3(carStart.clone(),V([1.5,0,1.0]),V([1.15,0,5.2]),V([2.5,0,15]));
  const carDistance=carCurve.getLength(),carWheelStart=[];
+ // Only build the exit when the car is selected; it sits outside the normal
+ // workshop view and does not participate in object picking.
+ let carExit=null;
+ function garageExit(){
+  if(carExit)return carExit;
+  const group=new THREE.Group(),concrete=new THREE.MeshStandardMaterial({color:'#7b7971',roughness:.94}),metal=new THREE.MeshStandardMaterial({color:'#323b3b',metalness:.55,roughness:.55}),edge=new THREE.MeshStandardMaterial({color:'#c8bca7',roughness:.8}),road=new THREE.MeshStandardMaterial({color:'#545754',roughness:1}),stripe=new THREE.MeshStandardMaterial({color:'#c5b995',roughness:.9});
+  const box=(w,h,d,mat,x,y,z)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.receiveShadow=true;group.add(m);return m};
+  // A wide opening, framed with masonry and metal rails.
+  for(const x of [-1.5,3.7]){box(.5,3.55,.42,concrete,x,1.775,4.15);box(.08,3.2,.46,metal,x+(x<0?.29:-.29),1.6,4.15)}
+  box(5.7,.52,.46,concrete,1.1,3.29,4.15);box(4.8,.11,.5,metal,1.1,3.02,4.15);
+  box(4.7,.035,.7,edge,1.1,.018,4.15);
+  // A segmented overhead shutter lifts as the car prepares to drive.
+  const shutter=new THREE.Group();shutter.position.set(1.1,2.27,4.19);group.add(shutter);
+  const panel=new THREE.BoxGeometry(4.65,.18,.08);
+  for(let i=0;i<7;i++){const slat=new THREE.Mesh(panel,metal);slat.position.y=i*.19;shutter.add(slat)}
+  // Extend the ground into a short driveway, with restrained lane markings.
+  box(6,.035,17,road,1.1,-.025,12.6);
+  for(let z=5.8;z<19;z+=2.6)box(.055,.006,1.1,stripe,1.1,-.003,z);
+  group.visible=false;scene.add(group);carExit={group,shutter};return carExit;
+ }
  const tyreStart=P.tyre.position.clone();
  const surf=(key,pre,pts=[])=>()=>{ // approach a surface square-on, pause, then push until it fills the screen
   const s=panels[key].cover(),a=s.c.clone().addScaledVector(s.n,s.d*pre);
@@ -253,10 +273,11 @@ async function start(){
     t.position.set(slot[1][0]*ur,.2+(slot[1][1]-.2)*ur,-.14+(slot[1][2]+.14)*ur);t.rotation.x=-.5*(1-ur);t.rotation.y=0;
    }},
   car:{label:'Builds',dur:3.2,finish:'sweep',own:true,
-   prep(){carParts.spins.forEach((w,i)=>{carWheelStart[i]=w.rotation.x})},
+   prep(){garageExit();carParts.spins.forEach((w,i)=>{carWheelStart[i]=w.rotation.x})},
    route:from=>({path:[from.p,V([-1.3,1.25,7.2]),V([-.9,.85,6.6]),V([-.5,.8,6.2])],look:[from.t,V([.5,.4,-.3]),V([.9,.5,1.6]),V([2.3,.5,7.4])],up:Y}),
    act(e){
     const pre=seg(e,.05,.42),go=seg(e,.3,1),rig=P.car;
+    if(carExit){carExit.group.visible=e>.001;carExit.shutter.position.y=2.27+seg(e,.05,.35)*1.05}
     rig.position.y=Math.sin(e*45)*.0018*pre*(1-go);rig.rotation.x=-.009*pre*(1-go);
     const q=carCurve.getPointAt(go),d=carCurve.getTangentAt(go),heading=Math.atan2(d.x,d.z),turn=seg(go,0,.12);
     rig.position.x=q.x;rig.position.z=q.z;rig.rotation.y=CAR.rot+(heading-CAR.rot)*turn;
