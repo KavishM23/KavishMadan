@@ -685,6 +685,7 @@ html.intro-hold .obj-labs{visibility:hidden}
 <link rel="stylesheet" href="noir.css">
 <link rel="stylesheet" href="workshop.css">
 <link rel="stylesheet" href="portfolio-refinement.css">
+<link rel="stylesheet" href="research-book.css">
 </head>
 <body>
 <!-- sticker art (reused below) -->
@@ -820,20 +821,17 @@ html.intro-hold .obj-labs{visibility:hidden}
   <p class="menu-f">Dubai College, applying to Stanford for Aero/Astro</p>
 </div>
 
-<div class="rb" id="rb" hidden data-lenis-prevent role="dialog" aria-modal="true" aria-labelledby="rb-title">
+<div class="rb" id="rb" hidden data-lenis-prevent role="dialog" aria-modal="true" aria-label="Research papers and notes">
   <div class="rb-back" data-rclose></div>
   <div class="rb-book">
     <button class="rb-x" type="button" data-rclose aria-label="Close research papers"><span></span><span></span></button>
-    <div class="rb-page rb-l">
-      <h2 class="rb-h" id="rb-title">Research</h2>
-      <p class="rb-by">papers &amp; notes, K. Madan</p>
-      <ol class="rb-toc" id="rbToc"></ol>
-    </div>
-    <div class="rb-page rb-r">
-      <div class="rb-sheet" id="rbSheet" aria-live="polite"></div>
-      <div class="rb-nav"><button type="button" id="rbPrev" aria-label="Previous paper">←</button><button type="button" id="rbNext" aria-label="Next paper">→</button></div>
-    </div>
-    <div class="rb-cover" aria-hidden="true"><span>Research</span></div>
+    <div class="rb-page rb-l" id="rbLeft"></div>
+    <div class="rb-page rb-r" id="rbRight"></div>
+    <nav class="rb-nav" aria-label="Research book navigation">
+      <button type="button" id="rbContents">Contents</button>
+      <span class="rb-position" id="rbPosition" aria-live="polite"></span>
+      <div class="rb-nav-arrows"><button type="button" id="rbPrev" aria-label="Previous spread">← <span>Previous</span></button><button type="button" id="rbNext" aria-label="Next spread"><span>Next</span> →</button></div>
+    </nav>
   </div>
 </div>
 
@@ -1721,47 +1719,52 @@ html.intro-hold .obj-labs{visibility:hidden}
      meta:[['Where','Extended Project Qualification, Dubai College'],['Focus','Batteries in 45°C heat']],
      body:['Most of it comes down to the heat. At 45°C, what happens to battery capacity, cooling and degradation?'],doodle:D.battery}
   ];
-  const rb=document.getElementById('rb'),rbBook=rb.querySelector('.rb-book'),rbSheet=document.getElementById('rbSheet'),rbToc=document.getElementById('rbToc');
+  const rb=document.getElementById('rb'),rbBook=rb.querySelector('.rb-book');
+  const rbLeft=document.getElementById('rbLeft'),rbRight=document.getElementById('rbRight');
+  const rbPrev=document.getElementById('rbPrev'),rbNext=document.getElementById('rbNext'),rbContents=document.getElementById('rbContents'),rbPosition=document.getElementById('rbPosition');
   const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
-  rbToc.innerHTML=PAPERS.map((p,i)=>`<li><button type="button" data-i="${i}"><span>${esc(p.short)}</span><i></i><em>${i+1}</em></button></li>`).join('');
-  const sheet=(p,i)=>`<span class="rb-status">${esc(p.status)}</span><h3>${esc(p.title)}</h3><dl class="rb-meta">${p.meta.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>${p.body.map(t=>`<p>${esc(t)}</p>`).join('')}<div class="rb-doodle" aria-hidden="true">${p.doodle}</div><span class="rb-pg">${i+1}</span>`;
-  let cur=0;const rmq=matchMedia('(prefers-reduced-motion: reduce)'),narrow=matchMedia('(max-width:760px)');
-  function showPaper(i,turn){
-    i=(i+PAPERS.length)%PAPERS.length;
-    if(turn&&!rmq.matches&&!narrow.matches&&i!==cur){
-      const t=document.createElement('div');t.className='rb-turn';
-      t.innerHTML=`<div class="f rb-page rb-r"><div class="rb-sheet">${rbSheet.innerHTML}</div></div><div class="b"></div>`;
-      rbBook.appendChild(t);t.addEventListener('animationend',()=>t.remove());
+  const rmq=matchMedia('(prefers-reduced-motion: reduce)');
+  let cur=-1,rbReturn=null,rbCloseTimer=null;
+  function showPaper(i,animate=false,focusHeading=false){
+    i=Math.max(-1,Math.min(PAPERS.length-1,i));
+    if(i===-1){
+      rbLeft.innerHTML='<div class="rb-overline">KAVISH MADAN / RESEARCH</div><h2 class="rb-display" tabindex="-1">Ideas worth<br><em>exploring.</em></h2><p class="rb-intro">A collection of papers and notes on engineering, space and the questions in between.</p><div class="rb-index-art" aria-hidden="true">'+D.orbit+'</div><span class="rb-folio">RESEARCH NOTEBOOK</span>';
+      rbRight.innerHTML='<div class="rb-overline">THE COLLECTION</div><h3 class="rb-contents-title">Contents</h3><p class="rb-hint">Choose a paper to explore its summary.</p><ol class="rb-toc" id="rbToc">'+PAPERS.map((p,n)=>`<li><button type="button" data-i="${n}"><span class="rb-toc-number">${String(n+1).padStart(2,'0')}</span><span>${esc(p.short)}</span><span class="rb-toc-arrow" aria-hidden="true">↗</span></button></li>`).join('')+'</ol><span class="rb-folio">CONTENTS / 00</span>';
+    }else{
+      const p=PAPERS[i],n=String(i+1).padStart(2,'0');
+      rbLeft.innerHTML=`<div class="rb-overline">RESEARCH NOTEBOOK / ${n}</div><span class="rb-status">${esc(p.status)}</span><h2 class="rb-paper-title" tabindex="-1">${esc(p.title)}</h2><dl class="rb-meta">${p.meta.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl><span class="rb-folio">${n} / ${String(PAPERS.length).padStart(2,'0')}</span>`;
+      rbRight.innerHTML=`<div class="rb-overline">PAPER ${n} / OVERVIEW</div><h3 class="rb-contents-title">The idea.</h3><div class="rb-copy">${p.body.map(t=>`<p>${esc(t)}</p>`).join('')}</div><div class="rb-illustration" aria-hidden="true">${p.doodle}</div><span class="rb-folio">SUMMARY / ${n}</span>`;
     }
-    cur=i;rbSheet.innerHTML=sheet(PAPERS[i],i);
-    rbToc.querySelectorAll('button').forEach(b=>b.setAttribute('aria-current',String(+b.dataset.i===i)));
+    cur=i;rbPrev.disabled=i===-1;rbNext.disabled=i===PAPERS.length-1;
+    rbContents.disabled=i===-1;rbPosition.textContent=i===-1?'Contents':`${String(i+1).padStart(2,'0')} / ${String(PAPERS.length).padStart(2,'0')}`;
+    if(animate&&!rmq.matches){rbLeft.classList.remove('rb-enter');rbRight.classList.remove('rb-enter');void rbBook.offsetWidth;rbLeft.classList.add('rb-enter');rbRight.classList.add('rb-enter')}
+    if(focusHeading)rbLeft.querySelector('h2').focus({preventScroll:true});
+    rb.scrollTop=0;
   }
-  showPaper(0,false);
-  rbToc.addEventListener('click',e=>{const b=e.target.closest('button[data-i]');if(b)showPaper(+b.dataset.i,true)});
-  document.getElementById('rbPrev').addEventListener('click',()=>showPaper(cur-1,true));
-  document.getElementById('rbNext').addEventListener('click',()=>showPaper(cur+1,true));
-  let rbReturn=null;
+  rb.addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(b)showPaper(Number(b.dataset.i),true,true)});
+  rbPrev.addEventListener('click',()=>showPaper(cur-1,true));
+  rbNext.addEventListener('click',()=>showPaper(cur+1,true));
+  rbContents.addEventListener('click',()=>showPaper(-1,true,true));
   window.openResearch=(ox,oy)=>{
-    rbReturn=document.activeElement;
+    clearTimeout(rbCloseTimer);rbReturn=document.activeElement;
     rb.style.setProperty('--dx',((ox??innerWidth/2)-innerWidth/2).toFixed(0)+'px');rb.style.setProperty('--dy',((oy??innerHeight/2)-innerHeight/2).toFixed(0)+'px');
-    rb.classList.remove('closing');rb.hidden=false;lockScroll(true);
-    const cov=rb.querySelector('.rb-cover');if(cov){cov.style.animation='none';void cov.offsetWidth;cov.style.animation=''}
-    setTimeout(()=>rbToc.querySelector('button').focus({preventScroll:true}),60);
+    showPaper(-1);rb.classList.remove('closing');rb.hidden=false;lockScroll(true);
+    setTimeout(()=>{if(!rb.hidden)rb.querySelector('button[data-rclose]').focus({preventScroll:true})},60);
   };
   function closeResearch(){
-    if(rb.hidden)return;rb.classList.add('closing');
-    setTimeout(()=>{rb.hidden=true;rb.classList.remove('closing');lockScroll(false);window.hero3d&&window.hero3d.closeBook();if(rbReturn&&rbReturn.focus)rbReturn.focus({preventScroll:true})},rmq.matches?0:330);
+    if(rb.hidden||rb.classList.contains('closing'))return;rb.classList.add('closing');
+    rbCloseTimer=setTimeout(()=>{rb.hidden=true;rb.classList.remove('closing');lockScroll(false);window.hero3d&&window.hero3d.closeBook();if(rbReturn&&rbReturn.focus)rbReturn.focus({preventScroll:true})},rmq.matches?0:330);
   }
   rb.addEventListener('click',e=>{if(e.target.closest('[data-rclose]'))closeResearch()});
   document.querySelectorAll('[data-research]').forEach(b=>b.addEventListener('click',e=>{e.preventDefault();
     if(window.hero3d&&!b.closest('.menu'))window.hero3d.openBook();else setTimeout(()=>window.openResearch(innerWidth/2,innerHeight/2),b.closest('.menu')?60:0)}));
   document.addEventListener('keydown',e=>{
     if(!rb.hidden){
-      if(e.key==='Escape'){closeResearch();return}
-      if(e.key==='ArrowRight')showPaper(cur+1,true);
-      if(e.key==='ArrowLeft')showPaper(cur-1,true);
-      if(e.key==='Tab'){const f=[...rb.querySelectorAll('button')].filter(x=>x.offsetParent);const a=f[0],z=f[f.length-1];
-        if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}
+      if(e.key==='Escape'){e.preventDefault();closeResearch();return}
+      if(e.key==='ArrowRight'&&!rbNext.disabled){e.preventDefault();showPaper(cur+1,true)}
+      if(e.key==='ArrowLeft'&&!rbPrev.disabled){e.preventDefault();showPaper(cur-1,true)}
+      if(e.key==='Tab'){const f=[...rb.querySelectorAll('button:not(:disabled)')].filter(x=>x.offsetParent);const first=f[0],last=f[f.length-1];
+        if(e.shiftKey&&(document.activeElement===first||!rb.contains(document.activeElement))){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}
     }else if(!menu.hidden&&e.key==='Escape')closeMenu();
   });
 
