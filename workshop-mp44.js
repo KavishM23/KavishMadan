@@ -17,7 +17,7 @@ function personalLivery(material){
  }else if(material.name==='blinn4'){
   // The small wing atlas is 256px; its dimensions are scaled above.
   white(0,0,2048,265);white(0,1440,2048,608);
-  white(710,650,580,360);
+  white(710,650,580,760);
   g.fillStyle='#ed1128';g.fillRect(390,1010,290,135);g.fillRect(1360,650,300,125);
  }else if(material.name==='blinn6'){
   white(500,950,1430,650);
