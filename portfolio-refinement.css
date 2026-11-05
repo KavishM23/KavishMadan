@@ -55,3 +55,26 @@
 @media(max-width:800px){.builds-index{grid-template-columns:repeat(2,minmax(0,1fr))}.builds-index a:nth-child(odd){padding-right:20px}#work #b-4x4 .photo-wrap{aspect-ratio:4/3}}
 @media(max-width:520px){#work .page-head{padding-top:115px}.builds-eyebrow{font-size:.62rem}.builds-deck{font-size:1.05rem}.builds-index{margin-top:36px}.builds-index a{font-size:.78rem;min-height:62px;gap:6px}.builds-index a span{font-size:.59rem}#work .b-stats .drop{min-width:0;flex:1 1 130px}#work #b-4x4 .photo-wrap{aspect-ratio:1/1}#work .strip{grid-template-columns:1fr 1fr;gap:10px}#work .print figcaption{padding:15px}#work .print p{font-size:.8rem}#work .pin>span{font-size:.5rem}}
 @media(prefers-reduced-motion:reduce){.builds-index a,.builds-index a b{transition:none}}
+
+/* Computer displays present real project diagrams and app screenshots. */
+.project-laptop{width:100%;padding:0 0 18px;perspective:1400px;filter:drop-shadow(0 22px 25px rgb(8 22 28 / .17))}
+.project-laptop-lid{position:relative;width:92%;margin:auto;padding:clamp(8px,1.15vw,14px);border:1px solid #768487;border-radius:clamp(12px,1.4vw,20px) clamp(12px,1.4vw,20px) 5px 5px;background:linear-gradient(135deg,#596a70,#172c33 25%,#0c1c22 80%,#556a70);box-shadow:inset 0 0 0 1px #c4d4d12e}
+.project-laptop-camera{position:absolute;z-index:2;top:4px;left:50%;width:4px;height:4px;border-radius:50%;background:#7f999e;transform:translateX(-50%)}
+.project-laptop-screen{overflow:hidden;border-radius:4px;background:var(--t-card)}
+.project-laptop-bar{height:clamp(25px,2.5vw,34px);display:flex;align-items:center;gap:10px;padding:0 12px;background:#20343a;color:#dce8e4}
+.project-laptop-bar>span{display:flex;gap:4px;flex-shrink:0}.project-laptop-bar i{width:5px;height:5px;border-radius:50%;background:#899c9b}.project-laptop-bar i:first-child{background:#d8876d}
+.project-laptop-bar b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:500 clamp(.53rem,.72vw,.68rem) var(--f-m);letter-spacing:.02em}
+#work .project-laptop .peel.bp{border:0;border-radius:0;box-shadow:none;padding:clamp(12px,2vw,24px);background-color:var(--t-card)}
+.project-laptop-base,.case-laptop-base{position:relative;width:100%;height:clamp(10px,1.35vw,17px);border-radius:1px 1px 45% 45% / 2px 2px 65% 65%;background:linear-gradient(#b2bfc0 0%,#e1e4e0 20%,#8f9da0 65%,#55676a 100%);box-shadow:0 7px 9px #101b1d2c}
+.project-laptop-base span,.case-laptop-base span{position:absolute;left:43%;top:0;width:14%;height:25%;border-radius:0 0 7px 7px;background:#8d9b9d}
+.case-laptop{width:100%;padding-bottom:8px}
+.cs-view .case-laptop .cs-frame{position:relative;width:94%;margin:auto;padding:8px;background:#172a30;border:1px solid #718386;border-radius:16px 16px 3px 3px;overflow:hidden}
+.cs-view .case-laptop .cs-frame::before{content:'';position:absolute;z-index:2;top:3px;left:50%;width:3px;height:3px;border-radius:50%;background:#9aafad}
+.cs-view .case-laptop .cs-frame .bar{border-radius:5px 5px 0 0}
+.cs-view .case-laptop .cs-frame .photo-open{padding:0;background:var(--bg-1)}
+.cs-view .case-laptop .cs-frame img{max-height:55vh}
+.cs-view .case-laptop-base{height:14px}
+@supports (animation-timeline:view()){
+ @media(prefers-reduced-motion:no-preference){.project-laptop{animation:laptop-arrive linear both;animation-timeline:view();animation-range:entry 0% entry 85%}@keyframes laptop-arrive{from{transform:translateY(24px) scale(.96)}to{transform:translateY(0) scale(1)}}}
+}
+@media(max-width:520px){.project-laptop-lid{width:94%;padding:7px}.project-laptop-bar{height:25px;padding:0 8px}.project-laptop-bar b{font-size:.55rem}#work .project-laptop .peel.bp{padding:10px}.cs-view .case-laptop .cs-frame{padding:6px;border-radius:10px 10px 2px 2px}}
