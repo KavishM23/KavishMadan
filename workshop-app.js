@@ -78,7 +78,7 @@ async function start(){
   const r=hero.getBoundingClientRect();W=Math.max(1,Math.round(r.width));H=Math.max(1,Math.round(r.height));
   // Post-processing uses several full-size buffers. Cap their combined cost
   // without lowering normal-density screens below their native resolution.
-  ratio=Math.min(devicePixelRatio||1,phone?1.5:1.75,Math.max(1,Math.sqrt((phone?2000000:3200000)/(W*H))));
+  ratio=Math.min(devicePixelRatio||1,phone?1.5:2,Math.max(1,Math.sqrt((phone?2000000:4200000)/(W*H))));
   renderer.setPixelRatio(ratio);renderer.setSize(W,H,false);camera.aspect=W/H;camera.updateProjectionMatrix();
   const pw=Math.round(W*ratio),ph=Math.round(H*ratio);
   const fw=Math.round(pw*fastScale),fh=Math.round(ph*fastScale),key=[pw,ph,fw,fh,fastAO].join();

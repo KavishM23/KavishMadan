@@ -3,6 +3,22 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { wheelForTriangle } from './workshop-mp44-rig.mjs';
 
+// Preserve the original paint atlas and replace its two small, baked-in body
+// wordmarks with vector artwork at a higher texture resolution.
+function sharpenBodyDecals(material,wordmark,anisotropy){
+ const original=material.map;if(!original?.image||!wordmark)return;
+ const canvas=document.createElement('canvas');canvas.width=canvas.height=3072;
+ const ctx=canvas.getContext('2d');if(!ctx)return;
+ ctx.scale(1.5,1.5);ctx.drawImage(original.image,0,0,2048,2048);
+ ctx.fillStyle='#fff';ctx.fillRect(500,1560,310,90);ctx.fillRect(500,1680,310,95);
+ ctx.drawImage(wordmark,510,1684,285,84);
+ ctx.save();ctx.translate(795,1646);ctx.rotate(Math.PI);ctx.drawImage(wordmark,0,0,285,84);ctx.restore();
+ const map=new THREE.CanvasTexture(canvas);map.flipY=original.flipY;map.colorSpace=original.colorSpace;
+ map.wrapS=original.wrapS;map.wrapT=original.wrapT;map.magFilter=original.magFilter;map.minFilter=original.minFilter;
+ map.offset.copy(original.offset);map.repeat.copy(original.repeat);map.rotation=original.rotation;map.center.copy(original.center);
+ map.anisotropy=anisotropy;map.needsUpdate=true;material.map=map;material.needsUpdate=true;original.dispose();
+}
+
 // The tyre mesh contains exactly four tyres. The hub material also contains
 // chassis details, so only triangles fully inside a tyre volume are rigged.
 function rigWheels(scene){
@@ -24,8 +40,8 @@ function rigWheels(scene){
 }
 
 export async function installMP44(car,{anisotropy=1}={}){
- const gltf=await new GLTFLoader().loadAsync('assets/models/mp44-flamestroke.glb');const model=gltf.scene;
- model.traverse(o=>{if(!o.isMesh)return;o.castShadow=true;o.receiveShadow=true;const materials=Array.isArray(o.material)?o.material:[o.material];for(const material of materials){for(const key of ['map','normalMap','roughnessMap','metalnessMap'])if(material[key])material[key].anisotropy=anisotropy}});
+ const [gltf,wordmark]=await Promise.all([new GLTFLoader().loadAsync('assets/models/mp44-flamestroke.glb'),new THREE.ImageLoader().loadAsync('assets/models/decals/marlboro-wordmark.svg').catch(()=>null)]);const model=gltf.scene;
+ const sharpened=new Set();model.traverse(o=>{if(!o.isMesh)return;o.castShadow=true;o.receiveShadow=true;const materials=Array.isArray(o.material)?o.material:[o.material];for(const material of materials){for(const key of ['map','normalMap','roughnessMap','metalnessMap'])if(material[key])material[key].anisotropy=anisotropy;if(material.name==='blinn2'&&!sharpened.has(material)){sharpened.add(material);sharpenBodyDecals(material,wordmark,anisotropy)}}});
  const wheels=rigWheels(model);if(!wheels)throw new Error('MP4/4 wheel geometry is missing');
  model.updateMatrixWorld(true);const box=new THREE.Box3().setFromObject(model),center=box.getCenter(new THREE.Vector3()),size=box.getSize(new THREE.Vector3()),scale=4.4/size.z;
  model.scale.setScalar(scale);model.position.set(-center.x*scale,-box.min.y*scale,-center.z*scale);
