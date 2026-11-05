@@ -39,14 +39,31 @@ function rigWheels(scene){
  return {spins,fronts};
 }
 
+// The source windscreen is very opaque from this viewpoint, obscuring its
+// steering wheel. Fit a clearly defined wheel at the original wheel's centre.
+function cockpitDetails(model){
+ let originalWheel=null,screen=null;
+ model.traverse(o=>{if(!o.isMesh)return;if(o.material?.name==='lambert5')originalWheel=o;if(o.material?.name==='blinn10')screen=o});
+ if(screen){screen.material=screen.material.clone();screen.material.map=null;screen.material.color.set('#aab6b6');screen.material.opacity=.13;screen.material.transparent=true;screen.material.depthWrite=false;screen.material.roughness=.18;screen.material.needsUpdate=true}
+ if(!originalWheel)return new THREE.Group();
+ originalWheel.geometry.computeBoundingBox();const center=originalWheel.geometry.boundingBox.getCenter(new THREE.Vector3());
+ const wheel=new THREE.Group();wheel.name='Steering wheel';wheel.position.copy(center);wheel.rotation.x=-.22;wheel.userData.moving=true;
+ const leather=new THREE.MeshStandardMaterial({color:'#17191b',roughness:.78}),metal=new THREE.MeshStandardMaterial({color:'#8d9292',metalness:.75,roughness:.38});
+ const rim=new THREE.Mesh(new THREE.TorusGeometry(.105,.011,12,64),leather);wheel.add(rim);
+ for(const angle of [0,Math.PI*2/3,Math.PI*4/3]){const spoke=new THREE.Mesh(new THREE.BoxGeometry(.085,.013,.007),metal);spoke.position.set(Math.cos(angle)*.048,Math.sin(angle)*.048,0);spoke.rotation.z=angle;wheel.add(spoke)}
+ const boss=new THREE.Mesh(new THREE.CylinderGeometry(.022,.022,.018,28),leather);boss.rotation.x=Math.PI/2;wheel.add(boss);
+ const column=new THREE.Mesh(new THREE.CylinderGeometry(.012,.012,.15,16),metal);column.rotation.x=Math.PI/2;column.position.z=-.08;wheel.add(column);
+ wheel.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});originalWheel.visible=false;originalWheel.parent.add(wheel);return wheel;
+}
+
 export async function installMP44(car,{anisotropy=1}={}){
  const [gltf,wordmark]=await Promise.all([new GLTFLoader().loadAsync('assets/models/mp44-flamestroke.glb'),new THREE.ImageLoader().loadAsync('assets/models/decals/marlboro-wordmark.svg').catch(()=>null)]);const model=gltf.scene;
  const sharpened=new Set();model.traverse(o=>{if(!o.isMesh)return;o.castShadow=true;o.receiveShadow=true;const materials=Array.isArray(o.material)?o.material:[o.material];for(const material of materials){for(const key of ['map','normalMap','roughnessMap','metalnessMap'])if(material[key])material[key].anisotropy=anisotropy;if(material.name==='blinn2'&&!sharpened.has(material)){sharpened.add(material);sharpenBodyDecals(material,wordmark,anisotropy)}}});
- const wheels=rigWheels(model);if(!wheels)throw new Error('MP4/4 wheel geometry is missing');
+ const wheels=rigWheels(model);if(!wheels)throw new Error('MP4/4 wheel geometry is missing');const yoke=cockpitDetails(model);
  model.updateMatrixWorld(true);const box=new THREE.Box3().setFromObject(model),center=box.getCenter(new THREE.Vector3()),size=box.getSize(new THREE.Vector3()),scale=4.4/size.z;
  model.scale.setScalar(scale);model.position.set(-center.x*scale,-box.min.y*scale,-center.z*scale);
  const orientation=new THREE.Group();orientation.rotation.y=Math.PI;orientation.position.z=-1.15;orientation.add(model);
- const {tyreGeometry,rubber}=car.userData.parts,flap=new THREE.Group(),yoke=new THREE.Group();
+ const {tyreGeometry,rubber}=car.userData.parts,flap=new THREE.Group();
  car.clear();car.add(orientation);car.userData.parts={tyreGeometry,rubber,...wheels,flap,yoke};
- car.userData.playFor=2.6;car.userData.play=(h,p,dt)=>{wheels.fronts.forEach(w=>{w.rotation.y=h*.08});const speed=p<2.6?26*Math.max(0,1-p/2.6):0;wheels.spins.forEach(w=>{w.rotation.x-=speed*dt})};
+ car.userData.playFor=2.6;car.userData.play=(h,p,dt)=>{wheels.fronts.forEach(w=>{w.rotation.y=h*.08});yoke.rotation.z=-h*.14;const speed=p<2.6?26*Math.max(0,1-p/2.6):0;wheels.spins.forEach(w=>{w.rotation.x-=speed*dt})};
 }

@@ -84,12 +84,16 @@ Workshop.props=function(THREE,kit,carParts){
    add(inst,mesh(new THREE.CylinderGeometry(.0105,.0132,.018,24),gold,[x,PY+y,.046],[Math.PI/2,0,0]));
    add(inst,mesh(new THREE.TorusGeometry(.008,.0008,6,20),nickel,[x,PY+y,.056]));
   }
-  // Selector switch, washer and mounting screws on the cream pickguard.
-  add(inst,mesh(new THREE.CylinderGeometry(.009,.009,.003,24),cream,[-.095,PY+.09,.043],[Math.PI/2,0,0]));
-  add(inst,bar([-.095,PY+.09,.045],[-.087,PY+.103,.06],.0022,nickel,8));
-  for(const [x,y] of [[.038,.174],[.056,.095]])add(inst,mesh(new THREE.SphereGeometry(.002,10,8),chrome,[x,PY+y,.053]));
-  const guard=new THREE.Shape();guard.moveTo(.047,.18);guard.lineTo(.078,.18);guard.bezierCurveTo(.1,.14,.095,.1,.06,.085);guard.lineTo(.047,.09);guard.closePath();
-  add(inst,mesh(new THREE.ExtrudeGeometry(guard,{depth:.002,bevelEnabled:false,curveSegments:16}),cream,[0,PY,.05]));
+  // The toggle belongs on the upper bass-side bout, independent of the guard.
+  const switchX=-.058,switchY=PY+.127;
+  add(inst,mesh(new THREE.CylinderGeometry(.010,.010,.0025,32),cream,[switchX,switchY,.040],[Math.PI/2,0,0]));
+  add(inst,mesh(new THREE.CylinderGeometry(.0045,.0045,.003,24),nickel,[switchX,switchY,.042],[Math.PI/2,0,0]));
+  add(inst,bar([switchX,switchY,.043],[switchX-.003,switchY+.009,.055],.0022,nickel,10));
+  add(inst,mesh(new THREE.SphereGeometry(.0032,12,8),cream,[switchX-.003,switchY+.009,.055]));
+  // A Les Paul guard sits beside and between the pickup rings, not above them.
+  const guard=new THREE.Shape();guard.moveTo(.047,.145);guard.lineTo(.060,.145);guard.lineTo(.060,.103);guard.lineTo(.071,.094);guard.lineTo(.096,.088);guard.lineTo(.095,.021);guard.lineTo(.080,.012);guard.lineTo(.047,.012);guard.lineTo(.047,.018);guard.lineTo(.053,.018);guard.lineTo(.053,.062);guard.lineTo(.047,.068);guard.closePath();
+  add(inst,mesh(new THREE.ExtrudeGeometry(guard,{depth:.0018,bevelEnabled:true,bevelSize:.0006,bevelThickness:.0005,bevelSegments:2,curveSegments:16}),cream,[0,PY,.0405]));
+  for(const [x,y] of [[.055,.137],[.085,.026]])add(inst,mesh(new THREE.SphereGeometry(.0018,10,8),chrome,[x,PY+y,.043]));
   // strings
   const sMat=std('#d5d3cc',.22,1);
   add(inst,strs);for(let i=0;i<6;i++){const a=-.0165+i*.0066,b=-.02+i*.008,r=.0005+.00016*(5-i),joint=[a,Y0+.07,.058];add(strs,bar([b,PY-.06,.058],joint,r,sMat,8));add(strs,bar(joint,[a,Y0+.428,.034],r,sMat,8))}
