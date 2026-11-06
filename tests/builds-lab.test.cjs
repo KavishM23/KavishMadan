@@ -41,7 +41,8 @@ for(const [name,size] of Object.entries(sizes)){
  const scale=G.fit(size),w=size.w*scale,h=size.h*scale,d=size.d*scale,slot=G.slots[name];
  test(`${name} fits its slot and clears the machine all the way down`,()=>{
   assert.ok(w<=G.maxW+1e-6&&d<=G.maxD+1e-6&&h<=G.maxH+1e-6);
-  assert.ok(slot[0]-w/2>=G.bayL&&slot[0]+w/2<=G.bayR,'clear of the bay walls');
+  assert.ok(slot[0]-w/2>=G.bayL+.06&&slot[0]+w/2<=G.bayR-.06,'clear of the bay walls and shelf uprights');
+  assert.ok(Math.abs(slot[0]-G.fenceX)>=w/2+.03,'clear of the fence and the neighbouring project');
   const shelfAbove=G.shelfTops.filter(y=>y>slot[1])[0]??G.ceiling;
   assert.ok(slot[1]+G.rest+h<shelfAbove-.06,'clear of the shelf above');
   for(let t=0;t<=G.times.feed+G.times.tip+G.times.fall+G.times.land+G.times.door+G.times.slide;t+=10){
@@ -55,10 +56,16 @@ for(const [name,size] of Object.entries(sizes)){
    // It never sinks into the ramp.
    assert.ok(p.y>=G.rampAt(p.z)-1e-6,`above the ramp at ${t}ms`);
    // It goes through the hatch only inside the opening.
-   if(p.z+d/2>G.front-.05){assert.ok(p.door>1.5,'door open as it passes');assert.ok(p.y+h<G.hatch.top+.001,`under the hatch head at ${t}ms`);assert.ok(slot[0]-w/2>G.hatch.left-.001||slot[0]+w/2<G.hatch.right,'inside hatch')}
+   if(p.z+d/2>G.front-.05){assert.ok(p.door>1.5,'door open as it passes');assert.ok(p.y+h<G.hatch.top+.001,`under the hatch head at ${t}ms`);assert.ok(slot[0]-w/2>G.hatch.left&&slot[0]+w/2<G.hatch.right,'inside the hatch sides')}
   }
  });
 }
+
+test('the shelves, coils and motors all sit inside the cabinet',()=>{
+ for(const [,[x,top]] of Object.entries(G.slots))for(const s of [-1,1]){
+  const cx=x+s*G.coilX;assert.ok(cx-G.coilR>G.bayL+.06&&cx+G.coilR<G.bayR-.06,'coil clear of the walls');assert.ok(Math.abs(cx-G.fenceX)>G.coilR+.03,'coil clear of the fence');assert.ok(top+G.coilY+G.coilR<top+G.rest+.001,'coil tops carry the product')}
+ assert.ok(G.lip<G.laneZ-G.maxD/2,'shelf stops short of the drop lane');assert.ok(G.laneZ+G.maxD/2<G.glass,'lane stops short of the glass');
+});
 
 test('the coils turn exactly as far as the product advances',()=>{
  const p=G.path(G.times.feed,G.slots.strata,1,sizes.strata),travel=G.lip-.04-(G.back+G.startZ);

@@ -6,3 +6,5 @@ The body wordmarks are sharpened using the wordmark paths extracted from [Marlbo
 
 ## Project machine models (assets/models/vending)
 Original work for this site. Strata uses the team's own CAD. Globe coastlines come from Natural Earth 1:50m (public domain) through the world-atlas package (ISC). Plaque lettering uses Blender's built-in font. See the README in that folder for what is real and what is inferred.
+
+The workshop scene (assets/models/vending/workshop) is original. Its method follows Jesse Zhou's published case study on baked three.js scenes, and none of his assets are used. Labels in prints.webp are rasterised from macOS system fonts.

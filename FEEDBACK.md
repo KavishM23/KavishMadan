@@ -243,3 +243,9 @@ Quiet ambient music now plays behind the site. It is made in the browser rather 
 - Strata is now built from the team's CAD: 22 ribs sliced from the Fusion body, with the real tyre and rim. The chassis and electronics are modelled from photographs. It is not a scan.
 - The quadcopter is labelled as representative, the wing as a concept model, and the Kessler plaque says heights are not to scale. `assets/models/vending/README.md` lists what is real and what is inferred.
 - The cabinet is now hollow, so a product rides twin coils, drops down a lane in front of the shelves, lands on a ramp and leaves through a drop-down tray door. If you change the cabinet, run the tests: they fail if a product would hit the glass, a shelf, the ramp or the hatch.
+
+## The workshop, baked
+- The machine and room are now one Blender scene with light baked into textures, the method Jesse Zhou describes for his ramen shop. The room itself is original: a brick workshop with a bench, shadow board, cork board, shelving, window and ceiling.
+- Metal bakes black if it stays metallic in Blender, so the light rig bakes everything as non-metal and the page adds the shine back.
+- Cabinet numbers live in `builds-lab-layout.js`. Blender reads the same file, so a change there means a rebuild and rebake, not just a code edit.
+- The status screen, buttons and flap are real parts of the machine now and report what it is doing.
