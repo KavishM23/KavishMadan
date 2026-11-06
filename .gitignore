@@ -2,3 +2,5 @@ versions/
 research/
 .DS_Store
 .claude/
+*.blend1
+__pycache__/
