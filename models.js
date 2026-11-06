@@ -53,6 +53,7 @@ window.createPortfolioAtelier=function({THREE,Round,environment,reduced,anisotro
  const descriptions={guitar:'Guitar / Trinity Grade 8',sketch:'Sketchbook / Project Strata body studies',orbit:'Orbit / 450, 550 and 850 km',drone:'Anti-drone quadcopter study',trophy:'Awards & olympiads'};
  /* A scene is built the first time its page needs it: nothing here costs anything until then. */
  const makeSlot=el=>{
+  if(el.dataset.scene==='staircase')return window.createCodeStaircase({THREE,Round,environment,makeDrone:()=>batch(drone()),reduced,el,anisotropy});
   if(el.dataset.scene==='cabinet')return window.createTrophyCabinet({THREE,Round,environment,reduced,el,anisotropy,batch});
   const scene=new THREE.Scene();scene.environment=environment;scene.add(new THREE.HemisphereLight(0xf4eadb,0x9a8a78,1.1));const key=new THREE.DirectionalLight(0xfff0dc,2.8);key.position.set(-4,6,8);scene.add(key);const rim=new THREE.DirectionalLight(0xeb5939,1.6);rim.position.set(5,2,-5);scene.add(rim);
   const camera=new THREE.PerspectiveCamera(32,1,.1,100);camera.position.set(0,.15,el.dataset.scene==='about'?13.6:el.classList.contains('accent-model')?(el.dataset.scene==='drone'?6.6:6.2):9.8);camera.lookAt(0,0,0);const group=new THREE.Group();scene.add(group);const keys=el.dataset.scene==='about'?['guitar','sketch','orbit']:[el.dataset.scene];

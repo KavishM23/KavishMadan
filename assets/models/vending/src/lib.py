@@ -242,7 +242,8 @@ def bake_ao(path,size=1536,samples=32,skip=('tyre','rim_shared'),distance=6):
     for o in obs:o.select_set(True)
     bpy.context.view_layer.objects.active=obs[0]
     for o in obs:
-        if not o.data.uv_layers:o.data.uv_layers.new(name='ao')
+        if 'ao' not in o.data.uv_layers:o.data.uv_layers.new(name='ao')
+        o.data.uv_layers.active=o.data.uv_layers['ao']
     bpy.ops.object.mode_set(mode='EDIT');bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.uv.smart_project(angle_limit=math.radians(58),island_margin=.0025,area_weight=.6,scale_to_bounds=True)
     bpy.ops.object.mode_set(mode='OBJECT')

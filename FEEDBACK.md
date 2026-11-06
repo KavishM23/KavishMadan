@@ -250,9 +250,7 @@ Quiet ambient music now plays behind the site. It is made in the browser rather 
 - Cabinet numbers live in `builds-lab-layout.js`. Blender reads the same file, so a change there means a rebuild and rebake, not just a code edit.
 - The status screen, buttons and flap are real parts of the machine now and report what it is doing.
 
-## Code: a real stairwell
-- The stairs no longer float. The door now opens onto a blue tiled shaft with a stone column, a stair that connects to it, and three arched alcoves reached by bridges: a larder for LastBite, a study for TutorTime and an arcade for Kung Fooled.
-- The stairs used to pour out of the doorway. That is gone, because a stair that exists can't appear from nowhere. The door opens, the camera walks through and a warm flash hides the move into the stairwell.
-- Each stop leads with a name, one line and proof numbers, then three tabs. Tabs and numbered features change the physical screen and mark the part they describe.
-- Screens were recaptured from the real apps at 1600 px, with TutorTime's test data and example LastBite items.
-- `code-layout.js` drives both Blender and the page. If it changes, rebuild and rebake. `tests/code-journey.test.cjs` checks that the camera and drone stay clear of the rails, walls and bridges.
+## Code: same staircase, better objects
+- A full stairwell rebuild was tried and rejected as too much. The page stays as it was: the cream scene, door, pouring stairs and text.
+- The flat monitors are now small 3D sets on brackets off each landing: a kitchen counter for LastBite, a desk with the real match formula for TutorTime, and an arcade cabinet for Kung Fooled. Each shows its real screen.
+- Screens are recaptured from the running apps at 1600 px, and the drone is the detailed model. If a set or the drone can't load, the plain monitor or simple drone stays.

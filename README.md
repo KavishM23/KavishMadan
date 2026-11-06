@@ -16,7 +16,7 @@ One static page, no build step. The hero's 3D objects are modelled in [three.js]
 
 `moroccan-gate.js` models the doorway at the top of the staircase and draws the brick, limestone and flagstone textures. `noir.css` sets the art direction (near-black, sand, one orange) and loads last; `noir.js` fills the big statements word by word on scroll. `models.js` supplies the additional About, Code and Awards objects; they share the hero's WebGL renderer. `interactions.js` and `interactions.css` provide the contextual cursor, pointer lenses, touch/keyboard reveal controls and collection layout. The intro in `concorde.js` is a modelled Concorde that shares the hero's scene and is removed once it has flown. Design decisions are recorded in `FEEDBACK.md`.
 
-`code-layout.js` holds the stairwell as numbers, and Blender and the page both read it. `code-journey.js` and `code-journey.css` turn the Code page into a pinned descent through a baked stairwell, with the same HTML as an ordinary page when WebGL or motion is off.
+`code-journey.js` and `code-journey.css` turn the Code page into a scroll-driven spiral staircase with LastBite and TutorTime landings and a following drone. Short-screen, reduced-motion and WebGL fallbacks retain a normal project layout. The final code-behind-the-builds section is preserved.
 
 `render-performance.js` batches static model details, manages a single cancellable render loop and adapts framebuffer density under sustained load. The 3D loop targets 60 fps and pauses offscreen, in background tabs and behind open overlays. Static camera bounds are cached; the staircase steps and posts use instancing. Geometry detail, the book notes and the page grain are retained.
 

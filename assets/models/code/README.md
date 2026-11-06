@@ -1,23 +1,8 @@
-# Code stairwell
+# Code staircase sets
 
-A baked Blender scene for the Code page, built by the same method as the workshop.
+Three small sets and the drone for the staircase on the Code page.
 
-- `world.glb`: stair, shaft, alcoves and lobby, about 88,000 triangles.
-- `movers.glb`: the three physical screens.
+- `set-lastbite.glb`, `set-tutortime.glb`, `set-kungfooled.glb`: built by `src/sets.py` with baked ambient shadow. Each has a `mover_screen` plane, and `code-journey.js` puts the real screen on it.
 - `drone.glb`: the representative quadcopter from `vending/src/quadcopter.py`, without its display base.
-- `lm-*.webp`: six lightmaps at 1280, or 1024 for the lobby, with smaller copies for phones. Blender 4.2's GPU baker crashed above 1280 on the build Mac.
-- Shared textures for brushed metal, enamel, timber, brick and boards are read from `vending/workshop/`.
 
-## Rebuilding
-
-1. Write `code-layout.js` out as `layout.json`.
-2. `python src/textures.py tex ../../../img`
-3. `blender -b --python src/world.py -- layout.json scene tex/code_prints.json`
-4. `blender -b --python src/bake.py -- scene layout.json 200`
-5. Denoise each `.exr` with `vending/src/workshop/denoise.py`, run `src/pack.py`, then compress `world.glb` with meshopt and quantisation. Keep `movers.glb` unquantised so its positions survive.
-
-`src/blend/stairwell.blend` is the scene before baking. The lobby's gate is drawn live by `moroccan-gate.js`.
-
-## Real and invented
-
-Real: the screens, the match formula on the chalkboard, the ten realm names on the cartridges, and the 01 to 03 project order. Everything else in the alcoves is set dressing that suits the project, not a record of it.
+To rebuild a set, run `src/textures.py` for the print atlas, then `blender -b --python src/sets.py -- OUT prints.json KEY TEXDIR SHAREDTEX`. Compress with `gltf-transform optimize`, and pass `--prune-attributes false`, or the screens lose their texture coordinates.
