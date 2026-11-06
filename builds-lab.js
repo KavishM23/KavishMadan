@@ -106,7 +106,7 @@ async function init(){
  // The drone is supported on a stand and has four connected arms, motors and propellers.
  {const g=models.drone;const drone=new THREE.Group();drone.position.y=.38;drone.rotation.y=.25;g.add(drone);box(drone,.28,.09,.24,m.blue,0,0,0,.025);box(drone,.16,.035,.16,m.black,0,.07,0,.01);
   for(const x of [-.27,.27])for(const z of [-.22,.22]){rod(drone,[0,0,0],[x,0,z],.018,m.deep);cylinder(drone,.045,.055,m.silver,x,.03,z,18);const prop=new THREE.Group();prop.position.set(x,.07,z);drone.add(prop);box(prop,.30,.009,.04,m.cream,0,0,0,.004);cylinder(prop,.02,.02,m.brass,0,.012,0,14)}
-  for(const x of [-.27,.27])for(const z of [-.22,.22]){const cap=cylinder(drone,.026,.035,m.black,x,.073,z,16);const stripe=torus(drone,.052,.005,m.brass,x,.035,z);stripe.rotation.x=Math.PI/2}box(drone,.12,.035,.1,m.silver,0,.095,0,.006);for(const x of [-.08,.08])rod(drone,[x,.06,.05],[x,.13,.12],.006,m.orange);for(const x of [-.09,.09]){rod(drone,[x,-.05,-.08],[x,-.15,-.12],.009,m.silver);rod(drone,[x,-.15,-.12],[x,-.15,.13],.009,m.silver)}
+  for(const x of [-.27,.27])for(const z of [-.22,.22]){const cap=cylinder(drone,.026,.035,m.black,x,.073,z,16);const stripe=torus(drone,.052,.005,m.brass,x,.035,z);stripe.rotation.x=Math.PI/2}box(drone,.12,.035,.1,m.silver,0,.095,0,.006);box(drone,.18,.012,.14,m.deep,0,.12,0,.004);for(const x of [-.06,.06])for(const z of [-.045,.045]){const screw=cylinder(drone,.008,.008,m.brass,x,.129,z,8)}box(drone,.08,.05,.06,m.black,0,-.045,.13,.008);ball(drone,.022,m.glow,0,-.045,.168,12);for(const x of [-.08,.08])rod(drone,[x,.06,.05],[x,.13,.12],.006,m.orange);for(const x of [-.09,.09]){rod(drone,[x,-.05,-.08],[x,-.15,-.12],.009,m.silver);rod(drone,[x,-.15,-.12],[x,-.15,.13],.009,m.silver)}
   cylinder(g,.025,.2,m.silver,0,.17,0,12);cylinder(g,.18,.025,m.deep,0,.07,0,24);
  }
  // Globe with three distinct conceptual orbital paths and visible satellite markers.
@@ -116,13 +116,10 @@ async function init(){
   for(let i=0;i<8;i++){const a=i*2.4;const dot=ball(globe,.009,i%2?m.orange:m.cream,Math.cos(a)*.34,Math.sin(a*.7)*.19,Math.sin(a)*.25,8)}rod(g,[0,.06,0],[0,.16,0],.023,m.silver);cylinder(g,.16,.035,m.deep,0,.05,0,24);
  }
  // Corrugated wing, held on a real stand, with a small flow direction marker.
- {const g=models.wing;const profile=new THREE.Shape();profile.moveTo(-.34,0);for(let i=0;i<=10;i++)profile.lineTo(-.34+i*.068,i%2?.045:0);profile.lineTo(.34,-.03);profile.lineTo(-.34,-.03);profile.closePath();const wing=new THREE.Mesh(new THREE.ExtrudeGeometry(profile,{depth:.26,bevelEnabled:true,bevelSize:.006,bevelThickness:.006,bevelSegments:2}),m.cream);wing.position.set(0,.38,-.13);wing.rotation.z=.08;g.add(wing);for(let i=0;i<6;i++){const x=-.29+i*.115;rod(g,[x,.43,-.12],[x,.43,.13],.004,m.brass)}rod(g,[0,.08,0],[0,.37,0],.02,m.silver);cylinder(g,.16,.035,m.deep,0,.05,0,24);}
- // A travelling collection cradle runs on two guides in front of the shelves.
- const lift=new THREE.Group();lift.position.set(-.42,1.5,1.58);machine.add(lift);
- box(lift,1.35,.065,.5,m.silver,0,0,0,.012);box(lift,1.25,.025,.42,m.deep,0,.055,0,.006);
- const liftCables=[];for(const x of [-.65,.65]){box(lift,.035,.18,.46,m.brass,x,.105,0,.006);const cable=cylinder(machine,.012,1,m.silver,0,0,1.45,10);liftCables.push({cable,x})}box(machine,2.95,.045,.07,m.silver,-.42,5.48,1.45,.01);
- function updateLiftCables(){for(const {cable,x} of liftCables){const bottom=lift.position.y+.1,top=5.48; cable.position.set(lift.position.x+x,(top+bottom)/2,1.45);cable.scale.y=Math.max(.01,top-bottom)}}updateLiftCables();
- const hatch=new THREE.Group();hatch.position.set(-.45,1.34,1.05);machine.add(hatch);box(hatch,2.08,.4,.05,m.blue,0,-.2,0,.03);box(hatch,1.8,.025,.035,m.brass,0,-.34,.04,.005);
+ {const g=models.wing;const profile=new THREE.Shape();profile.moveTo(-.34,0);for(let i=0;i<=10;i++)profile.lineTo(-.34+i*.068,i%2?.045:0);profile.lineTo(.34,-.03);profile.lineTo(-.34,-.03);profile.closePath();const wing=new THREE.Mesh(new THREE.ExtrudeGeometry(profile,{depth:.26,bevelEnabled:true,bevelSize:.006,bevelThickness:.006,bevelSegments:2}),m.cream);wing.position.set(0,.38,-.13);wing.rotation.z=.08;g.add(wing);for(let i=0;i<6;i++){const x=-.29+i*.115;rod(g,[x,.43,-.12],[x,.43,.13],.004,m.brass)}for(const z of [-.14,.14]){rod(g,[-.35,.39,z],[.35,.39,z],.006,m.silver);for(let i=0;i<5;i++)ball(g,.009,m.brass,-.28+i*.14,.39,z,8)}rod(g,[0,.08,0],[0,.37,0],.02,m.silver);cylinder(g,.16,.035,m.deep,0,.05,0,24);}
+ // Collection flap is below the glass; the hidden delivery channel is behind
+ // the display back, so a model never has to pass through the front pane.
+ const hatch=new THREE.Group();hatch.position.set(-.45,1.34,1.06);machine.add(hatch);box(hatch,2.08,.4,.05,m.blue,0,-.2,0,.03);box(hatch,1.8,.025,.035,m.brass,0,-.34,.04,.005);
  // The lower compartment holds a set of engineering notes and material samples.
  box(machine,1.03,.075,.42,m.deep,-1.02,2.35,.94,.014);box(machine,.94,.035,.39,m.cream,-1.02,2.41,.94,.01);
  for(let i=0;i<4;i++)box(machine,.73,.012,.012,m.blue,-1.02,2.435,1.07-i*.065,.002);
@@ -152,14 +149,23 @@ async function init(){
  const desired=new THREE.Vector3(6,4.5,13.2),look=new THREE.Vector3(.5,3.1,.2),desiredLook=look.clone(),ray=new THREE.Raycaster(),pointer=new THREE.Vector2();camera.position.copy(desired);camera.lookAt(look);
  let raf=0,last=0,dirty=true,dispense=null,hover=null;
  function size(){const r=stage.getBoundingClientRect();if(!r.width||!r.height)return;renderer.setSize(r.width,r.height,false);camera.aspect=r.width/r.height;camera.updateProjectionMatrix();renderer.shadowMap.needsUpdate=true;dirty=true;wake()}
- function finishDispense(){if(!dispense)return;machine.remove(dispense.copy);dispense.original.visible=true;const done=dispense.done;dispense=null;dirty=true;done?.()}
- function cancelDispense(){if(!dispense)return;machine.remove(dispense.copy);dispense.original.visible=true;dispense=null;lift.position.set(-.42,1.5,1.58);hatch.rotation.x=0}
+ // A selected object is retained for the close-up until the user leaves.
+ let presentation=null;
+ function clearPresentation(){if(presentation){machine.remove(presentation.copy);presentation.original.visible=true;presentation=null}if(dispense){machine.remove(dispense.copy);dispense.original.visible=true;dispense=null}hatch.rotation.x=0;dirty=true}
+ function focusPosition(){camera.updateMatrixWorld();machine.updateWorldMatrix(true,false);const distance=3.65;const x=Math.min(1.05,Math.max(.45,camera.aspect*.63));return machine.worldToLocal(camera.localToWorld(new THREE.Vector3(x,-.28,-distance)))}
+ function finishDispense(){if(!dispense)return;presentation=dispense;dispense=null;presentation.original.visible=true;presentation.copy.visible=true;presentation.copy.position.copy(focusPosition());presentation.copy.scale.setScalar(1.65);const done=presentation.done;dirty=true;done?.()}
+ function cancelDispense(){clearPresentation()}
  const ease=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t)};
- selectScene=(name,done)=>{cancelDispense();buttonHighlights.forEach((h,i)=>h.visible=['strata','drone','orbit','wing'][i]===name);desired.set(4.2,4.1,10.2);desiredLook.set(.6,3,.1);if(reduce){dirty=true;return false}const original=models[name],copy=original.clone(true);copy.position.copy(original.position);machine.add(copy);copy.visible=false;dispense={copy,original,start:performance.now(),done};dirty=true;return true};
- resetScene=()=>{cancelDispense();buttonHighlights.forEach(h=>h.visible=false);lift.position.set(-.42,1.5,1.58);hatch.rotation.x=0;updateLiftCables();desired.set(6,4.5,13.2);desiredLook.set(.5,3.1,.2);dirty=true};
+ selectScene=(name,done)=>{cancelDispense();buttonHighlights.forEach((h,i)=>h.visible=['strata','drone','orbit','wing'][i]===name);desired.set(4.2,4.1,10.2);desiredLook.set(.6,3,.1);const original=models[name],copy=original.clone(true);copy.position.copy(original.position);machine.add(copy);dispense={copy,original,start:performance.now(),done};if(reduce){finishDispense();return true}dirty=true;return true};
+ resetScene=()=>{cancelDispense();buttonHighlights.forEach(h=>h.visible=false);desired.set(6,4.5,13.2);desiredLook.set(.5,3.1,.2);dirty=true};
  function frame(now){raf=0;if(!visible||document.hidden)return;const dt=Math.min(.05,(now-(last||now))/1000);last=now;const f=reduce?1:1-Math.exp(-4*dt);camera.position.lerp(desired,f);look.lerp(desiredLook,f);camera.lookAt(look);let moving=camera.position.distanceTo(desired)>.008||look.distanceTo(desiredLook)>.008;
-  if(dispense){const elapsed=now-dispense.start,start=dispense.original.position;const rise=ease(elapsed/850),transfer=ease((elapsed-850)/500),lower=ease((elapsed-1350)/1250),open=ease((elapsed-2550)/400);lift.position.set(THREE.MathUtils.lerp(-.42,start.x,rise),THREE.MathUtils.lerp(1.5,start.y+.04,rise),1.58);if(elapsed>=850){dispense.copy.visible=true;dispense.original.visible=false;dispense.copy.position.set(start.x,THREE.MathUtils.lerp(start.y,start.y+.1,transfer),THREE.MathUtils.lerp(start.z,1.58,transfer));}if(elapsed>=1350){lift.position.set(THREE.MathUtils.lerp(start.x,-.45,lower),THREE.MathUtils.lerp(start.y+.04,1.43,lower),1.58);dispense.copy.position.set(lift.position.x,lift.position.y+.06,1.58);}hatch.rotation.x=-open*.75;updateLiftCables();dirty=true;if(elapsed>=3150)finishDispense()}
-  if(moving||dirty){renderer.render(scene,camera);dirty=false}if(moving||dispense)raf=requestAnimationFrame(frame);
+  if(dispense){const elapsed=now-dispense.start,start=dispense.original.position;const feed=ease(elapsed/700),open=ease((elapsed-1250)/450),emerge=ease((elapsed-1700)/600),focus=ease((elapsed-2300)/950);dispense.original.visible=false;
+   if(elapsed<700){dispense.copy.visible=true;dispense.copy.position.set(start.x,start.y,THREE.MathUtils.lerp(start.z,.55,feed));}
+   else if(elapsed<1700){dispense.copy.visible=false;}
+   else {dispense.copy.visible=true;const end=focusPosition();dispense.copy.position.set(THREE.MathUtils.lerp(-.45,end.x,focus),THREE.MathUtils.lerp(1.08,end.y,focus),THREE.MathUtils.lerp(THREE.MathUtils.lerp(.95,1.48,emerge),end.z,focus));dispense.copy.scale.setScalar(1+.65*focus)}
+   hatch.rotation.x=-open*.8;dirty=true;if(elapsed>=3250)finishDispense()}
+  if(presentation){presentation.copy.position.copy(focusPosition());if(!reduce){presentation.copy.rotation.y+=dt*.42;dirty=true}}
+  if(moving||dirty){renderer.render(scene,camera);dirty=false}if(moving||dispense||(presentation&&!reduce))raf=requestAnimationFrame(frame);
  }
  wake=()=>{if(visible&&!document.hidden&&!raf){last=0;raf=requestAnimationFrame(frame)}};
  canvas.addEventListener('pointermove',e=>{const r=canvas.getBoundingClientRect();pointer.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(pointer,camera);const key=ray.intersectObjects(targets)[0]?.object.userData.key||null;canvas.style.cursor=key?'pointer':'default';if(key!==hover){hover=key;buttonHighlights.forEach((h,i)=>h.visible=['strata','drone','orbit','wing'][i]===(key||selected));dirty=true;wake()}});
