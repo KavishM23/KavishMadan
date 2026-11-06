@@ -99,3 +99,10 @@ html:not(.spiral-ready) .code-journey .journey-project{background:var(--t-card);
 html:not(.spiral-ready) .code-journey .journey-project h2{color:var(--t-ink)}
 html:not(.spiral-ready) .code-journey .journey-project .project-line,html:not(.spiral-ready) .code-journey .journey-project .project-proof{color:var(--t-ink2)}
 html:not(.spiral-ready) .code-journey .journey-project .project-context{color:var(--t-terra)}
+.journey-open,.journey-door{display:none}
+html.spiral-ready .journey-open{display:inline-flex;align-items:center;min-height:44px;margin-top:22px;padding:.72rem 1.1rem;border:0;border-radius:999px;background:var(--paper);color:var(--navy);font:700 .88rem var(--f-b);cursor:pointer;transition:transform .2s,background .2s}
+html.spiral-ready .journey-open:hover{transform:translateY(1px)}
+html.spiral-ready .journey-open:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+html.spiral-ready .journey-door{display:block;position:absolute;z-index:3;padding:0;border:0;background:none;cursor:pointer}
+html.spiral-ready .code-journey.departed .journey-door{display:none}
+@media(prefers-reduced-motion:reduce){html.spiral-ready .journey-open{transition:none}}

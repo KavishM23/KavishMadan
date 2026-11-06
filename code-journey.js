@@ -1,5 +1,5 @@
 /* Two real projects, one physical helix. The camera and drone follow scroll in both directions. */
-window.createCodeStaircase=function({THREE,Round,environment,makeDrone,reduced,el,anisotropy=4}){
+window.createCodeStaircase=function({THREE,Round,environment,makeDrone,reduced,el,anisotropy=4,batch=root=>root}){
  const masonry=window.createMasonry({THREE,anisotropy});
  const journey=document.getElementById('code-journey');
  const scene=new THREE.Scene();scene.environment=environment;scene.fog=new THREE.Fog(0xefe4d3,22,46);
@@ -51,7 +51,7 @@ window.createCodeStaircase=function({THREE,Round,environment,makeDrone,reduced,e
  add(new THREE.CylinderGeometry(.385,.385,.07,48),brass,world,new THREE.Vector3(0,.65+wallH-.1,0));
  add(new THREE.CylinderGeometry(.47,.47,.07,48),edge,world,new THREE.Vector3(0,.65+wallH,0));add(new THREE.ConeGeometry(.47,.17,48),columnStone,world,new THREE.Vector3(0,.65+wallH+.12,0));add(new THREE.SphereGeometry(.05,18,14),brass,world,new THREE.Vector3(0,.65+wallH+.22,0));
  const entrance=new THREE.Group();entrance.rotation.y=wallAngle+Math.PI/2;world.add(entrance);
- const gate=window.createMoroccanGate({THREE,Round,parent:entrance,wallLeft:-outer-.27,wallRight:-.2,wallHeight:wallH,masonry,anisotropy});
+ const gate=window.createMoroccanGate({THREE,Round,parent:entrance,wallLeft:-outer-.27,wallRight:-.2,wallHeight:wallH,masonry,anisotropy,batch});
  const deckRail=(r,y,radius,material)=>{const line=[];for(let i=0;i<=32;i++)line.push(onDeck(start-i/32*deck,r,y));add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(line),48,radius,7,false),material,world)};
  deckRail(outer-.06,1.0,.035,metal);deckRail(innerRadius,.85,.024,copper);
  const deckPosts=new THREE.InstancedMesh(new THREE.CylinderGeometry(.018,.018,1.02,7),metal,6);
@@ -139,13 +139,21 @@ window.createCodeStaircase=function({THREE,Round,environment,makeDrone,reduced,e
   if(caption&&p<=.08){const text=p<.03?'Scroll to open the door':'Three projects. One descent.';if(caption.textContent!==text)caption.textContent=text}
   const spine=journey.querySelector('.journey-spine');if(spine)spine.style.setProperty('--flight-progress',String(p*(spine.clientHeight-20)));
  }
+ // The doorway is a real button laid over the door, so hover, click and focus all match the object you see.
+ const doorHit=journey.querySelector('.journey-door'),openButton=journey.querySelector('.journey-open');let hoverDoor=false,hitAt='';
+ const corner=new THREE.Vector3();
+ function placeDoorHit(){if(!doorHit)return;const d=gate.doorway,r=slot.rect||el.getBoundingClientRect(),pts=[[d.cx-d.half,d.bottom],[d.cx+d.half,d.bottom],[d.cx-d.half,d.top],[d.cx+d.half,d.top]].map(([x,y])=>{corner.set(x,y,0);entrance.localToWorld(corner);corner.project(camera);return[r.left+(corner.x+1)/2*r.width,r.top+(1-corner.y)/2*r.height]}),xs=pts.map(q=>q[0]),ys=pts.map(q=>q[1]),box=sticky.getBoundingClientRect(),l=Math.min(...xs)-box.left,t=Math.min(...ys)-box.top,w=Math.max(...xs)-Math.min(...xs),h=Math.max(...ys)-Math.min(...ys),key=[l,t,w,h].map(Math.round).join();if(key!==hitAt){hitAt=key;doorHit.style.cssText=`left:${l}px;top:${t}px;width:${w}px;height:${h}px`}}
+ const openDoor=()=>{const y=journey.getBoundingClientRect().top+scrollY+Math.max(1,journey.offsetHeight-innerHeight)*.17;window.lenis?window.lenis.scrollTo(y,{duration:2.8}):scrollTo({top:y,behavior:'smooth'})};
+ const sticky=journey.querySelector('.journey-sticky');
+ if(doorHit){doorHit.addEventListener('pointerenter',()=>hoverDoor=true);doorHit.addEventListener('pointerleave',()=>hoverDoor=false);doorHit.addEventListener('click',openDoor)}
+ if(openButton){openButton.addEventListener('click',openDoor);openButton.addEventListener('pointerenter',()=>hoverDoor=true);openButton.addEventListener('pointerleave',()=>hoverDoor=false);openButton.addEventListener('focus',()=>hoverDoor=true);openButton.addEventListener('blur',()=>hoverDoor=false)}
  slot.customUpdate=(dt,t)=>{
   if(!live)return;
   const rect=journey.getBoundingClientRect(),distance=Math.max(1,journey.offsetHeight-innerHeight),p=clamp(-rect.top/distance),stage=slot.rect||el.getBoundingClientRect();slot.progress=p;
-  const door=smooth(clamp((p-.012)/.046));if(door>=.95)pouring=true;else if(door<.7)pouring=false;
+  const door=smooth(clamp((p-.012)/.046));if(door>=.95&&doorOpen>.82)pouring=true;else if(door<.7)pouring=false;
   burst=clamp(burst+(pouring?dt/1.7:-dt/.8));const out=ease(burst);
   // going back up, the doors stay open until the last tread is inside, and only then close
-  const doorWanted=burst>0?1:door;doorOpen=Math.abs(doorWanted-doorOpen)<.002?doorWanted:damp(doorOpen,doorWanted,12,dt);
+  const ajar=hoverDoor&&!journey.classList.contains('departed')?.2:0,doorWanted=burst>0?1:Math.max(door,ajar);doorOpen=Math.abs(doorWanted-doorOpen)<.002?doorWanted:damp(doorOpen,doorWanted,5.5,dt);
   // the camera waits for the stairs to come out, then scrolling drives it as normal
   const old=slot.q;slot.q=damp(slot.q,restQ+(mapped(p)-restQ)*out,9,dt);const q=slot.q,angle=start+q*total;
   // The scene fills the viewport, so nothing is cut at a box edge; .journey-scene only says where the stairs sit in it.
@@ -156,6 +164,7 @@ window.createCodeStaircase=function({THREE,Round,environment,makeDrone,reduced,e
   const near=mobile?10.8:compact?9.9:8.9,shut=1-out;
   camera.position.copy(at(q,r+(near-r)*shut,4.6-1.9*shut));camera.lookAt(at(q+.025,1.8,.8).lerp(gateFocus,shut));
   if(doorOpen!==doorShown||burst!==burstShown){if(burst!==burstShown)pour(burst);doorShown=doorOpen;burstShown=burst;gate.swing(doorOpen,Math.sin(Math.PI*clamp(burst/.7)));key.shadow.needsUpdate=true}
+  gate.tick(dt);placeDoorHit();
   const dq=clamp((q-old)/Math.max(dt,.001),-1,1);
   const droneQ=Math.min(.995,q+.055),land=clamp((p-.91)/.09),position=at(droneQ,5.1*(1-land)+4.1*land,4.55*(1-land)+.42*land);
   position.y+=Math.sin(t*2)*.045*(1-land);const flown=ease(clamp(burst/.6));drone.visible=burst>0;drone.position.lerpVectors(droneDoor,position,flown);drone.scale.setScalar(.32*Math.max(flown,.02));drone.rotation.set(.16+Math.abs(dq)*.12,start+droneQ*total+Math.PI*.55,-dq*.35);drone.userData.tick?.(t,1-land);

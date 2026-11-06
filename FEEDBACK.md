@@ -254,3 +254,8 @@ Quiet ambient music now plays behind the site. It is made in the browser rather 
 - A full stairwell rebuild was tried and rejected as too much. The page stays as it was: the cream scene, door, pouring stairs and text.
 - The flat monitors are now small 3D sets on brackets off each landing: a kitchen counter for LastBite, a desk with the real match formula for TutorTime, and an arcade cabinet for Kung Fooled. Each shows its real screen.
 - Screens are recaptured from the running apps at 1600 px, and the drone is the detailed model. If a set or the drone can't load, the plain monitor or simple drone stays.
+
+## The door
+- The door is the gate at the top of the Code stairs. It is now a blue painted door in a cream surround, with a real timber frame, sill, hinges, pulls, lock and seals, all hung on the hinge line so the leaves clear the jamb.
+- Hovering opens it a crack, and clicking it or the "Open the door" button scrolls to the point where it opens. Scrolling still works as before.
+- Without the staircase (reduced motion or a very short window) there is no 3D door, just the plain page.
