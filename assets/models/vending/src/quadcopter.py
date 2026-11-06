@@ -160,12 +160,13 @@ obj('w',tube([(-5.2,-.7,H-1.2),(-6.4,-1,H-.6),(-6.6,-.7,H+.1),(-5.4,-.3,H+.2),(-
 for k,mm in enumerate((M['yel'],M['wht'],M['blu'])):
     o=-.7+k*.5
     obj('w',tube([(-1,o,H+.2),(-.8,o-1.6,H+1.6),(-3,o-2.2,H+1.5),(-6.9,o,Z-.3),(-5.9,o,Z+.6),(-4,o-1,Z+1.4),(-.7+k*.5,2.35,Z+1.45)],.04,mm,seg=4),None)
-plinth(30,30,M['enamel'],M['brass'])
-plaque('ANTI-DRONE QUAD','ARDUINO PROTOTYPE / REPRESENTATIVE BUILD',0,-15.09,-.75,M['brass'],M['engr'],w=11.5,h=1.25)
+if mode!='fly':
+    plinth(30,30,M['enamel'],M['brass'])
+    plaque('ANTI-DRONE QUAD','ARDUINO PROTOTYPE / REPRESENTATIVE BUILD',0,-15.09,-.75,M['brass'],M['engr'],w=11.5,h=1.25)
 print('objects',len(bpy.data.objects),'tris',tris_of())
 if mode in('view',):
     render(out,{'iso':(-.8,-1,.5),'side':(0,-1,.1),'top':(.2,-.3,1),'back':(.9,1,.3)},cx=(0,0,8),dist=112,size=(900,640),samples=20)
-if mode=='final':
+if mode in('final','fly'):
     join_static(keep=('tyre','mover'));bake_ao(out+'_ao.png',size=1280,skip=('mover',),distance=4)
     bpy.ops.wm.save_as_mainfile(filepath=out+'.blend')
     export(out+'_raw.glb');print('tris final',tris_of())

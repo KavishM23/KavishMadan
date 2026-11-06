@@ -1339,49 +1339,75 @@ html.intro-hold .obj-labs{visibility:hidden}
 <div class="view" id="code" data-label="Code" hidden>
   <section class="code-journey" id="code-journey" aria-label="Code projects: a spiral descent">
     <div class="journey-sticky">
-      <div class="journey-view" data-scene="staircase" aria-hidden="true"></div>
-      <div class="journey-scene" aria-hidden="true"></div>
+      <canvas id="journey-canvas" aria-hidden="true"></canvas>
+      <div class="journey-shade" aria-hidden="true"></div>
+      <div class="journey-flash" aria-hidden="true"></div>
+      <div class="journey-load" aria-hidden="true"><span>Lighting the stairs</span><i></i></div>
       <header class="journey-heading">
         <a class="back" href="#home">← Back to the workshop</a>
         <h1>Code</h1>
         <p>Software I've built: a hackathon app that cuts food waste, my A-level NEA, a troll platformer and the code behind the builds.</p>
+        <p class="journey-cue" aria-hidden="true">Scroll to open the door ↓</p>
       </header>
-      <div class="journey-spine" aria-hidden="true"><i></i></div>
       <span class="journey-anchor" id="b-lastbite" aria-hidden="true"></span>
       <article class="journey-project" data-project="lastbite" aria-labelledby="landing-lastbite-title">
+        <figure class="stop-still"><img loading="lazy" src="img/code/stop-lastbite.webp" alt="" width="1200" height="750" decoding="async"></figure>
         <div class="project-context">UAE InnovAIte Hackathon</div>
         <h2 id="landing-lastbite-title">LastBite</h2>
         <p class="project-line">A pantry app that tells you what's about to go off, and what to cook with it.</p>
-        <p class="project-proof">Finalist. Top 7 of 60+ teams.</p>
-        <div class="chips"><span>React</span><span>TypeScript</span><span>Gemini API</span><span>Leaflet</span></div>
-        <div class="journey-actions"><button class="btn cs-open" type="button" data-case="lastbite">Explore LastBite ↗</button><a class="journey-gh" href="https://github.com/robberttorfs/LastBite" target="_blank" rel="noopener" aria-label="LastBite on GitHub"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>GitHub ↗</a></div>
-        <a class="journey-next" href="#b-tutortime">Next landing: TutorTime ↓</a>
-        <img loading="lazy" class="journey-image" src="img/lb-pantry.webp" alt="LastBite pantry sorted by expiry date, with example items" decoding="async" width="800" height="500">
+        <ul class="stop-tiles"><li><b>Top 7</b><span>of 60+ teams, finalist</span></li><li><b>4</b><span>people on the team</span></li></ul>
+        <div class="stop-tabs" role="tablist" aria-label="About LastBite">
+          <button role="tab" type="button" id="lastbite-tab-what" aria-controls="lastbite-what" aria-selected="true">What it does</button>
+          <button role="tab" type="button" id="lastbite-tab-why" aria-controls="lastbite-why" aria-selected="false" tabindex="-1">Why it exists</button>
+          <button role="tab" type="button" id="lastbite-tab-mine" aria-controls="lastbite-mine" aria-selected="false" tabindex="-1">My part</button>
+        </div>
+        <div class="stop-panel" role="tabpanel" id="lastbite-what" aria-labelledby="lastbite-tab-what"><ol class="stop-features"><li><button type="button" class="stop-feature" data-shot="0" aria-pressed="true"><i aria-hidden="true">1</i><span><b>Sorted by days left</b><small>Whatever goes off first sits at the top.</small></span></button></li><li><button type="button" class="stop-feature" data-shot="1" aria-pressed="false"><i aria-hidden="true">2</i><span><b>Cook Something</b><small>Gemini writes recipes around what expires first.</small></span></button></li><li><button type="button" class="stop-feature" data-shot="2" aria-pressed="false"><i aria-hidden="true">3</i><span><b>Donate</b><small>Maps the nearest UAE food donation points.</small></span></button></li></ol></div>
+        <div class="stop-panel" role="tabpanel" id="lastbite-why" aria-labelledby="lastbite-tab-why" hidden><p>Food gets bought, forgotten and thrown away because people can't see what they have or when it expires. LastBite makes that visible and gives you something to do about it.</p></div>
+        <div class="stop-panel" role="tabpanel" id="lastbite-mine" aria-labelledby="lastbite-tab-mine" hidden><p>We built it as a team of four for the hackathon: Raafae, Kavish, Robbert and Yusif. The repo lives on Robbert's GitHub.</p></div>
+        <figure class="journey-shot"><img loading="lazy" class="journey-image" src="img/code/lb-list.webp" alt="LastBite pantry sorted by expiry date, with example items" decoding="async" width="1600" height="1000"><i class="shot-box" aria-hidden="true"></i></figure>
+        <div class="journey-actions"><button class="btn cs-open" type="button" data-case="lastbite">Full story ↗</button><a class="journey-gh" href="https://github.com/robberttorfs/LastBite" target="_blank" rel="noopener" aria-label="LastBite on GitHub">GitHub ↗</a></div>
+        <a class="journey-next" href="#b-tutortime">Next stop: TutorTime ↓</a>
       </article>
       <span class="journey-anchor" id="b-tutortime" aria-hidden="true"></span>
       <article class="journey-project" data-project="tutortime" aria-labelledby="landing-tutortime-title">
+        <figure class="stop-still"><img loading="lazy" src="img/code/stop-tutortime.webp" alt="" width="1200" height="750" decoding="async"></figure>
         <div class="project-context">A-level Computer Science NEA</div>
         <h2 id="landing-tutortime-title">TutorTime</h2>
         <p class="project-line">A tutoring platform I built from scratch, from matching students with tutors to sending the invoice.</p>
-        <p class="project-proof">Solo build. Three-factor tutor matching.</p>
-        <div class="chips"><span>Python</span><span>Flask</span><span>SQLite</span><span>PDF invoices</span></div>
-        <div class="journey-actions"><button class="btn cs-open" type="button" data-case="tutortime">Explore TutorTime ↗</button><a class="journey-gh" href="https://github.com/KavishM23/TutorTime" target="_blank" rel="noopener" aria-label="TutorTime on GitHub"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>GitHub ↗</a></div>
-        <a class="journey-next" href="#b-kungfooled">Next landing: Kung Fooled ↓</a>
-        <img loading="lazy" class="journey-image" src="img/tt-match.webp" alt="TutorTime tutors ranked by match score, style and availability" decoding="async" width="620" height="290">
+        <ul class="stop-tiles"><li><b>3</b><span>factors in every tutor match</span></li><li><b>Solo</b><span>built on my own</span></li></ul>
+        <div class="stop-tabs" role="tablist" aria-label="About TutorTime">
+          <button role="tab" type="button" id="tutortime-tab-what" aria-controls="tutortime-what" aria-selected="true">What it does</button>
+          <button role="tab" type="button" id="tutortime-tab-why" aria-controls="tutortime-why" aria-selected="false" tabindex="-1">Why it exists</button>
+          <button role="tab" type="button" id="tutortime-tab-mine" aria-controls="tutortime-mine" aria-selected="false" tabindex="-1">My part</button>
+        </div>
+        <div class="stop-panel" role="tabpanel" id="tutortime-what" aria-labelledby="tutortime-tab-what"><ol class="stop-features"><li><button type="button" class="stop-feature" data-shot="0" aria-pressed="true"><i aria-hidden="true">1</i><span><b>Three-factor matching</b><small>Teaching style, shared free time and rating.</small></span></button></li><li><button type="button" class="stop-feature" data-shot="1" aria-pressed="false"><i aria-hidden="true">2</i><span><b>Lessons on a calendar</b><small>Either side can ask to reschedule; the other approves.</small></span></button></li><li><button type="button" class="stop-feature" data-shot="2" aria-pressed="false"><i aria-hidden="true">3</i><span><b>Progress and payments</b><small>Score graphs, overdue flags and PDF invoices.</small></span></button></li></ol></div>
+        <div class="stop-panel" role="tabpanel" id="tutortime-why" aria-labelledby="tutortime-tab-why" hidden><p>It's my A-level Computer Science NEA. I wanted one place that finds a student the right tutor, then runs everything that happens after that.</p></div>
+        <div class="stop-panel" role="tabpanel" id="tutortime-mine" aria-labelledby="tutortime-tab-mine" hidden><p>All of it, on my own. Python and Flask with raw SQLite, and the SQL written by hand. Screens use the project's test data.</p></div>
+        <figure class="journey-shot"><img loading="lazy" class="journey-image" src="img/code/tt-match.webp" alt="TutorTime tutors ranked by match score, style and availability" decoding="async" width="1600" height="1000"><i class="shot-box" aria-hidden="true"></i></figure>
+        <div class="journey-actions"><button class="btn cs-open" type="button" data-case="tutortime">Full story ↗</button><a class="journey-gh" href="https://github.com/KavishM23/TutorTime" target="_blank" rel="noopener" aria-label="TutorTime on GitHub">GitHub ↗</a></div>
+        <a class="journey-next" href="#b-kungfooled">Next stop: Kung Fooled ↓</a>
       </article>
       <span class="journey-anchor" id="b-kungfooled" aria-hidden="true"></span>
       <article class="journey-project" data-project="kungfooled" aria-labelledby="landing-kungfooled-title">
+        <figure class="stop-still"><img loading="lazy" src="img/code/stop-kungfooled.webp" alt="" width="1200" height="750" decoding="async"></figure>
         <div class="project-context">Browser game</div>
         <h2 id="landing-kungfooled-title">Kung Fooled</h2>
         <p class="project-line">A troll platformer dressed as a 90s arcade fighter. The stage will betray you.</p>
-        <p class="project-proof">10 art styles. 40 levels.</p>
-        <div class="chips"><span>JavaScript</span><span>HTML Canvas</span><span>Web Audio</span></div>
-        <div class="journey-actions"><button class="btn cs-open" type="button" data-case="kungfooled">Explore Kung Fooled ↗</button><a class="journey-gh" href="https://github.com/KavishM23/kung-fooled" target="_blank" rel="noopener" aria-label="Kung Fooled on GitHub"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>GitHub ↗</a></div>
+        <ul class="stop-tiles"><li><b>10</b><span>art styles</span></li><li><b>40</b><span>levels</span></li></ul>
+        <div class="stop-tabs" role="tablist" aria-label="About Kung Fooled">
+          <button role="tab" type="button" id="kungfooled-tab-what" aria-controls="kungfooled-what" aria-selected="true">What it does</button>
+          <button role="tab" type="button" id="kungfooled-tab-why" aria-controls="kungfooled-why" aria-selected="false" tabindex="-1">Why it exists</button>
+          <button role="tab" type="button" id="kungfooled-tab-mine" aria-controls="kungfooled-mine" aria-selected="false" tabindex="-1">My part</button>
+        </div>
+        <div class="stop-panel" role="tabpanel" id="kungfooled-what" aria-labelledby="kungfooled-tab-what"><ol class="stop-features"><li><button type="button" class="stop-feature" data-shot="0" aria-pressed="true"><i aria-hidden="true">1</i><span><b>Learn by dying</b><small>Nothing gives a trap away, and respawn is instant.</small></span></button></li><li><button type="button" class="stop-feature" data-shot="1" aria-pressed="false"><i aria-hidden="true">2</i><span><b>Ten realms</b><small>Arcade colour to Edo prints, each with its own rule.</small></span></button></li><li><button type="button" class="stop-feature" data-shot="2" aria-pressed="false"><i aria-hidden="true">3</i><span><b>Every realm open</b><small>Clearing them pays coins to spend in the Dojo.</small></span></button></li></ol></div>
+        <div class="stop-panel" role="tabpanel" id="kungfooled-why" aria-labelledby="kungfooled-tab-why" hidden><p>Memory is the game. Trap floors look exactly like real floor and a fake exit looks exactly like the real one, so what you learned by dying stays true.</p></div>
+        <div class="stop-panel" role="tabpanel" id="kungfooled-mine" aria-labelledby="kungfooled-tab-mine" hidden><p>It's on my GitHub, written in plain JavaScript and HTML Canvas with no build step. Kevin Hu has commits in it too.</p></div>
+        <figure class="journey-shot"><img loading="lazy" class="journey-image" src="img/kf-arcade.webp" alt="Kung Fooled: the player on a brick rooftop level at dusk" decoding="async" width="1600" height="1000"><i class="shot-box" aria-hidden="true"></i></figure>
+        <div class="journey-actions"><button class="btn cs-open" type="button" data-case="kungfooled">Full story ↗</button><a class="journey-gh" href="https://github.com/KavishM23/kung-fooled" target="_blank" rel="noopener" aria-label="Kung Fooled on GitHub">GitHub ↗</a></div>
         <a class="journey-next" href="#more-code">The code behind the builds ↓</a>
-        <img loading="lazy" class="journey-image" src="img/kf-arcade.webp" alt="Kung Fooled: the player on a brick rooftop level at dusk" decoding="async" width="1536" height="864">
       </article>
-      <nav class="journey-track" aria-label="Project landings"><a href="#b-lastbite" data-journey-stop="lastbite">LastBite</a><a href="#b-tutortime" data-journey-stop="tutortime">TutorTime</a><a href="#b-kungfooled" data-journey-stop="kungfooled">Kung Fooled</a><a href="#more-code">Behind the builds</a></nav>
-      <p class="journey-caption" data-flight-status aria-live="polite">Three projects. One descent.</p>
+      <nav class="journey-track" aria-label="Stops on the staircase"><a href="#b-lastbite" data-journey-stop="lastbite"><i>01</i> LastBite</a><a href="#b-tutortime" data-journey-stop="tutortime"><i>02</i> TutorTime</a><a href="#b-kungfooled" data-journey-stop="kungfooled"><i>03</i> Kung Fooled</a><a href="#more-code" data-journey-stop="more"><i>04</i> Behind the builds</a></nav>
+      <p class="journey-end" aria-hidden="true">Touchdown. The rest of the code is below ↓</p>
     </div>
   </section>
 
@@ -1790,17 +1816,17 @@ html.intro-hold .obj-labs{visibility:hidden}
       how:['Trap floors look exactly like real floor, and a fake exit looks exactly like the real one.','A retry looks exactly like the first try, so what you learned by dying stays true.','Stand still for 3.5 seconds and the floor drops away.','Each level has four parts and three checkpoint doors.','A checker tool tests all 40 layouts: checkpoint order, grounded terrain and trap outcomes.','It is plain scripts with no build step, so it runs straight from a file.'],
       tech:['JavaScript','HTML Canvas','Web Audio'],note:'Screens are captured from the game.'},
     lastbite:{story:["LastBite keeps track of what's in your fridge, freezer and cupboards and sorts it all by expiry date, so whatever's about to go off is right at the top.", "Hit Cook Something and Gemini writes recipes around the things expiring first. You can scan barcodes to add food, see the money and CO2 you've saved, and if you can't use something in time it shows the nearest places in the UAE to donate it.", "We built it for the UAE InnovAIte Hackathon and made the final, top 7 out of 60+ teams."],tag:'UAE InnovAIte Hackathon',title:'LastBite',line:'A pantry app that tells you what is about to go off, and what to cook with it. Top 7 of 60+ teams.',repo:'https://github.com/robberttorfs/LastBite',
-      shots:[{src:'img/lb-landing.webp',w:800,h:500,url:'lastbite / home',cap:'The landing page.'},
-             {src:'img/lb-pantry.webp',w:800,h:500,url:'lastbite / pantry',cap:'The pantry, sorted by days left. Example items.'},
-             {src:'img/lb-visual.webp',w:800,h:500,url:'lastbite / pantry / visual',cap:'Visual mode: fridge, pantry and freezer at a glance.'},
-             {src:'img/lb-donate.webp',w:720,h:430,url:'lastbite / donate',cap:'The nearest UAE donation points, on a map.'}],
+      shots:[{src:'img/code/lb-home.webp',w:1600,h:1000,url:'lastbite / home',cap:'The landing page.'},
+             {src:'img/code/lb-list.webp',w:1600,h:1000,url:'lastbite / pantry',cap:'The pantry, sorted by days left. Example items.'},
+             {src:'img/code/lb-visual.webp',w:1600,h:1000,url:'lastbite / pantry / visual',cap:'Visual mode: fridge, pantry and freezer at a glance.'},
+             {src:'img/code/lb-donate.webp',w:1600,h:1000,url:'lastbite / donate',cap:'The nearest UAE donation points, on a map.'}],
       how:['Add food by typing it or scanning the barcode. Gemini tidies up the name and quantity.','Everything is sorted by days left, with fridge, pantry and freezer views.','Cook Something asks Gemini for recipes built around whatever expires first.','Using or binning food logs its impact: kg saved, AED saved, CO2 prevented.','Donate maps the nearest food donation points in the UAE.','It all stays in your browser, so there is no account to make.'],
       tech:['React','TypeScript','Vite','Tailwind','Gemini API','Leaflet','html5-qrcode'],note:'Built as a team for the hackathon. Screens show example pantry items.'},
     tutortime:{story:["Students say how they like to learn and when they're free. TutorTime ranks tutors on three things: how close their teaching style is, how much their free time overlaps, and their rating, weighted by how many reviews it's based on.", "Then it runs the rest. Lessons go on a calendar, either side can ask to reschedule and the other has to approve it, tutors write summaries and set homework, test scores turn into progress graphs, and payments flag themselves overdue and turn into PDF invoices.", "It's Flask and raw SQLite, with the SQL written by hand."],tag:'A-level Computer Science NEA',title:'TutorTime',line:'A tutoring platform I built on my own, from matching students with tutors to sending the invoice.',repo:'https://github.com/KavishM23/TutorTime',
-      shots:[{src:'img/tt-match.webp',w:620,h:290,url:'tutortime / find a tutor',cap:'Tutors ranked by overall match score.'},
-             {src:'img/tt-scores.webp',w:498,h:450,url:'tutortime / scores',cap:'A student’s test scores over time, seen by their tutor.'},
-             {src:'img/tt-calendar.webp',w:620,h:380,url:'tutortime / my lessons',cap:'A tutor’s month of lessons.'},
-             {src:'img/tt-dashboard.webp',w:620,h:500,url:'tutortime / dashboard',cap:'The tutor dashboard, with overdue payments flagged.'},
+      shots:[{src:'img/code/tt-match.webp',w:1600,h:1000,url:'tutortime / find a tutor',cap:'Tutors ranked by overall match score.'},
+             {src:'img/code/tt-scores.webp',w:1600,h:1000,url:'tutortime / scores',cap:'A student’s test scores over time, seen by their tutor.'},
+             {src:'img/code/tt-calendar.webp',w:1600,h:1000,url:'tutortime / my lessons',cap:'A tutor’s month of lessons.'},
+             {src:'img/code/tt-dashboard.webp',w:1600,h:1000,url:'tutortime / dashboard',cap:'The tutor dashboard, with overdue payments flagged.'},
              {src:'img/tt-student.webp',w:620,h:430,url:'tutortime / home',cap:'A student’s dashboard and lesson history.'}],
       how:['Match score = 0.42 × style + 0.33 × availability + 0.25 × rating.','Style is cosine similarity between the student’s and tutor’s learning-style profiles, like pace, structure and difficulty.','Availability is how much of the student’s free time overlaps with the tutor’s slots.','Ratings are weighted by how many reviews they are based on.','Either side can request a reschedule, and the other has to approve it.','Tutors write lesson summaries, set homework and share materials. Payments flag themselves overdue and generate PDF invoices.'],
       tech:['Python','Flask','SQLite','Jinja','Chart.js','PDF generation'],note:'Built solo for my A-level NEA. Screens use the project’s test data.'}
@@ -2383,6 +2409,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 <script src="noir.js"></script>
 <script src="interactions.js"></script>
 <script src="moroccan-gate.js"></script>
+<script src="code-layout.js"></script>
 <script src="code-journey.js"></script>
 <script src="awards-cabinet.js"></script>
 <script src="models.js"></script>
