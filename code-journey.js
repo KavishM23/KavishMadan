@@ -65,9 +65,8 @@ window.createCodeStaircase=function({THREE,Round,environment,makeDrone,reduced,e
  const loader=new THREE.TextureLoader(),reveals=[];
  for(const project of projects){
   const angle=start+project.q*total;
-  const landing=add(wedge(.62,.33,4.7,28),edge,world,new THREE.Vector3(0,-project.q*drop-.1,0));landing.rotation.y=angle-.31;reveals.push({object:landing,flat:true,at:project.q*.86-.04});
-  // Each project stands on its own set: a real screen on a modelled desk or cabinet, bracketed off the landing.
-  const set=new THREE.Group();set.position.copy(at(project.q,3.9,-.1));set.rotation.y=angle;world.add(set);reveals.push({object:set,at:project.q*.86});project.set=set;
+  // The set owns its landing and supports, so both reveal together outside the stair rail.
+  const set=new THREE.Group();set.position.copy(at(project.q,4.1,-.1));set.rotation.y=angle;world.add(set);reveals.push({object:set,at:project.q*.86});project.set=set;
  }
  const screenTexture=src=>{const t=loader.load(src);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=anisotropy;t.minFilter=THREE.LinearMipmapLinearFilter;t.magFilter=THREE.LinearFilter;return t};
  // If a set cannot load, the project still gets its plain screen.
@@ -162,7 +161,11 @@ window.createCodeStaircase=function({THREE,Round,environment,makeDrone,reduced,e
   const mobile=innerWidth<=650,compact=innerWidth>650&&innerWidth<=1100,aspect=Math.max(.45,frame.w/frame.h),r=mobile?12.0:compact?Math.max(11.8,4.1+7*(1.1/aspect)):10.2,baseFov=mobile?48:43;
   camera.fov=2*Math.atan(Math.tan(baseFov*Math.PI/360)*stage.height/frame.h)*180/Math.PI;camera.setViewOffset(stage.width,stage.height,-frame.x,-frame.y,stage.width,stage.height);
   const near=mobile?10.8:compact?9.9:8.9,shut=1-out;
-  camera.position.copy(at(q,r+(near-r)*shut,4.6-1.9*shut));camera.lookAt(at(q+.025,1.8,.8).lerp(gateFocus,shut));
+  // Leave room for the platform edges, especially beneath the taller arcade cabinet.
+  const platformRoom=1.55*smooth(clamp((q-.03)/.13));
+  const cabinetRoom=1.0*smooth(clamp(1-Math.abs(q-.8)/.17));
+  camera.position.copy(at(q,r+(near-r)*shut+(platformRoom+cabinetRoom)*out,4.6-1.9*shut));
+  camera.lookAt(at(q+.025,1.8,.8).lerp(gateFocus,shut));
   if(doorOpen!==doorShown||burst!==burstShown){if(burst!==burstShown)pour(burst);doorShown=doorOpen;burstShown=burst;gate.swing(doorOpen,Math.sin(Math.PI*clamp(burst/.7)));key.shadow.needsUpdate=true}
   gate.tick(dt);placeDoorHit();
   const dq=clamp((q-old)/Math.max(dt,.001),-1,1);

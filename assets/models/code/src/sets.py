@@ -12,14 +12,22 @@ br=M('brass','#b8945f',.34,1);dk=M('steel_dark','#2c3236',.42,.8);st=M('steel','
 pr=M('code_prints','#ffffff',.5,tex='code_prints');paper=M('paper','#efe6d2',.7);terra=M('terra_paint','#a4694a',.5);cream=M('cream','#e6d9bd',.4);glass=M('jar_glass','#c8dcd6',.18)
 P=lambda n,me,loc=(0,0,0),rot=(0,0,0),sc=None:S(n,me,loc,rot,'set',None,sc)
 def deck(w,fz):
-    """A slab bracketed off the landing, so the set is held up by something."""
-    P('deck',box(w,.14,fz+.62,cream,bevel=.03,seg=2),(0,-.07,(fz-.62)/2))
-    P('decktrim',box(w+.06,.05,fz+.68,br,bevel=.012),(0,-.17,(fz-.62)/2))
-    for x in (-w*.38,w*.38):
-        for z0 in (fz*.72,):
-            p0,p1=Vector_((x,-.2,z0)),Vector_((x*.5,-1.5,-.62));d=p1-p0
-            P('strut',cyl(.05,d.length,dk,seg=10),tuple((p0+p1)/2),rot_to(d))
-        P('beam',box(.12,.14,fz+.5,dk,bevel=.012),(x,-.24,(fz-.5)/2))
+    """Independent landing outside the 3.45 stair radius (set origin at 4.10)."""
+    back=-.63
+    depth=fz-back
+    center=(fz+back)/2
+    P('landing slab',box(w,.16,depth,cream,bevel=.027),(0,-.08,center))
+    P('landing fascia',box(w-.035,.105,depth-.04,wd,bevel=.014),(0,-.18,center))
+    P('landing nosing',box(w-.08,.033,.045,br,bevel=.008),(0,-.105,fz+.008))
+    for x in (-w*.35,w*.35):
+        P('underside beam',box(.13,.13,depth-.1,dk,bevel=.012),(x,-.25,center))
+        heel=Vector_((x,-.77,back+.06))
+        toe=Vector_((x,-.28,fz*.72))
+        span=toe-heel
+        P('triangular brace',cyl(.06,span.length,dk,seg=8),tuple((heel+toe)/2),rot_to(span))
+        P('brace back plate',box(.23,.62,.08,dk,bevel=.012),(x,-.49,back+.043))
+        for y in (-.28,-.68):
+            P('brace bolt',cyl(.036,.018,br,seg=8),(x,y,back+.09))
 def Vector_(v):
     from mathutils import Vector;return Vector(v)
 def counter(w,top,body,fz):
@@ -70,16 +78,48 @@ elif KEY=='tutortime':
 else:
     fz=1.9;deck(5.1,fz);P('tatami',box(4.9,.04,2.4,M('tatami','#b39c64',.7,tex='wood',tile=1.2)),(0,.02,.64))
     side=M('cab_side','#a4412a',.4);c=M('cab_deep','#141a33',.38);blk=M('deck_black','#101214',.42)
-    cz=.42;w=3.0;prof=[(1.25,0),(-1.2,0),(-1.2,4.75),(.62,4.75),(.62,3.92),(.3,3.62),(1.22,1.72),(1.25,1.62)]
+    cz=.42;w=3.0;prof=[(1.25,0),(-1.2,0),(-1.2,4.75),(.62,4.75),(.62,3.92),(.35,3.72),(.81,1.84),(1.31,1.64),(1.25,1.55)]
     for s in (-1,1):P('cabside',panel(prof,.1,side,bevel=.02),(s*(w/2+.05),0,cz),(0,-PI/2,0))
     P('cabback',box(w,4.72,.08,c),(0,2.36,cz-1.16));P('cabtop',box(w,.08,1.8,c),(0,4.71,cz-.28));P('cabfront',box(w,1.62,.08,c),(0,.81,cz+1.2));P('kick',box(w,.16,.1,rb),(0,.08,cz+1.22))
-    t=.3;P('ctrl',box(w,.08,.86,blk,bevel=.012),(0,1.74,cz+.96),(t,0,0));P('ctrlart',quad(2.8,.7,RE['kf5'],pr),(0,1.79,cz+.97),(-PI/2+t,0,0))
-    def D(u,v):return (u,1.8-v*math.sin(t),cz+.96+v*math.cos(t))
-    q=D(-.8,0);P('stickgate',cyl(.2,.02,bk,seg=16),(q[0],q[1]+.01,q[2]),Yr);P('stick',cyl(.03,.32,st,seg=8),(q[0],q[1]+.16,q[2]),Yr);P('ball',sphere(.13,M('stick_red','#c9402e',.3),seg=14,ring=10),(q[0],q[1]+.35,q[2]))
-    for k,(u,v,cc) in enumerate(((.1,.1,'#d9a520'),(.5,.03,'#c9402e'),(.9,-.04,'#2f7a8a'),(.1,-.18,'#d9a520'),(.5,-.25,'#c9402e'),(.9,-.32,'#2f7a8a'))):
-        q=D(u,v);P('btn',lathe([(0,0),(.12,0),(.12,.04),(.09,.07),(0,.06)],M('btn'+str(k%3),cc,.3),seg=14),q)
-    m=1.82;P('monbezel',panel(rr(-1.5,-.98,1.5,.98,.05),.08,blk,holes=[rr(-1.24,-.76,1.24,.76,.03)],bevel=.01),(0,2.78,cz+.62),(-.2,0,0))
-    s=S('mover_screen',quad(2.44,1.5,(0,0,1,1),M('screen','#ffffff',.5)),(0,2.78,cz+.6),(-.2,0,0));s['mover']=1
+    # The cabinet has an opaque monitor pod behind the CRT, a separate
+    # enamel control panel below it, and no display artwork under the controls.
+    tilt=.2
+    screen_y,screen_z=2.78,cz+.62
+    normal=Vector_((0,math.sin(tilt),math.cos(tilt)))
+    origin=Vector_((0,screen_y,screen_z))
+    angle=(-tilt,0,0)
+    P('Monitor enclosure',box(w-.045,1.91,1.08,c,bevel=.035),
+      tuple(origin-normal*.558),angle)
+    P('Monitor bezel',panel(rr(-1.5,-.98,1.5,.98,.05),.08,blk,
+      holes=[rr(-1.24,-.76,1.24,.76,.03)],bevel=.01),tuple(origin),angle)
+    s=S('mover_screen',quad(2.48,1.52,(0,0,1,1),M('screen','#ffffff',.5)),
+        tuple(origin+normal*.005),angle)
+    s['mover']=1
+    P('Upper monitor baffle',box(w-.08,.20,.42,c,bevel=.012),(0,3.81,cz+.24))
+    P('Lower monitor valance',box(w-.06,.11,.21,c,bevel=.01),(0,1.806,cz+.65))
+    P('Rear access panel',box(2.65,1.63,.035,blk,bevel=.025),(0,2.74,cz-1.21))
+    for y in (3.18,3.26,3.34,3.42):
+        P('Rear vent louver',box(1.63,.028,.021,rb,bevel=.005),(0,y,cz-1.235))
+    t=.25
+    ctrl_y,ctrl_z=1.71,cz+.98
+    def D(u,v,lift=0):
+        return (u,ctrl_y-v*math.sin(t)+(.041+lift)*math.cos(t),
+                  ctrl_z+v*math.cos(t)+(.041+lift)*math.sin(t))
+    P('Control deck',box(w,.082,.66,blk,bevel=.016),(0,ctrl_y,ctrl_z),(t,0,0))
+    P('Control deck front trim',box(w-.08,.018,.024,side,bevel=.004),D(0,.305,.003),(t,0,0))
+    for x in (-1.38,1.38):
+        for z in (-.24,.24):
+            P('Panel fastener',cyl(.024,.008,st,seg=10),D(x,z,.004),(t-PI/2,0,0))
+    q=D(-.86,.03)
+    P('Joystick dust washer',cyl(.17,.023,bk,seg=18),D(-.86,.03,.011),(t-PI/2,0,0))
+    P('Joystick shaft',cyl(.029,.247,st,seg=12),(q[0],q[1]+.126,q[2]),Yr)
+    P('Joystick grip',sphere(.111,M('stick_red','#c9402e',.3),seg=20,ring=12),
+      (q[0],q[1]+.255,q[2]))
+    for i,(u,v,cc) in enumerate(((.23,-.13,'#d9a520'),(.58,-.13,'#c9402e'),(.93,-.13,'#2f7a8a'),
+                                 (.23,.15,'#d9a520'),(.58,.15,'#c9402e'),(.93,.15,'#2f7a8a'))):
+        P('Button collar',cyl(.101,.020,rb,seg=16),D(u,v,.01),(t-PI/2,0,0))
+        P('Push button',lathe([(0,0),(.085,0),(.085,.035),(.069,.052),(0,.055)],
+          M('btn'+str(i%3),cc,.3),seg=18),D(u,v,.013),(t,0,0))
     P('marqueebox',box(w,.72,.2,blk,bevel=.012),(0,4.3,cz+.56));P('marquee',quad(2.8,.56,RE['marquee'],M('marquee_lit','#ffffff',.5,tex='code_prints',emit='#ffffff',emit_str=.5)),(0,4.3,cz+.67))
     P('coin',box(.42,.6,.03,br,bevel=.008),(0,1.0,cz+1.25));P('coinslot',box(.05,.16,.01,rb),(-.09,1.06,cz+1.27));P('coinslot',box(.05,.16,.01,rb),(.09,1.06,cz+1.27))
     # realm cartridges in a rack, and a small training dummy for the Dojo
