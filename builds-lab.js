@@ -51,12 +51,12 @@ async function init(){
  box(machine,3.18,3.7,.12,m.black,-.42,3.72,.48,.03);box(machine,2.98,3.43,.08,m.deep,-.42,3.72,.55,.025);
  // Lit back of the display and solid shelves establish depth behind the glass.
  box(machine,2.88,3.32,.05,mat('#6d8988',.75),-.42,3.73,.61,.01);
- for(const y of [2.23,3.45,4.68]){box(machine,2.96,.1,.86,m.silver,-.42,y,.96,.025);box(machine,2.88,.04,.82,m.cream,-.42,y+.07,.96,.01)}
- for(const x of [-1.81,.97])box(machine,.085,3.61,.13,m.brass,x,3.73,1.39,.015);
- for(const y of [2.05,5.53])box(machine,2.88,.075,.12,m.brass,-.42,y,1.39,.015);
+ for(const y of [2.23,3.45,4.68]){box(machine,2.96,.1,.44,m.silver,-.42,y,.83,.025);box(machine,2.88,.04,.42,m.cream,-.42,y+.07,.83,.01)}
+ for(const x of [-1.81,.97])box(machine,.085,3.61,.13,m.brass,x,3.73,1.94,.015);
+ for(const y of [2.05,5.53])box(machine,2.88,.075,.12,m.brass,-.42,y,1.94,.015);
  // Acrylic glass is slightly reflective and intentionally does not cast shadows.
- const pane=box(machine,2.82,3.35,.018,m.glass,-.42,3.74,1.43,.003);pane.castShadow=false;pane.receiveShadow=false;
- const shine=new THREE.Mesh(new THREE.PlaneGeometry(.055,2.7),new THREE.MeshBasicMaterial({color:'#e0f5ed',transparent:true,opacity:.16,depthWrite:false}));shine.position.set(-1.47,3.74,1.445);shine.rotation.z=-.13;machine.add(shine);
+ const pane=box(machine,2.82,3.35,.018,m.glass,-.42,3.74,1.96,.003);pane.castShadow=false;pane.receiveShadow=false;
+ const shine=new THREE.Mesh(new THREE.PlaneGeometry(.055,2.7),new THREE.MeshBasicMaterial({color:'#e0f5ed',transparent:true,opacity:.16,depthWrite:false}));shine.position.set(-1.47,3.74,1.98);shine.rotation.z=-.13;machine.add(shine);
  // Backlit marquee, screws, ventilation slits and lower dispensing hatch.
  box(machine,3.9,.62,.16,m.cream,-.02,5.93,.9,.065);addLabel(machine,'KAVISH  /  PROJECTS',-.02,5.93,1.0,3.65,.43,{bg:'#e2d5bc',fg:'#273e47',size:70,border:false});
  for(const x of [-1.92,1.88])for(const y of [.34,5.82]){const bolt=ball(machine,.042,m.silver,x,y,.92,16);bolt.scale.z=.32}
@@ -77,13 +77,13 @@ async function init(){
  for(const x of [-4.28,-3.92,-3.56]){cylinder(root,.13,.24,m.brass,x,1.23,-2.55);cylinder(root,.105,.12,m.silver,x,1.41,-2.55)}
  const lit=new THREE.PointLight('#ffdca4',18,8,2);lit.position.set(1,6,4);scene.add(lit);const glow=new THREE.PointLight('#a7d9e1',5,4,2);glow.position.set(1,4,1.6);scene.add(glow);
  // Four recognisable miniature project objects, each modelled as a coherent assembly.
- const models={},targets=[],slots={strata:[-1.14,4.77],drone:[.3,4.77],orbit:[-1.14,3.55],wing:[.3,3.55]};
+ const models={},springs={},targets=[],slots={strata:[-1.14,4.77],drone:[.3,4.77],orbit:[-1.14,3.55],wing:[.3,3.55]};
  for(const [i,name] of ['strata','drone','orbit','wing'].entries()){const target=box(machine,.82,.43,.07,new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false}),1.42,4.48-i*.55,1.11,0);target.castShadow=false;target.userData.key=name;targets.push(target)}
  for(const [name,[x,y]] of Object.entries(slots)){
   const holder=new THREE.Group();holder.position.set(x,y,.92);machine.add(holder);models[name]=holder;
   const hit=box(machine,1.26,1.05,.18,new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false}),x,y+.34,1.48,0);hit.castShadow=false;hit.userData.key=name;targets.push(hit);
-  const number={strata:'01 / STRATA',drone:'02 / QUADS',orbit:'03 / ORBIT',wing:'04 / WING'}[name];addLabel(machine,number,x,y-.02,1.405,1.22,.13,{bg:'#203945',fg:'#e8e5d8',size:67,border:false});
-  const springPoints=[];for(let i=0;i<100;i++){const t=i/99*4*Math.PI;springPoints.push(new THREE.Vector3(x+Math.cos(t)*.27,y+.06+Math.sin(t)*.11,.72+i/99*.4))}machine.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(springPoints),100,.013,6,false),m.silver));
+  const number={strata:'01 / STRATA',drone:'02 / QUADS',orbit:'03 / ORBIT',wing:'04 / WING'}[name];addLabel(machine,number,x,y-.02,1.945,1.22,.13,{bg:'#203945',fg:'#e8e5d8',size:67,border:false});
+  const springPoints=[];for(let i=0;i<100;i++){const t=i/99*4*Math.PI;springPoints.push(new THREE.Vector3(Math.cos(t)*.27,Math.sin(t)*.20,i/99*.48))}const spring=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(springPoints),100,.013,8,false),m.silver);spring.position.set(x,y+.22,.61);machine.add(spring);springs[name]=spring;
  }
  // Strata is based on the photographs: a ladder frame, sliced acrylic roof,
  // open sides, vertical rear grille and orange triangular wheel centres.
@@ -151,19 +151,20 @@ async function init(){
  function size(){const r=stage.getBoundingClientRect();if(!r.width||!r.height)return;renderer.setSize(r.width,r.height,false);camera.aspect=r.width/r.height;camera.updateProjectionMatrix();renderer.shadowMap.needsUpdate=true;dirty=true;wake()}
  // A selected object is retained for the close-up until the user leaves.
  let presentation=null;
- function clearPresentation(){if(presentation){machine.remove(presentation.copy);presentation.original.visible=true;presentation=null}if(dispense){machine.remove(dispense.copy);dispense.original.visible=true;dispense=null}hatch.rotation.x=0;dirty=true}
- function focusPosition(){camera.updateMatrixWorld();machine.updateWorldMatrix(true,false);const distance=3.65;const x=Math.min(1.05,Math.max(.45,camera.aspect*.63));return machine.worldToLocal(camera.localToWorld(new THREE.Vector3(x,-.28,-distance)))}
- function finishDispense(){if(!dispense)return;presentation=dispense;dispense=null;presentation.original.visible=true;presentation.copy.visible=true;presentation.copy.position.copy(focusPosition());presentation.copy.scale.setScalar(1.65);const done=presentation.done;dirty=true;done?.()}
+ function clearPresentation(){if(presentation){machine.remove(presentation.copy);presentation.original.visible=true;presentation.spring.rotation.z=0;presentation=null}if(dispense){machine.remove(dispense.copy);dispense.original.visible=true;dispense.spring.rotation.z=0;dispense=null}hatch.rotation.x=0;dirty=true}
+ function focusPosition(){camera.updateMatrixWorld();machine.updateWorldMatrix(true,false);const distance=4.35;const x=Math.min(.9,Math.max(.35,camera.aspect*.53));return machine.worldToLocal(camera.localToWorld(new THREE.Vector3(x,-.42,-distance)))}
+ function finishDispense(){if(!dispense)return;presentation=dispense;dispense=null;presentation.original.visible=true;presentation.copy.visible=true;presentation.copy.position.copy(focusPosition());presentation.copy.scale.setScalar(1.48);const done=presentation.done;dirty=true;done?.()}
  function cancelDispense(){clearPresentation()}
  const ease=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t)};
- selectScene=(name,done)=>{cancelDispense();buttonHighlights.forEach((h,i)=>h.visible=['strata','drone','orbit','wing'][i]===name);desired.set(4.2,4.1,10.2);desiredLook.set(.6,3,.1);const original=models[name],copy=original.clone(true);copy.position.copy(original.position);machine.add(copy);dispense={copy,original,start:performance.now(),done};if(reduce){finishDispense();return true}dirty=true;return true};
+ selectScene=(name,done)=>{cancelDispense();buttonHighlights.forEach((h,i)=>h.visible=['strata','drone','orbit','wing'][i]===name);desired.set(4.2,4.1,10.2);desiredLook.set(.6,3,.1);const original=models[name],copy=original.clone(true);copy.position.copy(original.position);machine.add(copy);dispense={copy,original,spring:springs[name],start:performance.now(),done};if(reduce){finishDispense();return true}dirty=true;return true};
  resetScene=()=>{cancelDispense();buttonHighlights.forEach(h=>h.visible=false);desired.set(6,4.5,13.2);desiredLook.set(.5,3.1,.2);dirty=true};
  function frame(now){raf=0;if(!visible||document.hidden)return;const dt=Math.min(.05,(now-(last||now))/1000);last=now;const f=reduce?1:1-Math.exp(-4*dt);camera.position.lerp(desired,f);look.lerp(desiredLook,f);camera.lookAt(look);let moving=camera.position.distanceTo(desired)>.008||look.distanceTo(desiredLook)>.008;
-  if(dispense){const elapsed=now-dispense.start,start=dispense.original.position;const feed=ease(elapsed/700),open=ease((elapsed-1250)/450),emerge=ease((elapsed-1700)/600),focus=ease((elapsed-2300)/950);dispense.original.visible=false;
-   if(elapsed<700){dispense.copy.visible=true;dispense.copy.position.set(start.x,start.y,THREE.MathUtils.lerp(start.z,.55,feed));}
-   else if(elapsed<1700){dispense.copy.visible=false;}
-   else {dispense.copy.visible=true;const end=focusPosition();dispense.copy.position.set(THREE.MathUtils.lerp(-.45,end.x,focus),THREE.MathUtils.lerp(1.08,end.y,focus),THREE.MathUtils.lerp(THREE.MathUtils.lerp(.95,1.48,emerge),end.z,focus));dispense.copy.scale.setScalar(1+.65*focus)}
-   hatch.rotation.x=-open*.8;dirty=true;if(elapsed>=3250)finishDispense()}
+  if(dispense){const elapsed=now-dispense.start,start=dispense.original.position;const feed=ease(elapsed/1500),fall=ease((elapsed-1500)/1150),open=ease((elapsed-2650)/400),emerge=ease((elapsed-3050)/600),focus=ease((elapsed-3650)/1050);dispense.original.visible=false;dispense.spring.rotation.z=-feed*Math.PI*4;
+   if(elapsed<1500){dispense.copy.visible=true;dispense.copy.position.set(start.x,start.y,THREE.MathUtils.lerp(start.z,1.5,feed));dispense.copy.scale.setScalar(1)}
+   else if(elapsed<2650){dispense.copy.visible=true;dispense.copy.position.set(start.x,THREE.MathUtils.lerp(start.y,1.82,fall),1.5);dispense.copy.scale.setScalar(1);dispense.copy.rotation.z=fall*.35;}
+   else if(elapsed<3050){dispense.copy.visible=false;}
+   else {dispense.copy.visible=true;const end=focusPosition();dispense.copy.rotation.z=0;dispense.copy.position.set(THREE.MathUtils.lerp(-.45,end.x,focus),THREE.MathUtils.lerp(1.04,end.y,focus),THREE.MathUtils.lerp(THREE.MathUtils.lerp(1.0,1.5,emerge),end.z,focus));dispense.copy.scale.setScalar(1+.48*focus)}
+   hatch.rotation.x=-open*.8;dirty=true;if(elapsed>=4700)finishDispense()}
   if(presentation){presentation.copy.position.copy(focusPosition());if(!reduce){presentation.copy.rotation.y+=dt*.42;dirty=true}}
   if(moving||dirty){renderer.render(scene,camera);dirty=false}if(moving||dispense||(presentation&&!reduce))raf=requestAnimationFrame(frame);
  }
