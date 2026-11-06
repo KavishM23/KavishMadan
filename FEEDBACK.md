@@ -238,3 +238,8 @@ The flat cards in School & academics went back to real paper on the dark ground:
 
 ## Room tone
 Quiet ambient music now plays behind the site. It is made in the browser rather than a downloaded track, so there is nothing to licence and nothing extra to load. It fades in after the first click or key press because browsers block sound before that, fades out while Spotify plays, and the speaker button in the top bar turns off all site sound. Change `VOLUME` in ambient.js to make it louder or quieter.
+
+## Project machine, rebuilt around the real car
+- Strata is now built from the team's CAD: 22 ribs sliced from the Fusion body, with the real tyre and rim. The chassis and electronics are modelled from photographs. It is not a scan.
+- The quadcopter is labelled as representative, the wing as a concept model, and the Kessler plaque says heights are not to scale. `assets/models/vending/README.md` lists what is real and what is inferred.
+- The cabinet is now hollow, so a product rides twin coils, drops down a lane in front of the shelves, lands on a ramp and leaves through a drop-down tray door. If you change the cabinet, run the tests: they fail if a product would hit the glass, a shelf, the ramp or the hatch.

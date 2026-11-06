@@ -25,3 +25,42 @@ test('each lab station opens its matching project without WebGL',()=>{
 test('returning to Builds resets a prior selection',()=>{
  const {ids,buttons,window,location}=setup();buttons[2].events.click();assert.equal(ids['testlab-card'].hidden,false);location.hash='#builds';window.events.hashchange();assert.equal(ids['testlab-card'].hidden,true);assert.equal(buttons[2].attributes['aria-pressed'],'false');
 });
+
+test('choosing the same project again does not restart it',()=>{
+ const {ids,buttons}=setup();buttons[1].events.click();ids['testlab-card'].hidden=true;buttons[1].events.click();assert.equal(ids['testlab-card'].hidden,true);
+});
+
+test('going back returns keyboard focus to the project that was open',()=>{
+ const {ids,buttons}=setup();buttons[3].events.click();ids['testlab-back'].events.click();assert.equal(buttons[3].focused,true);
+});
+
+// The dispense is checked as geometry: nothing a product does may pass through glass, a shelf or the ramp.
+const G=require('../builds-lab-layout.js');
+const sizes={strata:{w:.385,h:.2229,d:.32},drone:{w:.3491,h:.1827,d:.3491},orbit:{w:.3169,h:.4768,d:.3909},wing:{w:.365,h:.2934,d:.265}}; // measured from the exported models
+for(const [name,size] of Object.entries(sizes)){
+ const scale=G.fit(size),w=size.w*scale,h=size.h*scale,d=size.d*scale,slot=G.slots[name];
+ test(`${name} fits its slot and clears the machine all the way down`,()=>{
+  assert.ok(w<=G.maxW+1e-6&&d<=G.maxD+1e-6&&h<=G.maxH+1e-6);
+  assert.ok(slot[0]-w/2>=G.bayL&&slot[0]+w/2<=G.bayR,'clear of the bay walls');
+  const shelfAbove=G.shelfTops.filter(y=>y>slot[1])[0]??G.ceiling;
+  assert.ok(slot[1]+G.rest+h<shelfAbove-.06,'clear of the shelf above');
+  for(let t=0;t<=G.times.feed+G.times.tip+G.times.fall+G.times.land+G.times.door+G.times.slide;t+=10){
+   const p=G.path(t,slot,scale,size);
+   const c=Math.cos(p.tilt),s=Math.abs(Math.sin(p.tilt));
+   const frontZ=p.z+d/2*c+h*s,backZ=p.z-d/2*c;
+   // Before the door opens, the product stays behind the glass and front skin.
+   if(p.door<.01)assert.ok(frontZ<G.glass,`front ${frontZ.toFixed(3)} behind glass at ${t}ms`);
+   // Once it has dropped below shelf level, its back must be in front of the shelf lips.
+   if(p.y<slot[1]-.02)assert.ok(backZ>G.lip,`back ${backZ.toFixed(3)} clear of lip at ${t}ms`);
+   // It never sinks into the ramp.
+   assert.ok(p.y>=G.rampAt(p.z)-1e-6,`above the ramp at ${t}ms`);
+   // It goes through the hatch only inside the opening.
+   if(p.z+d/2>G.front-.05){assert.ok(p.door>1.5,'door open as it passes');assert.ok(p.y+h<G.hatch.top+.001,`under the hatch head at ${t}ms`);assert.ok(slot[0]-w/2>G.hatch.left-.001||slot[0]+w/2<G.hatch.right,'inside hatch')}
+  }
+ });
+}
+
+test('the coils turn exactly as far as the product advances',()=>{
+ const p=G.path(G.times.feed,G.slots.strata,1,sizes.strata),travel=G.lip-.04-(G.back+G.startZ);
+ assert.ok(Math.abs(p.spin-travel/G.pitch*Math.PI*2)<1e-9);
+});
