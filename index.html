@@ -812,7 +812,7 @@ html.intro-hold .obj-labs{visibility:hidden}
   <button class="menu-x" type="button" data-mclose aria-label="Close menu"><span></span><span></span></button>
   <ul class="menu-l">
     <li><a href="#home" data-mclose>Workshop</a></li>
-    <li><a href="#builds" data-mclose>Builds</a></li>
+    <li><a href="#builds" data-mclose data-skip-workshop-entry>Builds</a></li>
     <li><a href="#code" data-mclose>Code</a></li>
     <li><a href="#awards" data-mclose>Awards</a></li>
     <li><button type="button" data-research data-mclose>Research papers</button></li>
@@ -1831,6 +1831,7 @@ html.intro-hold .obj-labs{visibility:hidden}
   /* ---- pages: Builds (home), Code, Awards share one link; #code / #awards open the others ---- */
   const views=[...document.querySelectorAll('.view')],wipeEl=document.querySelector('.wipe'),rmqView=matchMedia('(prefers-reduced-motion: reduce)');
   let curView=document.querySelector('.view:not([hidden])')||views[0];
+  let directEntryHash=null;
   function markTabs(){document.querySelectorAll('[data-tab]').forEach(a=>{if(a.dataset.tab===curView.id)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
     const thumb=document.querySelector('.tab-thumb'),on=document.querySelector('.tabs a[aria-current]');if(thumb){thumb.style.opacity=on?1:0;if(on){thumb.style.setProperty('--x',on.offsetLeft+'px');thumb.style.setProperty('--w',on.offsetWidth+'px')}}}
   document.fonts?.ready.then(()=>markTabs());addEventListener('resize',()=>markTabs());
@@ -1849,25 +1850,33 @@ html.intro-hold .obj-labs{visibility:hidden}
     let done=false;const half=()=>{if(done)return;done=true;mid();wipeEl.className='wipe out';setTimeout(()=>{wipeEl.className='wipe'},700)};
     wipeEl.addEventListener('animationend',half,{once:true});setTimeout(half,650);
   }
-  function showView(v,target,instant){
+  function showView(v,target,instant,skipWorkshopEntry=false){
     if(v===curView){if(target&&target!==v)(window.smoothTo?smoothTo(target):target.scrollIntoView({behavior:rmqView.matches?'auto':'smooth'}));else (window.smoothTo?smoothTo(0):scrollTo({top:0,behavior:rmqView.matches?'auto':'smooth'}));return}
     const R=document.documentElement,toHome=v.id==='home',fromHome=curView.id==='home',ws=window.workshopApi;
     const swap=()=>{views.forEach(x=>{x.hidden=x!==v});curView=v;R.classList.toggle('on-home',toHome);afterShow(target)};
     if(instant){swap();return}
     // into a page: the object carries you there. Back out: the same move in reverse
-    if(fromHome){if(!(ws&&ws.enter(location.hash,swap)))wipe(v.dataset.label||'',swap);return}
+    if(fromHome&&!skipWorkshopEntry&&ws?.enter(location.hash,swap))return;
     if(toHome){if(!(ws&&ws.leave(swap,curView.dataset.label)))wipe('Workshop',swap);return}
     wipe(v.dataset.label||'',swap);
   }
   function route(instant){
+    const skipWorkshopEntry=location.hash===directEntryHash;
+    directEntryHash=null;
     const id=decodeURIComponent(location.hash.slice(1));const t=id?document.getElementById(id):null,ws=window.workshopApi;
     // Contact isn't a page: it's the crate, in the workshop
     if(id==='contact'){if(curView.id!=='home')showView(document.getElementById('home'),null,instant);else document.documentElement.classList.add('on-home');ws&&ws.contact();return}
     ws&&ws.closeContact();
     if(t&&!t.closest('.view')){if(!instant)(window.smoothTo?smoothTo(t):t.scrollIntoView({behavior:rmqView.matches?'auto':'smooth'}));return}
-    const v=(t&&t.closest('.view'))||document.getElementById('home');showView(v,t,instant);
+    const v=(t&&t.closest('.view'))||document.getElementById('home');showView(v,t,instant,skipWorkshopEntry);
   }
-  document.addEventListener('click',e=>{const a=e.target.closest('a[href^="#"]');if(!a)return;if(a.getAttribute('href')===location.hash)setTimeout(()=>route(false),0);if(a.dataset.tab){document.querySelectorAll('[data-tab]').forEach(x=>x===a?x.setAttribute('aria-current','page'):x.removeAttribute('aria-current'));const thumb=document.querySelector('.tab-thumb');if(thumb){thumb.style.opacity=1;thumb.style.setProperty('--x',a.offsetLeft+'px');thumb.style.setProperty('--w',a.offsetWidth+'px')}}});
+  document.addEventListener('click',e=>{
+    const a=e.target.closest('a[href^="#"]');if(!a)return;
+    const href=a.getAttribute('href');
+    if(a.hasAttribute('data-skip-workshop-entry')&&!e.defaultPrevented&&e.button===0&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey&&!e.altKey)directEntryHash=href;
+    if(href===location.hash)setTimeout(()=>route(false),0);
+    if(a.dataset.tab){document.querySelectorAll('[data-tab]').forEach(x=>x===a?x.setAttribute('aria-current','page'):x.removeAttribute('aria-current'));const thumb=document.querySelector('.tab-thumb');if(thumb){thumb.style.opacity=1;thumb.style.setProperty('--x',a.offsetLeft+'px');thumb.style.setProperty('--w',a.offsetWidth+'px')}}
+  });
   addEventListener('hashchange',()=>route(false));
   route(true);markTabs();
 
