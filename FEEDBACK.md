@@ -259,3 +259,8 @@ Quiet ambient music now plays behind the site. It is made in the browser rather 
 - The door is the gate at the top of the Code stairs. It is now a blue painted door in a cream surround, with a real timber frame, sill, hinges, pulls, lock and seals, all hung on the hinge line so the leaves clear the jamb.
 - Hovering opens it a crack, and clicking it or the "Open the door" button scrolls to the point where it opens. Scrolling still works as before.
 - Without the staircase (reduced motion or a very short window) there is no 3D door, just the plain page.
+
+## Code door rebuilt in Blender
+- Replaced the procedural leaves, arch stones, plaster, timber jamb, threshold and sconces with a Blender 4.2 LTS asset. The existing hall, stairs and controls retain their geometry and timing.
+- The fixed joinery has a 1280 px diffuse bake. Each leaf and its ring pulls share a separate 1024 px bake with the frame and opposite leaf excluded. Night mode dims the baked surfaces and keeps the existing stronger live sconce light and warmer glass.
+- Rebuild from the repository root with `assets/models/code/src/build-gate.sh`, using Blender 4.2 LTS and glTF Transform on PATH, or set `BLENDER` and `GLTF_TRANSFORM` to their executables. The script writes the editable Blender source and the Meshopt GLB.

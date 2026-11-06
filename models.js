@@ -75,7 +75,19 @@ window.createPortfolioAtelier=function({THREE,Round,environment,reduced,anisotro
   if(el.dataset.scene==='cabinet')document.documentElement.classList.add('cabinet-ready');
   return {el,visible:false,pending:true};
  });
- function build(el){const i=slots.findIndex(s=>s.el===el);if(i<0||!slots[i].pending)return slots[i];slots[i]=makeSlot(el);return slots[i]}
+ function build(el){
+  const i=slots.findIndex(s=>s.el===el),slot=slots[i];
+  if(!slot?.pending)return slot;
+  if(el.dataset.scene==='staircase'&&!reduced&&innerHeight>=620){
+   slot.loading??=window.preloadMoroccanGate().then(()=>{
+    slots[i]=makeSlot(el);
+    slots[i].visible=slot.visible;
+   });
+   return slot;
+  }
+  slots[i]=makeSlot(el);
+  return slots[i];
+ }
  // Build only scenes near the viewport; the observer builds the rest as the
  // visitor reaches them instead of allocating every model on the page at once.
  function prepare(view){const todo=slots.filter(s=>{if(!s.pending||!view.contains(s.el))return false;const r=s.el.getBoundingClientRect();return r.bottom>=-innerHeight*.25&&r.top<=innerHeight*1.25}).map(s=>s.el),idle=fn=>window.requestIdleCallback?requestIdleCallback(fn,{timeout:700}):setTimeout(fn,60);const next=()=>{const el=todo.shift();if(!el)return;build(el);idle(next)};idle(next)}
@@ -93,5 +105,5 @@ window.createPortfolioAtelier=function({THREE,Round,environment,reduced,anisotro
   // Back off immediately when rotation or a narrower viewport needs room; ease back in afterward.
   cam.position.z=slot.fit.ready&&want<cam.position.z?damp(cam.position.z,want,6,dt):want;slot.fit.ready=true;cam.lookAt(0,0,0);
  }
- return{slots,build,prepare,update(dt,t){for(const slot of slots){if(!slot.visible)continue;if(slot.customUpdate){slot.customUpdate(dt,t);continue}slot.rotation=damp(slot.rotation,slot.targetRotation,10,dt);slot.pitch=damp(slot.pitch,slot.targetPitch,10,dt);slot.group.rotation.y=slot.rotation+(reduced?0:Math.sin(t*.28)*.08);slot.group.rotation.x=slot.pitch;for(const [i,m] of slot.models.entries()){m.emphasis=damp(m.emphasis,slot.selected===m.key?1:0,7,dt);m.obj.position.copy(m.base);m.obj.position.z+=m.emphasis*.85;m.obj.position.y+=(reduced?0:Math.sin(t*.8+i*1.4)*.055)+m.emphasis*.12;m.obj.rotation.copy(m.rotation);m.obj.rotation.y+=m.emphasis*.15;m.obj.scale.setScalar(m.scale*(1+m.emphasis*.13));m.obj.userData.tick?.(t,slot.hover?1:0)}fit(slot,dt)}}};
+ return{slots,build,prepare,update(dt,t){for(const slot of slots){if(!slot.visible||slot.pending)continue;if(slot.customUpdate){slot.customUpdate(dt,t);continue}slot.rotation=damp(slot.rotation,slot.targetRotation,10,dt);slot.pitch=damp(slot.pitch,slot.targetPitch,10,dt);slot.group.rotation.y=slot.rotation+(reduced?0:Math.sin(t*.28)*.08);slot.group.rotation.x=slot.pitch;for(const [i,m] of slot.models.entries()){m.emphasis=damp(m.emphasis,slot.selected===m.key?1:0,7,dt);m.obj.position.copy(m.base);m.obj.position.z+=m.emphasis*.85;m.obj.position.y+=(reduced?0:Math.sin(t*.8+i*1.4)*.055)+m.emphasis*.12;m.obj.rotation.copy(m.rotation);m.obj.rotation.y+=m.emphasis*.15;m.obj.scale.setScalar(m.scale*(1+m.emphasis*.13));m.obj.userData.tick?.(t,slot.hover?1:0)}fit(slot,dt)}}};
 };

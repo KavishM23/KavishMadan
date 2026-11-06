@@ -40,8 +40,37 @@ window.createMasonry=function({THREE,anisotropy=4}){
  return{brick:tune(brick()),limestone:tune(limestone()),flagstone:tune(flagstone())};
 };
 
+// Resolve the asset before the staircase's first frame. A slow or failed
+// request chooses the procedural gate for this visit.
+let moroccanGateTask, moroccanGateModel;
+window.preloadMoroccanGate=function(){
+ if(moroccanGateTask)return moroccanGateTask;
+ const controller=new AbortController();
+ let timer;
+ const deadline=new Promise(resolve=>{timer=setTimeout(()=>{controller.abort();resolve(null)},2500)});
+ const load=(async()=>{
+  const [response,{GLTFLoader},{MeshoptDecoder}]=await Promise.all([
+   fetch('assets/models/code/moroccan-gate.glb',{signal:controller.signal}),
+   import('three/addons/loaders/GLTFLoader.js'),
+   import('three/addons/libs/meshopt_decoder.module.js')
+  ]);
+  if(!response.ok)throw new Error('Gate asset unavailable');
+  const loader=new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+  const {scene}=await loader.parseAsync(await response.arrayBuffer(),'');
+  for(const side of ['L','R']){
+   const leaf=scene.getObjectByName('Gate_leaf_'+side);
+   if(!leaf||!['front','back'].every(face=>leaf.getObjectByName('Gate_ring_'+side+'_'+face)))throw new Error('Gate rig incomplete');
+  }
+  if(!scene.getObjectByName('Gate_fixed'))throw new Error('Gate surround missing');
+  return scene;
+ })().catch(()=>null);
+ moroccanGateTask=Promise.race([load,deadline]).then(model=>{clearTimeout(timer);moroccanGateModel=model});
+ return moroccanGateTask;
+};
+
 window.createMoroccanGate=function({THREE,Round,parent,wallLeft,wallRight,wallHeight,masonry,anisotropy=4,batch=root=>root}){
  const cx=-2.2,w=1.3,turn=.44,R=w/2/Math.cos(turn),archTop=2.5,cy=archTop-R,spring=cy-R*Math.sin(turn),floor=.117,base=floor+.013;
+ const model=moroccanGateModel?.clone(true),bakedFixed=[],bakedLeaves=[],bulbs=[];
  const sand='#D9C8B0',hot='#B5563A',brassInk='#C9A45C',night='#141312';
  const add=(geometry,material,at=[0,0,0],host=parent)=>{const m=new THREE.Mesh(geometry,material);m.position.set(...at);host.add(m);return m};
  const canvas=(cw,ch)=>{const c=document.createElement('canvas');c.width=cw;c.height=ch;return[c,c.getContext('2d')]};
@@ -83,10 +112,8 @@ window.createMoroccanGate=function({THREE,Round,parent,wallLeft,wallRight,wallHe
   const s=cw/5;g.strokeStyle='#1a0e08';g.lineWidth=13;g.lineJoin='round';for(let y=-1;y<8;y++)for(let x=-1;x<6;x++){star(g,(x+.5)*s,(y+.5)*s,s*.52);g.stroke();star(g,(x+1)*s,(y+1)*s,s*.18);g.stroke()}
   g.lineWidth=30;g.strokeRect(0,0,cw,ch);return c}
 
- const [zelligeArt,zelligeHeight]=zelligeCanvas(),plasterArt=plasterCanvas(),[doorArt,doorGrain]=doorCanvas(),screenArt=screenCanvas();
+ const [zelligeArt,zelligeHeight]=zelligeCanvas(),plasterArt=model?null:plasterCanvas(),[doorArt,doorGrain]=model?[]:doorCanvas(),screenArt=screenCanvas();
  const tile=(rx,ry)=>new THREE.MeshPhysicalMaterial({map:texture(zelligeArt,rx,ry),bumpMap:texture(zelligeHeight,rx,ry,false),bumpScale:1.5,roughness:.26,metalness:.02,clearcoat:.6,clearcoatRoughness:.2,envMapIntensity:.5});
- const plasterMap=texture(plasterArt,2.1,2.1),plasterBump=texture(plasterArt,2.1,2.1,false);
- const plaster=new THREE.MeshStandardMaterial({map:plasterMap,bumpMap:plasterBump,bumpScale:2.4,roughness:.9,envMapIntensity:.35});
  const wallMat=new THREE.MeshStandardMaterial({map:masonry.brick.map,bumpMap:masonry.brick.bumpMap,bumpScale:2.6,color:0xd8cdbe,roughness:.92,envMapIntensity:.22});
  const dressed=new THREE.MeshStandardMaterial({map:masonry.limestone.map,bumpMap:masonry.limestone.bumpMap,bumpScale:1.4,color:0x9c9284,roughness:.8,envMapIntensity:.25});
  const brass=new THREE.MeshStandardMaterial({color:0xc9a45c,metalness:1,roughness:.32,envMapIntensity:.9});
@@ -104,7 +131,11 @@ window.createMoroccanGate=function({THREE,Round,parent,wallLeft,wallRight,wallHe
 
  // wall and carved frame
  const wallShape=rect(wallLeft,0,wallRight,wallHeight);wallShape.holes.push(archHole());add(extrude(wallShape,.3),wallMat,[0,0,-.3]);
- const half=1.35,frameTop=3,frameShape=rect(cx-half,.02,cx+half,frameTop);frameShape.holes.push(archHole());add(extrude(frameShape,.05),[plaster,wallMat],[0,0,0]);
+ const half=1.35,frameTop=3;
+ if(!model){
+  const plaster=new THREE.MeshStandardMaterial({map:texture(plasterArt,2.1,2.1),bumpMap:texture(plasterArt,2.1,2.1,false),bumpScale:2.4,roughness:.9,envMapIntensity:.35});
+  const frameShape=rect(cx-half,.02,cx+half,frameTop);frameShape.holes.push(archHole());add(extrude(frameShape,.05),[plaster,wallMat],[0,0,0]);
+ }
  for(const [x,y,sw,sh] of [[cx,frameTop-.02,2*half+.08,.05],[cx-half,1.5,.05,3],[cx+half,1.5,.05,3]])add(new Round(sw,sh,.09,2,.012),brass,[x,y,.04]);
 
  // zellige dado along the wall, with a brass rail above it
@@ -112,22 +143,26 @@ window.createMoroccanGate=function({THREE,Round,parent,wallLeft,wallRight,wallHe
  for(const [x0,x1] of [[wallLeft,leftEnd],[rightEnd,wallRight]]){const dw=x1-x0;add(new THREE.BoxGeometry(dw,dadoH,.07),tile(dw/.8,dadoH/.8),[(x0+x1)/2,dadoH/2+.03,.035]);add(new Round(dw,.035,.095,2,.012),brass,[(x0+x1)/2,dadoH+.04,.045])}
 
  // horseshoe arch: alternating voussoirs, a reveal, and a thin brass line outside them
- const count=33,span=Math.PI+2*turn,voussoir=new THREE.BoxGeometry(.15,(R+.09)*span/count*.93,.06),terra=new THREE.MeshStandardMaterial({color:0xa4563c,roughness:.62,envMapIntensity:.35}),rings=[new THREE.InstancedMesh(voussoir,stoneSand,17),new THREE.InstancedMesh(voussoir,terra,16)],place=new THREE.Object3D(),seen=[0,0];
+ const span=Math.PI+2*turn,place=new THREE.Object3D();
+ if(!model){
+ const count=33,voussoir=new THREE.BoxGeometry(.15,(R+.09)*span/count*.93,.06),terra=new THREE.MeshStandardMaterial({color:0xa4563c,roughness:.62,envMapIntensity:.35}),rings=[new THREE.InstancedMesh(voussoir,stoneSand,17),new THREE.InstancedMesh(voussoir,terra,16)],seen=[0,0];
  for(let i=0;i<count;i++){const t=Math.PI+turn-span*(i+.5)/count,k=i%2;place.position.set(cx+Math.cos(t)*(R+.095),cy+Math.sin(t)*(R+.095),.075);place.rotation.set(0,0,t);place.updateMatrix();rings[k].setMatrixAt(seen[k]++,place.matrix)}
  rings.forEach(r=>parent.add(r));
  // the brass line is an open band that follows the arc and stops at the springing, so nothing crosses the doorway
  const bandPoints=[];for(let i=0;i<=56;i++){const t=Math.PI+turn-span*i/56;bandPoints.push(new THREE.Vector2(cx+Math.cos(t)*(R+.2),cy+Math.sin(t)*(R+.2)))}for(let i=56;i>=0;i--){const t=Math.PI+turn-span*i/56;bandPoints.push(new THREE.Vector2(cx+Math.cos(t)*(R+.175),cy+Math.sin(t)*(R+.175)))}
  add(extrude(new THREE.Shape(bandPoints),.09),brass,[0,0,.02]);
- // A timber frame fills the wall opening: the arch is the outer edge, and a planted stop gives the leaves something to close against.
+ }
  const frameW=.05,stopW=.018,sill=floor+.042,openHalf=w/2-frameW;
+ const seal=new THREE.MeshStandardMaterial({color:0x0c0d0e,roughness:.85});
+ if(!model){
  const ring=(outer,inner,bottom,innerBottom=bottom)=>{const shape=new THREE.Shape(archPoints(outer,bottom));shape.holes.push(archHole(inner,innerBottom));return shape};
  const frameWood=new THREE.MeshStandardMaterial({map:masonry.limestone.map,color:0x4a2c19,roughness:.58,envMapIntensity:.35});
- const seal=new THREE.MeshStandardMaterial({color:0x0c0d0e,roughness:.85});
  add(new THREE.ExtrudeGeometry(ring(.012,-frameW,floor),{depth:.296,bevelEnabled:true,bevelSize:.005,bevelThickness:.005,bevelSegments:1,curveSegments:24}),frameWood,[0,0,-.306]);
  add(extrude(ring(-frameW+.002,-frameW-stopW,sill-.02),.022),frameWood,[0,0,-.086]);
  add(extrude(ring(-frameW-.004,-frameW-.012,sill-.02),.008),seal,[0,0,-.094]);
  add(extrude(ring(.014,.002,floor),.012),brass,[0,0,-.004]);
 
+ }
  // jambs: tile strips and slim columns with carved capitals
  for(const side of [-1,1]){
   const x=cx+side*(w/2+.095);add(new THREE.BoxGeometry(.15,spring-.04,.06),tile(.19,(spring-.04)/.8),[x,(spring+.04)/2,.075]);
@@ -190,7 +225,7 @@ window.createMoroccanGate=function({THREE,Round,parent,wallLeft,wallRight,wallHe
  for(const x of [-.13,0,.13])add(new Round(.016,.56,.016,1,.004),iron,[x,1.98,.03],rear);add(new Round(.54,.016,.016,1,.004),iron,[0,1.98,.03],rear);
  for(const side of [-1,1]){const dado=add(new THREE.PlaneGeometry(hallD,.86),tile(1.56,1.07),[cx+side*(hallW/2-.012),floor+.44,hallZ]);dado.rotation.y=-side*Math.PI/2}
  // sill: a worn stone step with a brass weather bar under the closed leaves
- add(new Round(w+.2,.05,.62,3,.016),stoneSand,[cx,floor+.017,-.04]);add(new Round(w-.12,.012,.05,2,.005),brass,[cx,sill+.003,-.14]);
+ if(!model){add(new Round(w+.2,.05,.62,3,.016),stoneSand,[cx,floor+.017,-.04]);add(new Round(w-.12,.012,.05,2,.005),brass,[cx,sill+.003,-.14]);}
 
  // a pierced brass lantern
  const lantern=new THREE.Group();lantern.position.set(cx,2.08,hallZ+.1);parent.add(lantern);
@@ -201,6 +236,34 @@ window.createMoroccanGate=function({THREE,Round,parent,wallLeft,wallRight,wallHe
  // the doors: framed joinery on real hinges. Each leaf hangs from an axis at its back corner, so it swings clear of the frame into the hall.
  const leafT=.085,gap=.006,leafFront=-.098,axisZ=leafFront-leafT-.002,base2=sill+.012,leafW=openHalf-gap,leafR=R-frameW-gap,leafH=cy-base2+leafR;
  const leafTop=x=>{const d=openHalf-x;return cy-base2+Math.sqrt(Math.max(0,leafR*leafR-d*d))};   // x runs from the hinge
+ let pivots;
+ if(model){
+  parent.add(model);
+  pivots=['L','R'].map(side=>{
+   const pivot=model.getObjectByName('Gate_leaf_'+side);
+   return {pivot,rings:['front','back'].map(face=>pivot.getObjectByName('Gate_ring_'+side+'_'+face))};
+  });
+  const materials=new Map();
+  model.traverse(o=>{
+   if(!o.isMesh)return;
+   o.userData.keepSeparate=true;
+   o.castShadow=o.receiveShadow=true;
+   const convert=source=>{
+    if(materials.has(source))return materials.get(source);
+    const name=source.name, fixed=name.startsWith('Fixed_'), bulb=name.startsWith('Lamp glass');
+    const material=bulb?new THREE.MeshBasicMaterial({toneMapped:false}):
+     fixed&&source.metalness===0?new THREE.MeshBasicMaterial({map:source.map,toneMapped:false}):source.clone();
+    if(source.map)source.map.anisotropy=anisotropy;
+    if(bulb)bulbs.push(material);
+    else if(fixed)bakedFixed.push(material);
+    else bakedLeaves.push(material);
+    if(material.isMeshStandardMaterial)material.envMapIntensity=.6;
+    materials.set(source,material);
+    return material;
+   };
+   o.material=Array.isArray(o.material)?o.material.map(convert):convert(o.material);
+  });
+ }else{
  const doorBump=texture(doorGrain,1,1,false),paintOf=(flip,tint=0xffffff)=>{const t=texture(doorArt,(flip?-1:1)/leafW,1/leafH);return new THREE.MeshStandardMaterial({map:t,bumpMap:doorBump,bumpScale:.7,color:tint,roughness:.46,metalness:.02,envMapIntensity:.55})};
  const creamInlay=new THREE.MeshStandardMaterial({color:0xcbb88f,roughness:.42,metalness:.15,envMapIntensity:.5});
  const edge=new THREE.MeshStandardMaterial({color:0x4d3423,roughness:.6}),hingeIron=new THREE.MeshStandardMaterial({color:0x1b1c1e,metalness:.75,roughness:.46,envMapIntensity:.6});
@@ -210,7 +273,7 @@ window.createMoroccanGate=function({THREE,Round,parent,wallLeft,wallRight,wallHe
   const top=[[sx,y4],[ex,y4]];for(let i=0;i<=14;i++){const x=ex-(ex-sx)*i/14;top.push([x,leafTop(x)-.075])}top.push([sx,y4]);list.push(top);return list.map(p=>p.map(([x,y])=>[dir*x,y]))};
  const spade=(dir,len)=>shapeOf([[0,-.02],[len-.05,-.016],[len-.03,-.034],[len,0],[len-.03,.034],[len-.05,.016],[0,.02]].map(([x,y])=>[dir*x,y]));
  const hingeY=[.105,.79,1.39];  // hinges sit on the rails, where the joinery is strongest
- const pivots=[-1,1].map(side=>{
+ pivots=[-1,1].map(side=>{
   const dir=-side,pivot=new THREE.Group();pivot.position.set(cx+side*openHalf,base2,axisZ);parent.add(pivot);
   const outline=[[gap,.002],[leafW,.002]];for(let i=0;i<=22;i++){const x=leafW-(leafW-gap)*i/22;outline.push([x,leafTop(x)])}
   const body=shapeOf(outline.map(([x,y])=>[dir*x,y])),holes=panels(dir);holes.forEach(h=>body.holes.push(new THREE.Path(h.map(([x,y])=>new THREE.Vector2(x,y)))));
@@ -251,6 +314,7 @@ window.createMoroccanGate=function({THREE,Round,parent,wallLeft,wallRight,wallHe
  // flush bolts on the back of the left leaf hold it to the sill and the head of the frame
  for(const y of [.14,1.72])add(new Round(.014,.16,.012,1,.004),brass,[leafW-.03,y,-.008],pivots[0].pivot);
 
+ }
  // Contact shading the shadow map is too soft to give: the door sits back in its frame, and the wall meets the ground.
  const [shadeArt,shadeInk]=canvas(256,512);shadeInk.filter='blur(14px)';shadeInk.strokeStyle='rgba(6,8,10,.86)';shadeInk.lineWidth=46;const toUv=([x,y])=>[(x-(cx-.7))/1.4*256,512-(y/2.6)*512];shadeInk.beginPath();archPoints(-frameW-stopW,.1).forEach((p,i)=>{const [u,v]=toUv([p.x,p.y]);shadeInk[i?'lineTo':'moveTo'](u,v)});shadeInk.stroke();
  const recess=add(new THREE.PlaneGeometry(1.4,2.6),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(shadeArt),transparent:true,depthWrite:false,toneMapped:false,color:0xffffff}),[cx,1.3,leafFront+.004]);
@@ -259,9 +323,10 @@ window.createMoroccanGate=function({THREE,Round,parent,wallLeft,wallRight,wallHe
 
  // a pair of wall lamps give the door its own light, stronger at night
  const lampGlass=new THREE.MeshBasicMaterial({color:0xffc27e,toneMapped:false});
- for(const s of [-1,1]){const x=cx+s*1.13,y=1.72;add(new THREE.CylinderGeometry(.05,.05,.012,16).rotateX(Math.PI/2),brass,[x,y+.13,.06]);add(new Round(.012,.012,.14,1,.003),brass,[x,y+.13,.12]);add(new THREE.CylinderGeometry(.07,.05,.13,8),lampGlass,[x,y,.19]);add(new THREE.ConeGeometry(.095,.07,8),brass,[x,y+.1,.19]);add(new THREE.CylinderGeometry(.052,.04,.024,8),brass,[x,y-.075,.19]);for(let k=0;k<4;k++){const a=k*Math.PI/2+.39;add(new THREE.CylinderGeometry(.004,.004,.14,5),brass,[x+Math.cos(a)*.062,y,.19+Math.sin(a)*.062])}}
+ bulbs.push(lampGlass);
+ if(!model)for(const s of [-1,1]){const x=cx+s*1.13,y=1.72;add(new THREE.CylinderGeometry(.05,.05,.012,16).rotateX(Math.PI/2),brass,[x,y+.13,.06]);add(new Round(.012,.012,.14,1,.003),brass,[x,y+.13,.12]);add(new THREE.CylinderGeometry(.07,.05,.13,8),lampGlass,[x,y,.19]);add(new THREE.ConeGeometry(.095,.07,8),brass,[x,y+.1,.19]);add(new THREE.CylinderGeometry(.052,.04,.024,8),brass,[x,y-.075,.19]);for(let k=0;k<4;k++){const a=k*Math.PI/2+.39;add(new THREE.CylinderGeometry(.004,.004,.14,5),brass,[x+Math.cos(a)*.062,y,.19+Math.sin(a)*.062])}}
  const doorLamp=new THREE.PointLight(0xffd3a0,1.6,4.2,2);doorLamp.position.set(cx,2.1,1.05);parent.add(doorLamp);
- const theme=dark=>{doorLamp.intensity=dark?3.4:1.5;lampGlass.color.set(dark?0xffdca8:0xffc27e)};theme(document.documentElement.dataset.theme==='dark');addEventListener('site-theme',e=>theme(e.detail.dark));
+ const theme=dark=>{doorLamp.intensity=dark?3.4:1.5;bulbs.forEach(m=>m.color.set(dark?0xffdca8:0xffc27e));bakedFixed.forEach(m=>m.color.setScalar(dark?.63:1));bakedLeaves.forEach(m=>m.color.setScalar(dark?.72:1))};theme(document.documentElement.dataset.theme==='dark');addEventListener('site-theme',e=>theme(e.detail.dark));
 
  // what the open doors let out: a star medallion on the floor, a pool of light, warm lamps
  const medallion=add(new THREE.CircleGeometry(.72,48),tile(.9,.9),[cx,floor+.004,1.02]);medallion.rotation.x=-Math.PI/2;
@@ -273,8 +338,10 @@ window.createMoroccanGate=function({THREE,Round,parent,wallLeft,wallRight,wallHe
 
  // Heavy timber: the right leaf unlatches and leads, the left follows a beat behind, and both come to rest gently at the hall walls.
  const OPEN=1.6,eased=t=>{t=Math.min(1,Math.max(0,t));return t*t*(3-2*t)};let last=0,ringV=0,ringA=0;
- const swing=(open,flare=0)=>{pivots[1].pivot.rotation.y=-OPEN*eased(open*1.04);pivots[0].pivot.rotation.y=OPEN*eased((open-.06)/.94);ringV+=(open-last)*9;last=open;recess.material.opacity=1-eased(open*7);recess.visible=open<.15;spill.material.opacity=Math.min(1,open+flare*.6);porchLight.intensity=open*3.6+flare*10;hallLight.intensity=3+open*2.6+flare*5};
- const tick=dt=>{if(Math.abs(ringV)<.002&&Math.abs(ringA)<.002)return false;ringV+=(-ringA*38-ringV*5.5)*dt;ringA+=ringV*dt;for(const {rings} of pivots)for(const r of rings)r.rotation.x=ringA;return true};
+ // The workshop kit's export root maps each GLB leaf's -Z axis to page Y.
+ const angle=(leaf,turn)=>{if(model)leaf.rotation.z=-turn;else leaf.rotation.y=turn};
+ const swing=(open,flare=0)=>{angle(pivots[1].pivot,-OPEN*eased(open*1.04));angle(pivots[0].pivot,OPEN*eased((open-.06)/.94));ringV+=(open-last)*9;last=open;recess.material.opacity=1-eased(open*7);recess.visible=open<.15;spill.material.opacity=Math.min(1,open+flare*.6);porchLight.intensity=open*3.6+flare*10;hallLight.intensity=3+open*2.6+flare*5};
+ const tick=dt=>{if(Math.abs(ringV)<.002&&Math.abs(ringA)<.002)return false;ringV+=(-ringA*38-ringV*5.5)*dt;ringA+=ringV*dt;for(const {rings} of pivots)rings.forEach((ring,i)=>{ring.rotation.x=model?(i?1:-1)*Math.min(.24,Math.abs(ringA)):ringA});return true};
  swing(0);
  batch(parent);
  return{swing,tick,doorway:{cx,top:archTop,bottom:base2,half:w/2}};

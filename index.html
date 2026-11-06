@@ -2219,7 +2219,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
       if(el.closest('[hidden]'))return;const rect=el.getBoundingClientRect();if(!rect.width||!rect.height||rect.bottom<=0||rect.top>=innerHeight)return;
       if(slot)slot.rect=rect;draws.push({el,world,view,rect});
     }
-    if(heroVisible&&!workshopHero)measure(hero,scene,camera);for(const slot of atelier.slots)if(slot.visible)measure(slot.el,slot.scene,slot.camera,slot);
+    if(heroVisible&&!workshopHero)measure(hero,scene,camera);for(const slot of atelier.slots)if(slot.visible&&!slot.pending)measure(slot.el,slot.scene,slot.camera,slot);
     return draws;
   }
   function renderPortfolios(draws=measureScenes()){
