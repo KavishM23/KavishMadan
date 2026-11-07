@@ -1,6 +1,6 @@
 /* The room: a set with a floor and three walls, standing in the dark like a stage model.
    Floor and walls take their light from baked maps, so their shadows stay soft at any camera angle. */
-Workshop.room=function(THREE,kit,{bakes=null}={}){
+Workshop.room=function(THREE,kit,{bakes=null,dressed=false}={}){
  const {mesh,box,add,canvasTexture,rng,bar}=kit;
  const RW=10.6,RD=7.6,RH=4.3,HX=RW/2,HZ=RD/2,T=.3;
 
@@ -122,14 +122,14 @@ Workshop.room=function(THREE,kit,{bakes=null}={}){
  },{srgb:false});
 
 
- const shared={tint:{value:new THREE.Color(1,1,1)},lamp:{value:0}};
+ const shared={tint:{value:new THREE.Color(1,1,1)},lamp:{value:0},amb:{value:new THREE.Color(.38,.355,.31)}};
  const white=new THREE.DataTexture(new Uint8Array([255,255,255,255]),1,1);white.needsUpdate=true;
  function baked(map,bump,name,floor=false){
   const mat=new THREE.ShaderMaterial({
    defines:floor?{FLOOR:1}:{},
-   uniforms:{tMap:{value:map},tLight:{value:(bakes&&bakes[name])||white},tBump:{value:bump},tRough:{value:floor?floorRough:null},tMirror:{value:null},uMirror:{value:0},uRes:{value:new THREE.Vector2(1,1)},uGain:{value:bakes&&bakes[name]?1/.4*.8:1},uTexel:{value:floor?.0016:.0022},uTint:shared.tint,uLamp:shared.lamp,uName:{value:0}},
+   uniforms:{tMap:{value:map},tLight:{value:(bakes&&bakes[name])||white},tBump:{value:bump},tRough:{value:floor?floorRough:null},tMirror:{value:null},uMirror:{value:0},uRes:{value:new THREE.Vector2(1,1)},uGain:{value:bakes&&bakes[name]?1/.4*.8:1},uTexel:{value:floor?.0016:.0022},uTint:shared.tint,uLamp:shared.lamp,uAmb:shared.amb,uName:{value:0}},
    vertexShader:'varying vec2 vUv;varying vec3 vW;void main(){vUv=uv;vec4 w=modelMatrix*vec4(position,1.);vW=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}',
-   fragmentShader:`varying vec2 vUv;varying vec3 vW;uniform sampler2D tMap,tLight,tBump;uniform float uGain,uTexel,uName,uLamp;uniform vec3 uTint;
+   fragmentShader:`varying vec2 vUv;varying vec3 vW;uniform sampler2D tMap,tLight,tBump;uniform float uGain,uTexel,uName,uLamp;uniform vec3 uTint,uAmb;
    #ifdef FLOOR
    uniform sampler2D tRough,tMirror;uniform float uMirror;uniform vec2 uRes;
    #endif
@@ -137,7 +137,7 @@ Workshop.room=function(THREE,kit,{bakes=null}={}){
     vec3 c=texture2D(tMap,vUv).rgb,alb=c;
     float b=texture2D(tBump,vUv).r,bx=texture2D(tBump,vUv+vec2(uTexel,0.)).r,by=texture2D(tBump,vUv+vec2(0.,uTexel)).r;
     float relief=1.+(bx-b)*1.5+(b-by)*.9;
-    c*=(texture2D(tLight,vUv).rgb*uGain+vec3(.38,.355,.31))*relief*uTint;
+    c*=(texture2D(tLight,vUv).rgb*uGain+uAmb)*relief*uTint;
     if(uLamp>0.){vec3 L=vec3(.2,3.6,.4)-vW;c+=alb*relief*vec3(1.,.8,.56)*uLamp/(1.+dot(L,L)*.1);}
     if(uName>0.){float l=dot(alb,vec3(.3,.59,.11));c=mix(c,vec3(.8,.62,.4),uName*(1.-smoothstep(.05,.22,l)));}
     #ifdef FLOOR
@@ -183,17 +183,21 @@ Workshop.room=function(THREE,kit,{bakes=null}={}){
  const lx=-HX-T/2-.002;
  edgeBox(T,WY0,RD,shell,[lx,WY0/2,0]);edgeBox(T,RH-WY1,RD,shell,[lx,(RH+WY1)/2,0]);
  edgeBox(T,WY1-WY0,WZ0+HZ,shell,[lx,(WY0+WY1)/2,(WZ0-HZ)/2]);edgeBox(T,WY1-WY0,HZ-WZ1,shell,[lx,(WY0+WY1)/2,(WZ1+HZ)/2]);
- // sill and reveals in plaster
- const reveal=new THREE.MeshStandardMaterial({color:'#b3a48c',roughness:.86});
- edgeBox(.42,.07,WZ1-WZ0+.22,new THREE.MeshStandardMaterial({color:'#a4957e',roughness:.8}),[-HX+.04,WY0-.03,(WZ0+WZ1)/2]);
- edgeBox(T+.02,.02,WZ1-WZ0,reveal,[lx,WY1-.012,(WZ0+WZ1)/2]);
- edgeBox(T+.02,WY1-WY0,.02,reveal,[lx,(WY0+WY1)/2,WZ0-.003]);edgeBox(T+.02,WY1-WY0,.02,reveal,[lx,(WY0+WY1)/2,WZ1+.003]);
+ // sill and reveals in plaster; the Blender dressing has its own recess, sill and frame
+ if(!dressed){
+  const reveal=new THREE.MeshStandardMaterial({color:'#b3a48c',roughness:.86});
+  edgeBox(.42,.07,WZ1-WZ0+.22,new THREE.MeshStandardMaterial({color:'#a4957e',roughness:.8}),[-HX+.04,WY0-.03,(WZ0+WZ1)/2]);
+  edgeBox(T+.02,.02,WZ1-WZ0,reveal,[lx,WY1-.012,(WZ0+WZ1)/2]);
+  edgeBox(T+.02,WY1-WY0,.02,reveal,[lx,(WY0+WY1)/2,WZ0-.003]);edgeBox(T+.02,WY1-WY0,.02,reveal,[lx,(WY0+WY1)/2,WZ1+.003]);
+ }
 
  /* ---- steel window, four lights across and four up, with trees beyond ---- */
  const frame=new THREE.MeshStandardMaterial({color:'#17191c',roughness:.5,metalness:.55});
  const wx=-HX-.2,nz=5,ny=4,zs=(WZ1-WZ0)/nz,ys=(WY1-WY0)/ny;
- for(let i=0;i<=nz;i++)edgeBox(.05,WY1-WY0,i%nz?.04:.07,frame,[wx,(WY0+WY1)/2,WZ0+i*zs]);
- for(let j=0;j<=ny;j++)edgeBox(.05,j%ny?.04:.07,WZ1-WZ0,frame,[wx,WY0+j*ys,(WZ0+WZ1)/2]);
+ if(!dressed){
+  for(let i=0;i<=nz;i++)edgeBox(.05,WY1-WY0,i%nz?.04:.07,frame,[wx,(WY0+WY1)/2,WZ0+i*zs]);
+  for(let j=0;j<=ny;j++)edgeBox(.05,j%ny?.04:.07,WZ1-WZ0,frame,[wx,WY0+j*ys,(WZ0+WZ1)/2]);
+ }
  const glass=mesh(new THREE.PlaneGeometry(WZ1-WZ0,WY1-WY0),new THREE.MeshPhysicalMaterial({color:'#dfe9e6',roughness:.12,transparent:true,opacity:.1,envMapIntensity:.9}),[wx-.01,(WY0+WY1)/2,(WZ0+WZ1)/2],[0,Math.PI/2,0]);add(root,glass);
  const outside=canvasTexture(1400,1100,(g,w,h)=>{
   const R=rng(66),sky=g.createLinearGradient(0,0,0,h);sky.addColorStop(0,'#f6fbf7');sky.addColorStop(.6,'#e7f0e0');sky.addColorStop(1,'#b9c79a');g.fillStyle=sky;g.fillRect(0,0,w,h);

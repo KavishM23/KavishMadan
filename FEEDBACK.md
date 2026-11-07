@@ -264,3 +264,12 @@ Quiet ambient music now plays behind the site. It is made in the browser rather 
 - Replaced the procedural leaves, arch stones, plaster, timber jamb, threshold and sconces with a Blender 4.2 LTS asset. The existing hall, stairs and controls retain their geometry and timing.
 - The fixed joinery has a 1280 px diffuse bake. Each leaf and its ring pulls share a separate 1024 px bake with the frame and opposite leaf excluded. Night mode dims the baked surfaces and keeps the existing stronger live sconce light and warmer glass.
 - Rebuild from the repository root with `assets/models/code/src/build-gate.sh`, using Blender 4.2 LTS and glTF Transform on PATH, or set `BLENDER` and `GLTF_TRANSFORM` to their executables. The script writes the editable Blender source and the Meshopt GLB.
+
+## The Workshop, dressed in Blender
+- The home room is now built in Blender with its light baked, like the Builds room. The car and everything you can click are still live.
+- Left bench: Strata half-built on a cutting mat from the real rib outlines, caliper, fastener tray, hex keys, battery lead, marked-up sheet. Tools in use are on the bench; their hooks on the pegboard are empty, with painted outlines.
+- Around the car: tool chest with a setup sheet, pit board, trolley jack, tape marks where the car sits. The car's drive path is kept clear, and the build stops if anything ends up in it.
+- Shelving, window, conduit, sockets, skirting, pinboard of real Strata photos, sheet stock, extinguisher and a shop vacuum fill the edges.
+- Night bakes its own light: warm lamp pools and a cool window.
+- The guitar's pickguard now sits inside the body, the strings run just above the frets, and the stand's yoke holds the neck.
+- Rebuild with `assets/models/workshop/rebuild.sh`. Details, and what is real and what is set dressing, are in `assets/models/workshop/README.md`.

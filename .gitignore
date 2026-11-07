@@ -4,3 +4,6 @@ research/
 .claude/
 *.blend1
 __pycache__/
+
+# Workshop rebuild scratch
+assets/models/workshop/.build/

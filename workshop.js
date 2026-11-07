@@ -8,9 +8,8 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { SMAAPass } from 'three/addons/postprocessing/SMAAPass.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { installMP44 } from './workshop-mp44.js';
+import { loadDressing } from './workshop-dress.js';
 
 const Grade={
  uniforms:{tDiffuse:{value:null},uTime:{value:0},uVignette:{value:.2},uGrain:{value:.024},uLift:{value:1},uIris:{value:3},uStars:{value:0},uAspect:{value:1.6},uDark:{value:0},uBg:{value:new THREE.Color(.86,.77,.65)}},
@@ -113,37 +112,59 @@ export function createMirror(renderer,scene,room,camera){
  };
 }
 
+/* A soft shadow drawn from the car's own low parts and carried by its rig, so it drives away with the car
+   and nothing is left behind on the baked floor. Wheels get a darker, tighter contact patch. */
+function contactShadow(rig){
+ rig.updateMatrixWorld(true);
+ const inv=rig.matrixWorld.clone().invert(),v=new THREE.Vector3(),pts=[],wheels=[];
+ rig.traverse(o=>{
+  if(!o.isMesh||!o.visible||o.material?.visible===false)return;
+  const pa=o.geometry.attributes.position,idx=o.geometry.index,n=idx?idx.count:pa.count,step=Math.max(1,Math.floor(n/900));
+  for(let i=0;i<n;i+=step){v.fromBufferAttribute(pa,idx?idx.getX(i):i).applyMatrix4(o.matrixWorld);if(v.y>.42)continue;const h=v.y;v.applyMatrix4(inv);pts.push([v.x,v.z,h])}
+ });
+ rig.traverse(o=>{if(o.userData.moving&&o.children.length&&o.parent&&!o.isMesh&&o.position.lengthSq()>.01&&o.children[0]?.userData?.moving){o.getWorldPosition(v);if(v.y<.5){v.applyMatrix4(inv);wheels.push([v.x,v.z])}}});
+ let x0=1e9,x1=-1e9,z0=1e9,z1=-1e9;for(const [x,z] of pts){x0=Math.min(x0,x);x1=Math.max(x1,x);z0=Math.min(z0,z);z1=Math.max(z1,z)}
+ const pad=.35;x0-=pad;x1+=pad;z0-=pad;z1+=pad;
+ const W=256,H=Math.round(256*(z1-z0)/(x1-x0)),c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
+ const tmp=document.createElement('canvas');tmp.width=W;tmp.height=H;const t=tmp.getContext('2d');
+ const px=x=>(x-x0)/(x1-x0)*W,pz=z=>(z-z0)/(z1-z0)*H;
+ for(const [x,z,h] of pts){t.fillStyle=`rgba(0,0,0,${.1*(1-h/.42)})`;t.beginPath();t.arc(px(x),pz(z),5,0,7);t.fill()}
+ g.filter='blur(9px)';g.drawImage(tmp,0,0);g.filter='blur(3px)';
+ for(const [x,z] of wheels){g.fillStyle='rgba(0,0,0,.7)';g.beginPath();g.ellipse(px(x),pz(z),W*.07,H*.04,0,0,7);g.fill()}
+ g.filter='none';
+ const tex=new THREE.CanvasTexture(c);
+ const plane=new THREE.Mesh(new THREE.PlaneGeometry(x1-x0,z1-z0),new THREE.MeshBasicMaterial({map:tex,transparent:true,opacity:.8,depthWrite:false,toneMapped:false}));
+ plane.rotation.x=-Math.PI/2;plane.position.set((x0+x1)/2,.006/Math.max(.001,rig.scale.y),(z0+z1)/2);plane.renderOrder=-1;plane.userData.noAO=true;
+ return plane;
+}
+
 export async function buildScene({renderer,bakes,texScale=1}){
  const anisotropy=Math.min(16,renderer.capabilities.getMaxAnisotropy());
  const kit=Workshop.kit(THREE,RoundedBoxGeometry,{anisotropy,texScale});
  const scene=new THREE.Scene();scene.background=new THREE.Color('#efe4d3');
- const room=Workshop.room(THREE,kit,{bakes});scene.add(room.root);
+ // The dressed room comes from the Blender source with its light baked in. If it fails to load, the
+ // older procedural bench, stool, window and shelving are built instead, so the room stays usable.
+ let dress=null;
+ try{dress=await loadDressing(renderer,{phone:texScale<1})}catch(error){console.warn('Could not load the Workshop dressing; using the procedural room.',error)}
+ const room=Workshop.room(THREE,kit,{bakes,dressed:!!dress});scene.add(room.root);
  flatten(room.root);
- // Fixed joinery comes from the editable Blender source. Its load is optional:
- // the original room and all links remain usable if this small GLB fails.
- try{
-  const loader=new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
-  const detail=(await loader.loadAsync(`assets/models/workshop/workshop/detail${texScale<1?'-mobile':''}.glb`)).scene;
-  // Their contact shadows are already in the Cycles room maps. Recasting them
-  // with the moving-object rig causes shadow-map aliasing on narrow screens.
-  detail.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=true}});
-  room.root.add(detail);
- }catch(error){console.warn('Could not load Workshop joinery.',error)}
+ if(dress)scene.add(dress.root);
  const car=Workshop.car(THREE,kit),carRig=new THREE.Group();
  try{await installMP44(car,{anisotropy})}catch(error){console.warn('Could not load the MP4/4 model; using the workshop car instead.',error)}
  car.position.z=1.7;carRig.add(car);carRig.scale.setScalar(CAR.scale);carRig.position.set(...CAR.pos);carRig.rotation.y=CAR.rot;scene.add(carRig);
- const props=Workshop.props(THREE,kit,car.userData.parts);
+ const props=Workshop.props(THREE,kit,car.userData.parts,{dressed:!!dress});
  const pages=await LOAD('img/workshop-sketchbook.webp');
  if(pages){pages.colorSpace=THREE.SRGBColorSpace;pages.anisotropy=anisotropy}
  const items={};
- for(const [key,make] of Object.entries({workbench:()=>props.workbench(),stool:()=>props.stool(),sillPot:()=>props.sillPot(),guitar:()=>props.guitar(),tablet:()=>props.tablet(),book:()=>props.sketchbook(pages),pencil:()=>props.pencil(),pick:()=>props.pick(),satellite:()=>props.satellite(),trophy:()=>props.trophy(),tyre:()=>props.tyre(),shelving:()=>props.shelving(),plant:()=>props.plant(),crate:()=>props.crate()})){
+ for(const [key,make] of Object.entries({...(dress?{}:{workbench:()=>props.workbench(),stool:()=>props.stool(),sillPot:()=>props.sillPot()}),guitar:()=>props.guitar(),tablet:()=>props.tablet(),book:()=>props.sketchbook(pages),pencil:()=>props.pencil(),pick:()=>props.pick(),satellite:()=>props.satellite(),trophy:()=>props.trophy(),tyre:()=>props.tyre(),shelving:()=>props.shelving(),plant:()=>props.plant(),crate:()=>props.crate()})){
   const o=make(),L=PLACES[key];o.position.set(...L.p);o.rotation.set(...L.r);o.scale.setScalar(L.s);scene.add(o);items[key]=o;
  }
  for(const o of Object.values(items))flatten(o);
  flatten(car);
  carRig.userData.play=car.userData.play;carRig.userData.playFor=car.userData.playFor;
+ carRig.add(contactShadow(carRig));
  items.car=carRig;
- return {scene,room,items,kit};
+ return {scene,room,items,kit,dress};
 }
 
 /* light the objects: a soft key from the window and a tighter shaft of sun */
@@ -181,6 +202,9 @@ export function buildComposer(renderer,scene,camera,w,h,{ao=true,samples=4,aoDiv
   gtao.updateGtaoMaterial({radius:.34,distanceExponent:1.5,thickness:.7,scale:1.25,samples:aoSamples,distanceFallOff:1,screenSpaceRadius:false});
   gtao.updatePdMaterial({lumaPhi:10,depthPhi:2,normalPhi:3,radius:3,radiusExponent:1.1,rings:2,samples:denoise});
   gtao.blendIntensity=.7;composer.addPass(gtao);
+  // Soft transparent cards (the car's contact shadow) must not enter the AO normal pass, or they leave a rectangle.
+  const aoRender=gtao.render.bind(gtao);
+  gtao.render=(...args)=>{const skip=[];scene.traverse(o=>{if(o.userData.noAO&&o.visible){o.visible=false;skip.push(o)}});aoRender(...args);skip.forEach(o=>o.visible=true)};
  }
  composer.addPass(new OutputPass());
  if(smaa)composer.addPass(new SMAAPass(w,h));

@@ -1,6 +1,7 @@
 /* Runs the workshop: the home screen, what each model does when touched, and the walk into each page. */
 import * as THREE from 'three';
 import {buildScene,lightScene,reflectionsFrom,buildComposer,createMirror,TARGETS,TOYS,CAR} from './workshop.js';
+import {LIGHT} from './workshop-dress.js';
 
 const R=document.documentElement,hero=document.getElementById('hero'),canvas=document.getElementById('workshop3d');
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -65,7 +66,10 @@ async function start(){
  await Promise.all(names.map(async n=>{bakes[n]=await loadBake('day',n)||await new Promise(res=>new THREE.TextureLoader().load(`img/workshop-light-${n}.webp`,t=>{t.colorSpace=THREE.SRGBColorSpace;res(t)},undefined,()=>res(null)))}));
  await frame();
  progress('Building workshop objects…');
- const {scene,room,items}=await buildScene({renderer,bakes,texScale:phone?.5:1});
+ const {scene,room,items,dress}=await buildScene({renderer,bakes,texScale:phone?.5:1});
+ // With the Blender dressing, the room planes carry its baked light at the level the manifest records.
+ const surfaceLight=theme=>{if(!dress)return;for(const n of names)room.surfaces[n].material.uniforms.uGain.value=dress.surfaceGain(theme,n);room.shared.amb.value.setRGB(...LIGHT.amb)};
+ surfaceLight('day');
  await frame();
  const lights=lightScene(scene,{shadowSize:phone?1024:2048});
  progress('Preparing the first frame…');
@@ -106,7 +110,8 @@ async function start(){
  addProxy('pencil',worldBox(items.pencil).expandByVector(new THREE.Vector3(.08,.1,.08)));
  addProxy('pick',worldBox(items.pick).expandByVector(new THREE.Vector3(.12,.12,.12)));
  addProxy('plant',worldBox(items.plant));
- addProxy('cases',new THREE.Box3(V([4.35,.2,-3.7]),V([5.2,1.72,-.8])));
+ // Each flight case that opens is its own target, so the dressing between them stays decoration.
+ for(const lid of items.shelving.userData.parts.lids){const b=worldBox(lid);b.min.y-=(b.max.y-b.min.y)*1.65;addProxy('cases',b)}
  {const m=new THREE.Mesh(new THREE.BoxGeometry(2.2,1.45,6.4),probe);m.position.set(0,.72,-1.72+1.7);items.car.add(m);m.userData.key='car';proxies.push(m);m.userData.top=new THREE.Vector3(CAR.pos[0],1.34,CAR.pos[2])}
  scene.updateMatrixWorld(true);
 
@@ -434,7 +439,7 @@ async function start(){
  function setNight(dark){
   if(dark&&!nightBakes)loadNight();
   const bakedNight=dark&&nightBakes&&names.every(n=>nightBakes[n]);
-  applyLightmaps(bakedNight?nightBakes:bakes);
+  applyLightmaps(bakedNight?nightBakes:bakes);surfaceLight(bakedNight?'night':'day');dress?.setTheme(dark).then(wake);
   scene.background.set(dark?'#17272b':'#efe4d3');room.shared.tint.value.setRGB(dark&&!bakedNight ? .1 : 1,dark&&!bakedNight ? .13 : 1,dark&&!bakedNight ? .2 : 1);room.shared.lamp.value=dark&&!bakedNight ? .4 : 0;room.surfaces.back.material.uniforms.uName.value=dark?.62:0;room.view.material.uniforms.uSky.value.setRGB(dark?.05:1,dark?.08:1,dark?.2:1);
   lights.sun.intensity=dark?0:1.7;lights.sky.intensity=dark?.28:1.25;lights.fill.intensity=dark?.4:1.3;lights.lamp.intensity=dark?22:0;envBase.forEach((v,m)=>{m.envMapIntensity=v*(dark?.34:1)});wake();
  }

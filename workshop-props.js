@@ -1,5 +1,5 @@
 /* Everything around the car: each prop is modelled at its real size, in metres, and stands on y=0. */
-Workshop.props=function(THREE,kit,carParts){
+Workshop.props=function(THREE,kit,carParts,{dressed=false}={}){
  const {loft,skin,bar,blade,tube,mesh,box,add,worn,canvasTexture,rng,lerp,smooth}=kit;
  const std=(color,roughness=.5,metalness=0,extra={})=>new THREE.MeshPhysicalMaterial({color,roughness,metalness,...extra});
  const chrome=std('#d8dadc',.13,1),nickel=std('#b9b6ae',.22,1),gold=std('#c9a257',.26,1),blackPlastic=std('#0f1012',.42),rubberFoot=std('#111',.85);
@@ -46,24 +46,24 @@ Workshop.props=function(THREE,kit,carParts){
   add(inst,mesh(new THREE.ShapeGeometry(binding,24),std('#e3d4b0',.4),[0,.205,.0382]));
   const cream=std('#e4d6b4',.36),mahog=std('#5b2e18',.28,0,{clearcoat:.7}),rose=std('#20120c',.5);
   const Y0=.205+.86*S; // the neck joins near the top of the body
-  add(inst,box(.046,.47,.022,mahog,[0,Y0+.2,.012],.009));
-  add(inst,box(.044,.45,.0065,rose,[0,Y0+.2,.0263],.002));
+  add(inst,box(.046,.47,.022,mahog,[0,Y0+.2,.028],.009));
+  add(inst,box(.044,.45,.0065,rose,[0,Y0+.2,.0423],.002));
   for(let i=0;i<22;i++){
    const y=Y0+.42-.42*(1-Math.pow(.945,i+1))*1.4;
    if(y<Y0-.02)continue;
-   add(inst,box(.0452,.0016,.0024,nickel,[0,y,.0303],.0006));
+   add(inst,box(.0452,.0016,.0024,nickel,[0,y,.0463],.0006));
    if([2,4,6,8,11,14,16,18,20].includes(i)){
     const inlay=new THREE.Shape();inlay.moveTo(-.014,-.004);inlay.lineTo(.014,-.004);inlay.lineTo(.011,.004);inlay.lineTo(-.011,.004);inlay.closePath();
-    add(inst,mesh(new THREE.ShapeGeometry(inlay),std('#efe6cf',.32),[0,y-.009,.0299]));
+    add(inst,mesh(new THREE.ShapeGeometry(inlay),std('#efe6cf',.32),[0,y-.009,.0459]));
    }
   }
-  const nut=box(.046,.004,.005,cream,[0,Y0+.426,.03],.001);add(inst,nut);
+  const nut=box(.046,.004,.005,cream,[0,Y0+.426,.046],.001);add(inst,nut);
   // headstock
   const hs=new THREE.Shape();hs.moveTo(-.024,0);hs.bezierCurveTo(-.05,.03,-.062,.1,-.054,.165);hs.lineTo(-.02,.18);hs.lineTo(0,.172);hs.lineTo(.02,.18);hs.lineTo(.054,.165);hs.bezierCurveTo(.062,.1,.05,.03,.024,0);hs.closePath();
   const headGeo=new THREE.ExtrudeGeometry(hs,{depth:.012,bevelEnabled:true,bevelSize:.002,bevelThickness:.002,bevelSegments:2,curveSegments:24});
   {const uv=headGeo.attributes.uv,p=headGeo.attributes.position;for(let i=0;i<p.count;i++)uv.setXY(i,(p.getX(i)+.06)/.12,p.getY(i)/.18)}
   const logo=canvasTexture(512,768,(g,w,h)=>{g.fillStyle='#100c0b';g.fillRect(0,0,w,h);g.fillStyle='#e7dcc0';g.font='italic 700 108px Georgia,serif';g.textAlign='center';g.fillText('Gibson',w/2,235);g.beginPath();g.moveTo(w/2,300);g.bezierCurveTo(w/2+44,345,w/2+30,405,w/2,435);g.bezierCurveTo(w/2-30,405,w/2-44,345,w/2,300);g.fill()});
-  const head=mesh(headGeo,[new THREE.MeshPhysicalMaterial({map:logo,roughness:.24,clearcoat:.8}),std('#24140d',.28,0,{clearcoat:.7})],[0,Y0+.43,.01],[-.2,0,0]);add(inst,head);
+  const head=mesh(headGeo,[new THREE.MeshPhysicalMaterial({map:logo,roughness:.24,clearcoat:.8}),std('#24140d',.28,0,{clearcoat:.7})],[0,Y0+.43,.026],[-.2,0,0]);add(inst,head);
   for(const side of [-1,1])for(let i=0;i<3;i++){
    const y=.05+i*.042;head.add(bar([side*.03,y,.0],[side*.074,y,.0],.0033,chrome,10));
    const tip=box(.016,.012,.006,cream,[side*.082,y,.0],.003);head.add(tip);
@@ -73,9 +73,9 @@ Workshop.props=function(THREE,kit,carParts){
   const PY=.205;
   for(const y of [.075,.022*-1+.145]){}
   for(const [y] of [[.125],[.04]]){
-   add(inst,box(.09,.044,.006,cream,[0,PY+y,.042],.008));
-   add(inst,box(.072,.034,.012,nickel,[0,PY+y,.046],.004));
-   for(let i=0;i<6;i++)add(inst,mesh(new THREE.CylinderGeometry(.002,.002,.002,8),chrome,[-.027+i*.0108,PY+y,.0526],[Math.PI/2,0,0]));
+   add(inst,box(.09,.044,.006,cream,[0,PY+y,.041],.008));
+   add(inst,box(.072,.034,.01,nickel,[0,PY+y,.0435],.004));
+   for(let i=0;i<6;i++)add(inst,mesh(new THREE.CylinderGeometry(.002,.002,.002,8),chrome,[-.027+i*.0108,PY+y,.0491],[Math.PI/2,0,0]));
   }
   add(inst,box(.082,.016,.012,nickel,[0,PY-.018,.044],.004));
   add(inst,box(.086,.016,.012,nickel,[0,PY-.06,.044],.005));
@@ -90,16 +90,22 @@ Workshop.props=function(THREE,kit,carParts){
   add(inst,mesh(new THREE.CylinderGeometry(.0045,.0045,.003,24),nickel,[switchX,switchY,.042],[Math.PI/2,0,0]));
   add(inst,bar([switchX,switchY,.043],[switchX-.003,switchY+.009,.055],.0022,nickel,10));
   add(inst,mesh(new THREE.SphereGeometry(.0032,12,8),cream,[switchX-.003,switchY+.009,.055]));
-  // A Les Paul guard sits beside and between the pickup rings, not above them.
-  const guard=new THREE.Shape();guard.moveTo(.047,.145);guard.lineTo(.060,.145);guard.lineTo(.060,.103);guard.lineTo(.071,.094);guard.lineTo(.096,.088);guard.lineTo(.095,.021);guard.lineTo(.080,.012);guard.lineTo(.047,.012);guard.lineTo(.047,.018);guard.lineTo(.053,.018);guard.lineTo(.053,.062);guard.lineTo(.047,.068);guard.closePath();
-  add(inst,mesh(new THREE.ExtrudeGeometry(guard,{depth:.0018,bevelEnabled:true,bevelSize:.0006,bevelThickness:.0005,bevelSegments:2,curveSegments:16}),cream,[0,PY,.0405]));
-  for(const [x,y] of [[.055,.137],[.085,.026]])add(inst,mesh(new THREE.SphereGeometry(.0018,10,8),chrome,[x,PY+y,.043]));
+  // A Les Paul guard sits on the treble side beside the pickup rings. Its outer edge is traced from the
+  // body outline, a few millimetres in, so it never overhangs the waist, and it lies on the top.
+  const edgeAt=y=>{const n=(y-.205)/1,pts=sh.getPoints(160);let best=0;for(let i=0;i<pts.length;i++){const a=pts[i],b=pts[(i+1)%pts.length];if(a.x>0&&b.x>0&&(a.y-n)*(b.y-n)<=0&&a.y!==b.y){const x=a.x+(b.x-a.x)*(n-a.y)/(b.y-a.y);best=Math.max(best,x)}}return best};
+  const guard=new THREE.Shape(),gy0=.014,gy1=.142,steps=10;
+  guard.moveTo(.049,PY+gy1-PY);
+  for(let i=0;i<=steps;i++){const y=gy1-(gy1-gy0)*i/steps;guard.lineTo(Math.max(.056,Math.min(.088,edgeAt(PY+y)-.007)),y)}
+  guard.lineTo(.049,gy0);guard.lineTo(.049,.018);guard.lineTo(.054,.022);guard.lineTo(.054,.062);guard.lineTo(.049,.066);guard.closePath();
+  add(inst,mesh(new THREE.ExtrudeGeometry(guard,{depth:.0016,bevelEnabled:true,bevelSize:.0006,bevelThickness:.0004,bevelSegments:2,curveSegments:16}),cream,[0,PY,.0386]));
+  for(const [x,y] of [[.053,.134],[.06,.024]])add(inst,mesh(new THREE.SphereGeometry(.0018,10,8),chrome,[x,PY+y,.0412]));
   // strings
   const sMat=std('#d5d3cc',.22,1);
   add(inst,strs);for(let i=0;i<6;i++){
-   const a=-.0165+i*.0066,b=-.02+i*.008,r=.0005+.00016*(5-i),joint=[a,Y0+.07,.058];
-   add(strs,bar([b,PY-.06,.058],joint,r,sMat,8));
-   add(strs,bar(joint,[a,Y0+.428,.034],r,sMat,8));
+   // tailpiece, over its saddle, then straight to the nut: a few millimetres above the frets
+   const a=-.0165+i*.0066,b=-.026+i*.0104,r=.0005+.00016*(5-i),saddle=[b,PY-.018,.0538];
+   add(strs,bar([b,PY-.06,.0505],saddle,r,sMat,8));
+   add(strs,bar(saddle,[a,Y0+.428,.0492],r,sMat,8));
    const side=i<3?-1:1,peg=i<3?2-i:i-3;
    head.add(bar([a,0,.026],[side*.03,.05+peg*.042,.022],r,sMat,8));
   }
@@ -109,16 +115,16 @@ Workshop.props=function(THREE,kit,carParts){
   inst.position.set(0,.115,.035);inst.rotation.x=-.145;
   // stand
   const steel=std('#101114',.42,.5),foam=std('#191919',.9);
-  add(root,bar([0,.09,-.1],[0,.64,-.2],.011,steel));
-  add(root,bar([0,.3,-.135],[0,.3,.05],.009,steel));
+  add(root,bar([0,.09,-.1],[0,.62,-.05],.011,steel));
+  add(root,bar([0,.3,-.13],[0,.3,-.04],.009,steel));
   add(root,bar([0,.1,-.1],[0,.098,-.04],.011,steel));
-  add(root,bar([-.03,.64,-.2],[.03,.64,-.2],.008,foam));
+  add(root,bar([-.03,.625,-.047],[.03,.625,-.047],.008,foam));
   for(const s of [-1,1]){
    add(root,bar([0,.1,-.1],[s*.21,.012,.11],.011,steel));
    add(root,bar([0,.1,-.1],[s*.04,.012,-.33],.011,steel));
    add(root,bar([0,.098,-.04],[s*.12,.098,.04],.011,steel));
    add(root,bar([s*.12,.098,.04],[s*.13,.125,.09],.011,foam));
-   add(root,bar([s*.022,.64,-.2],[s*.03,.72,-.19],.008,foam));
+   add(root,bar([s*.024,.625,-.047],[s*.03,.69,-.032],.008,foam));
    add(root,mesh(new THREE.SphereGeometry(.018,16,12),rubberFoot,[s*.21,.012,.11]));
   }
   // leans forward when you reach for it; a strum rocks it on the stand and blurs the strings
@@ -366,15 +372,18 @@ Workshop.props=function(THREE,kit,carParts){
   const root=new THREE.Group(),W=3.1,D=.62,H=2.9,steel=std('#2a2c2e',.46,.75),binderRoot=new THREE.Group(),lids=[],binders=[];
   const plank=canvasTexture(1024,128,(g,w,h)=>{const R=rng(7);g.fillStyle='#6a4426';g.fillRect(0,0,w,h);for(let i=0;i<200;i++){g.strokeStyle=`rgba(${R()>.5?'150,104,62':'36,20,10'},${.08+R()*.25})`;g.lineWidth=.6+R()*2;const y=R()*h;g.beginPath();g.moveTo(0,y);g.bezierCurveTo(340,y+R()*10-5,680,y+R()*10-5,w,y);g.stroke()}});
   const timber=new THREE.MeshStandardMaterial({map:plank,roughness:.6});
-  for(const x of [-W/2,W/2,0])for(const z of [-D/2,D/2]){
-   add(root,box(.05,H,.05,steel,[x,H/2,z],.004));
+  // The Blender dressing supplies the frame and boards; only the things on them are built here.
+  if(!dressed){
+   for(const x of [-W/2,W/2,0])for(const z of [-D/2,D/2]){
+    add(root,box(.05,H,.05,steel,[x,H/2,z],.004));
+   }
+   const levels=[.24,1.06,1.92,2.76];
+   for(const y of levels){
+    add(root,box(W+.04,.05,D+.03,timber,[0,y,0],.006));
+    add(root,box(W+.05,.04,.012,steel,[0,y-.05,D/2+.012],.002));
+   }
+   for(const x of [-W/2,W/2])for(const y of [.6,1.5,2.3]){add(root,bar([x,y,-D/2],[x,y+.4,D/2],.008,steel,8));add(root,bar([x,y+.4,-D/2],[x,y,D/2],.008,steel,8))}
   }
-  const levels=[.24,1.06,1.92,2.76];
-  for(const y of levels){
-   add(root,box(W+.04,.05,D+.03,timber,[0,y,0],.006));
-   add(root,box(W+.05,.04,.012,steel,[0,y-.05,D/2+.012],.002));
-  }
-  for(const x of [-W/2,W/2])for(const y of [.6,1.5,2.3]){add(root,bar([x,y,-D/2],[x,y+.4,D/2],.008,steel,8));add(root,bar([x,y+.4,-D/2],[x,y,D/2],.008,steel,8))}
   // aluminium flight cases
   const alu=std('#8b8d8e',.42,.9),trim=std('#3c3d3f',.5,.6);
   function fcase(w,h,d,p,c=alu,opens=true){
