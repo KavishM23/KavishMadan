@@ -96,7 +96,13 @@ Workshop.props=function(THREE,kit,carParts){
   for(const [x,y] of [[.055,.137],[.085,.026]])add(inst,mesh(new THREE.SphereGeometry(.0018,10,8),chrome,[x,PY+y,.043]));
   // strings
   const sMat=std('#d5d3cc',.22,1);
-  add(inst,strs);for(let i=0;i<6;i++){const a=-.0165+i*.0066,b=-.02+i*.008,r=.0005+.00016*(5-i),joint=[a,Y0+.07,.058];add(strs,bar([b,PY-.06,.058],joint,r,sMat,8));add(strs,bar(joint,[a,Y0+.428,.034],r,sMat,8))}
+  add(inst,strs);for(let i=0;i<6;i++){
+   const a=-.0165+i*.0066,b=-.02+i*.008,r=.0005+.00016*(5-i),joint=[a,Y0+.07,.058];
+   add(strs,bar([b,PY-.06,.058],joint,r,sMat,8));
+   add(strs,bar(joint,[a,Y0+.428,.034],r,sMat,8));
+   const side=i<3?-1:1,peg=i<3?2-i:i-3;
+   head.add(bar([a,0,.026],[side*.03,.05+peg*.042,.022],r,sMat,8));
+  }
   // A pick passes across the strings when the guitar is selected.
   const pickShape=new THREE.Shape();pickShape.moveTo(0,.018);pickShape.bezierCurveTo(.018,.02,.023,.009,.017,-.003);pickShape.quadraticCurveTo(.008,-.017,0,-.023);pickShape.quadraticCurveTo(-.008,-.017,-.017,-.003);pickShape.bezierCurveTo(-.023,.009,-.018,.02,0,.018);
   const pick=mesh(new THREE.ExtrudeGeometry(pickShape,{depth:.002,bevelEnabled:true,bevelSize:.001,bevelThickness:.001,bevelSegments:2,curveSegments:16}),std('#ad5a40',.32,0,{clearcoat:.65}),[-.08,PY+.076,.063]);pick.userData.moving=true;pick.visible=false;add(inst,pick);
@@ -198,6 +204,26 @@ Workshop.props=function(THREE,kit,carParts){
   const pivot=new THREE.Group();pivot.position.set(0,.014,.07);pivot.rotation.x=-tilt;pivot.userData.moving=true;add(root,pivot);
   add(pivot,box(W,H,.0065,std('#2a2c30',.4,.8),[0,H/2,0],.012));
   add(pivot,box(W-.002,H-.002,.002,std('#050507',.25),[0,H/2,.0029],.011));
+  // The recessed display closes against a real keyboard deck on a pinned hinge.
+  const deckMetal=std('#30373c',.48,.68),keyMat=std('#171b20',.72),keyLegend=std('#b8c2c4',.64);
+  add(root,box(W+.012,.012,.172,deckMetal,[0,.008,.153],.006));
+  add(root,box(W-.02,.002,.101,keyMat,[0,.015,.117],.002));
+  for(let row=0;row<4;row++)for(let col=0;col<12;col++){
+   const x=-.122+col*.0221,z=.078+row*.021;
+   const wide=row===3&&col>=4&&col<=7;
+   if(row===3&&col>4&&col<7)continue;
+   add(root,box(wide?.073:.018,.0025,.014,keyMat,[wide?x+.031:x,.017,z],.002));
+   if(!wide&&row<3&&col%2===0)add(root,box(.006,.0004,.001,keyLegend,[x,.0185,z-.004],0));
+  }
+  add(root,box(.078,.0007,.042,std('#50595d',.55,.55),[0,.015,.197],.003));
+  add(root,box(.075,.0004,.039,deckMetal,[0,.0154,.197],.003));
+  for(const x of [-.094,.094]){
+   add(root,mesh(new THREE.CylinderGeometry(.006,.006,.038,12),chrome,[x,.014,.07],[0,0,Math.PI/2]));
+   add(root,mesh(new THREE.SphereGeometry(.004,10,8),keyMat,[x,.014,.07]));
+  }
+  add(root,box(.205,.008,.009,deckMetal,[0,.014,.07],.003));
+  add(pivot,mesh(new THREE.CylinderGeometry(.0018,.0018,.002,10),keyMat,[0,H-.007,.005],[Math.PI/2,0,0]));
+  for(const x of [-.132,.132])for(const z of [.09,.21])add(root,box(.014,.002,.012,rubberFoot,[x,.001,z],.002));
   const scr=mesh(new THREE.PlaneGeometry(W-.016,H-.016),new THREE.MeshBasicMaterial({map:screen,toneMapped:true,color:'#f2f2f2'}),[0,H/2,.0042]);add(pivot,scr);
   const smudge=canvasTexture(512,384,(g,w,h)=>{const R=rng(13);g.fillStyle='#fff';g.fillRect(0,0,w,h);for(let i=0;i<46;i++){g.fillStyle=`rgba(90,90,90,${.04+R()*.1})`;g.beginPath();g.ellipse(R()*w,R()*h,16+R()*20,20+R()*26,R()*3,0,7);g.fill()}},{srgb:false});
   const glass=mesh(new THREE.PlaneGeometry(W-.004,H-.004),new THREE.MeshPhysicalMaterial({color:'#000',roughness:.09,roughnessMap:smudge,metalness:0,transparent:true,opacity:.22,clearcoat:1,clearcoatRoughness:.06,envMapIntensity:1.5}),[0,H/2,.0048]);add(pivot,glass);

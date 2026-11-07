@@ -8,6 +8,8 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { SMAAPass } from 'three/addons/postprocessing/SMAAPass.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { installMP44 } from './workshop-mp44.js';
 
 const Grade={
@@ -71,7 +73,7 @@ export function flatten(root){
  const inverse=root.matrixWorld.clone().invert(),groups=new Map(),movers=[];
  (function walk(o){for(const c of o.children){
   if(c.userData.moving){movers.push(c);continue}
-  if(c.isMesh&&!c.isInstancedMesh&&c.visible&&!Array.isArray(c.material)&&!c.material.transparent&&!c.material.isShaderMaterial&&c.material.colorWrite!==false){
+  if(c.isMesh&&!c.isInstancedMesh&&c.visible&&!Array.isArray(c.material)&&!c.material.transparent&&!c.material.isShaderMaterial&&!c.material.userData?.noMerge&&c.material.colorWrite!==false){
    const key=c.material.uuid+c.castShadow+c.receiveShadow;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(c);
   }
   walk(c);
@@ -116,6 +118,17 @@ export async function buildScene({renderer,bakes,texScale=1}){
  const kit=Workshop.kit(THREE,RoundedBoxGeometry,{anisotropy,texScale});
  const scene=new THREE.Scene();scene.background=new THREE.Color('#efe4d3');
  const room=Workshop.room(THREE,kit,{bakes});scene.add(room.root);
+ flatten(room.root);
+ // Fixed joinery comes from the editable Blender source. Its load is optional:
+ // the original room and all links remain usable if this small GLB fails.
+ try{
+  const loader=new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+  const detail=(await loader.loadAsync(`assets/models/workshop/workshop/detail${texScale<1?'-mobile':''}.glb`)).scene;
+  // Their contact shadows are already in the Cycles room maps. Recasting them
+  // with the moving-object rig causes shadow-map aliasing on narrow screens.
+  detail.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=true}});
+  room.root.add(detail);
+ }catch(error){console.warn('Could not load Workshop joinery.',error)}
  const car=Workshop.car(THREE,kit),carRig=new THREE.Group();
  try{await installMP44(car,{anisotropy})}catch(error){console.warn('Could not load the MP4/4 model; using the workshop car instead.',error)}
  car.position.z=1.7;carRig.add(car);carRig.scale.setScalar(CAR.scale);carRig.position.set(...CAR.pos);carRig.rotation.y=CAR.rot;scene.add(carRig);
@@ -127,7 +140,7 @@ export async function buildScene({renderer,bakes,texScale=1}){
   const o=make(),L=PLACES[key];o.position.set(...L.p);o.rotation.set(...L.r);o.scale.setScalar(L.s);scene.add(o);items[key]=o;
  }
  for(const o of Object.values(items))flatten(o);
- flatten(car);flatten(room.root);
+ flatten(car);
  carRig.userData.play=car.userData.play;carRig.userData.playFor=car.userData.playFor;
  items.car=carRig;
  return {scene,room,items,kit};

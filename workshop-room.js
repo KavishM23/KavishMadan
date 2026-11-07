@@ -169,7 +169,10 @@ Workshop.room=function(THREE,kit,{bakes=null}={}){
  wall('left',sideMap,RD,[-HX,RH/2,0],[0,Math.PI/2,0],leftGeo);
 
  /* ---- the outside of the set: walls with thickness, on a concrete slab ---- */
- const shell=new THREE.MeshStandardMaterial({color:'#c9b49a',roughness:.92});
+ const shell=new THREE.MeshStandardMaterial({color:'#c9b49a',roughness:.92,side:THREE.BackSide});
+ // These broad faces must stay separate when merged room hardware is batched;
+ // their joined mesh can flicker through the painted wall on narrow screens.
+ shell.userData.noMerge=true;
  const cap=new THREE.MeshStandardMaterial({color:'#f1e6d2',roughness:.9});
  const edgeBox=(w,h,d,m,p)=>{const b=mesh(new THREE.BoxGeometry(w,h,d),m,p);b.castShadow=true;b.receiveShadow=true;add(root,b);return b};
  const slab=edgeBox(RW+T*2,.42,RD+T,new THREE.MeshStandardMaterial({color:'#c9b49a',roughness:.92}),[0,-.21-.002,-T/2]);

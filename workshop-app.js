@@ -57,8 +57,12 @@ async function start(){
  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.shadowMap.autoUpdate=false;
  await Promise.race([Promise.all(['800 100px "League Spartan"','700 100px "League Spartan"','500 20px "IBM Plex Mono"'].map(f=>document.fonts.load(f))),new Promise(r=>setTimeout(r,1800))]);
  progress('Loading room lighting and textures…');
+ const names=['floor','back','left','right'];
+ const loadBake=(theme,n)=>new Promise(res=>new THREE.TextureLoader().load(
+  `assets/models/workshop/workshop/light-${theme}-${n}${phone?'-mobile':''}.webp`,
+  t=>{t.colorSpace=THREE.SRGBColorSpace;res(t)},undefined,()=>res(null)));
  const bakes={};
- await Promise.all(['floor','back','left','right'].map(n=>new Promise(res=>new THREE.TextureLoader().load(`img/workshop-light-${n}.webp`,t=>{t.colorSpace=THREE.SRGBColorSpace;bakes[n]=t;res()},undefined,res))));
+ await Promise.all(names.map(async n=>{bakes[n]=await loadBake('day',n)||await new Promise(res=>new THREE.TextureLoader().load(`img/workshop-light-${n}.webp`,t=>{t.colorSpace=THREE.SRGBColorSpace;res(t)},undefined,()=>res(null)))}));
  await frame();
  progress('Building workshop objects…');
  const {scene,room,items}=await buildScene({renderer,bakes,texScale:phone?.5:1});
@@ -420,8 +424,18 @@ async function start(){
  }
  /* day and night share one scene: the sun goes down, a lamp comes on, and the name catches it */
  const envBase=new Map();scene.traverse(o=>{if(o.material&&o.material.envMapIntensity!==undefined)envBase.set(o.material,o.material.envMapIntensity)});
+ let nightBakes=null,nightPromise=null;
+ const applyLightmaps=maps=>{for(const n of names)if(maps[n])room.surfaces[n].material.uniforms.tLight.value=maps[n]};
+ const loadNight=()=>nightPromise||=(Promise.all(names.map(n=>loadBake('night',n))).then(maps=>{
+  nightBakes=Object.fromEntries(names.map((n,i)=>[n,maps[i]]));
+  if(R.dataset.theme==='dark')setNight(true);
+  return nightBakes;
+ }));
  function setNight(dark){
-  scene.background.set(dark?'#17272b':'#efe4d3');room.shared.tint.value.setRGB(dark?.1:1,dark?.13:1,dark?.2:1);room.shared.lamp.value=dark?.4:0;room.surfaces.back.material.uniforms.uName.value=dark?.62:0;room.view.material.uniforms.uSky.value.setRGB(dark?.05:1,dark?.08:1,dark?.2:1);
+  if(dark&&!nightBakes)loadNight();
+  const bakedNight=dark&&nightBakes&&names.every(n=>nightBakes[n]);
+  applyLightmaps(bakedNight?nightBakes:bakes);
+  scene.background.set(dark?'#17272b':'#efe4d3');room.shared.tint.value.setRGB(dark&&!bakedNight ? .1 : 1,dark&&!bakedNight ? .13 : 1,dark&&!bakedNight ? .2 : 1);room.shared.lamp.value=dark&&!bakedNight ? .4 : 0;room.surfaces.back.material.uniforms.uName.value=dark?.62:0;room.view.material.uniforms.uSky.value.setRGB(dark?.05:1,dark?.08:1,dark?.2:1);
   lights.sun.intensity=dark?0:1.7;lights.sky.intensity=dark?.28:1.25;lights.fill.intensity=dark?.4:1.3;lights.lamp.intensity=dark?22:0;envBase.forEach((v,m)=>{m.envMapIntensity=v*(dark?.34:1)});wake();
  }
  addEventListener('site-theme',e=>setNight(e.detail.dark));
