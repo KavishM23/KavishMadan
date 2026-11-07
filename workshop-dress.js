@@ -35,6 +35,8 @@ export async function loadDressing(renderer,{phone=false}={}){
   if(r.tex)m.map=r.tex==='prints'?T.prints:T[r.tex+'_a']||null;
   if(r.tex&&T[r.tex+'_r']){m.roughnessMap=T[r.tex+'_r'];m.roughness=Math.min(1,(r.rough??.6)*1.6)}
   if(r.vc){m.vertexColors=true;m.color.multiplyScalar(1.3)}
+  // Prints and labels sit millimetres in front of their boards; pull them forward in depth so they never flicker.
+  if(name==='prints'){m.polygonOffset=true;m.polygonOffsetFactor=-2;m.polygonOffsetUnits=-6}
   if(r.glow){m.emissive=new THREE.Color(r.emit||'#ffd9a0');m.emissiveIntensity=0;glowMats.push(m)}
   m.lightMap=day;m.lightMapIntensity=Math.PI*manifest.lightmaps.day.dress*LIGHT.dress;
   m.envMapIntensity=(r.metal??0)>.5?1.1:.25;

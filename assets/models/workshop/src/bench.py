@@ -151,7 +151,7 @@ def build(W, parts):
         B('frame rail', (.8, .03, .024), (fx, fy + s * .25, fz + .012), W['oak_dark'], g, bevel=.004, parent=F)
         B('frame stile', (.03, .53, .024), (fx + s * .385, fy, fz + .012), W['oak_dark'], g, bevel=.004, parent=F)
     B('mount board', (.75, .48, .004), (fx, fy, fz + .006), W['paper'], g, bevel=0, parent=F)
-    S('photo_hero', card(.6, .4, 'photo_hero', W['prints']), (fx, fy + .01, fz + .0085), g=g, parent=F)
+    S('photo_hero', card(.6, .4, 'photo_hero', W['prints']), (fx, fy + .01, fz + .011), g=g, parent=F)
     C('nail', .003, .03, (fx, fy + .37, fz - .0), W['steel'], g, rot=(0, 0, 0), parent=F, seg=8)
     for s in (-1, 1): R('hanging wire', (fx + s * .3, fy + .25, fz + .006), (fx, fy + .37, fz + .008), .0009, W['steel'], g, parent=F, seg=4)
 
