@@ -202,9 +202,9 @@ export function buildComposer(renderer,scene,camera,w,h,{ao=true,samples=4,aoDiv
   gtao.updateGtaoMaterial({radius:.34,distanceExponent:1.5,thickness:.7,scale:1.25,samples:aoSamples,distanceFallOff:1,screenSpaceRadius:false});
   gtao.updatePdMaterial({lumaPhi:10,depthPhi:2,normalPhi:3,radius:3,radiusExponent:1.1,rings:2,samples:denoise});
   gtao.blendIntensity=.7;composer.addPass(gtao);
-  // Soft transparent cards (the car's contact shadow) must not enter the AO normal pass, or they leave a rectangle.
+  // Soft transparent cards (the car's contact shadow, lamp glows) must not enter the AO normal pass, or they leave a dark rectangle.
   const aoRender=gtao.render.bind(gtao);
-  gtao.render=(...args)=>{const skip=[];scene.traverse(o=>{if(o.userData.noAO&&o.visible){o.visible=false;skip.push(o)}});aoRender(...args);skip.forEach(o=>o.visible=true)};
+  gtao.render=(...args)=>{const skip=[];scene.traverse(o=>{if(o.visible&&(o.userData.noAO||o.isSprite)){o.visible=false;skip.push(o)}});aoRender(...args);skip.forEach(o=>o.visible=true)};
  }
  composer.addPass(new OutputPass());
  if(smaa)composer.addPass(new SMAAPass(w,h));
