@@ -2,6 +2,8 @@
 import * as THREE from 'three';
 import {buildScene,lightScene,reflectionsFrom,buildComposer,createMirror,TARGETS,TOYS,CAR} from './workshop.js';
 import {LIGHT} from './workshop-dress.js';
+/* Overall brightness of the room in each theme: lower is darker. */
+const EXPOSURE={day:.6,night:.46};
 
 const R=document.documentElement,hero=document.getElementById('hero'),canvas=document.getElementById('workshop3d');
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -55,7 +57,7 @@ async function start(){
  if(firstHome)hero.classList.add('ws-loading');
  let renderer;
  try{renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:'high-performance',stencil:false})}catch(e){fail();return}
- renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.shadowMap.autoUpdate=false;
+ renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=EXPOSURE.day;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.shadowMap.autoUpdate=false;
  await Promise.race([Promise.all(['800 100px "League Spartan"','700 100px "League Spartan"','500 20px "IBM Plex Mono"'].map(f=>document.fonts.load(f))),new Promise(r=>setTimeout(r,1800))]);
  progress('Loading room lighting and textures…');
  const names=['floor','back','left','right'];
@@ -439,6 +441,7 @@ async function start(){
  function setNight(dark){
   if(dark&&!nightBakes)loadNight();
   const bakedNight=dark&&nightBakes&&names.every(n=>nightBakes[n]);
+  renderer.toneMappingExposure=dark?EXPOSURE.night:EXPOSURE.day;
   applyLightmaps(bakedNight?nightBakes:bakes);surfaceLight(bakedNight?'night':'day');dress?.setTheme(dark).then(wake);
   scene.background.set(dark?'#17272b':'#efe4d3');room.shared.tint.value.setRGB(dark&&!bakedNight ? .1 : 1,dark&&!bakedNight ? .13 : 1,dark&&!bakedNight ? .2 : 1);room.shared.lamp.value=dark&&!bakedNight ? .4 : 0;room.surfaces.back.material.uniforms.uName.value=dark?.62:0;room.view.material.uniforms.uSky.value.setRGB(dark?.05:1,dark?.08:1,dark?.2:1);
   lights.sun.intensity=dark?0:1.7;lights.sky.intensity=dark?.28:1.25;lights.fill.intensity=dark?.4:1.3;lights.lamp.intensity=dark?22:0;envBase.forEach((v,m)=>{m.envMapIntensity=v*(dark?.34:1)});wake();
