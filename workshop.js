@@ -7,17 +7,31 @@ import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { SMAAPass } from 'three/addons/postprocessing/SMAAPass.js';
+import { FullScreenQuad } from 'three/addons/postprocessing/Pass.js';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { installMP44 } from './workshop-mp44.js';
-import {bloomComposite} from './workshop-bloom.js';
 import { loadDressing } from './workshop-dress.js';
 
 const Grade={
  uniforms:{tDiffuse:{value:null},uTime:{value:0},uVignette:{value:.2},uGrain:{value:.024},uLift:{value:1},uIris:{value:3},uStars:{value:0},uAspect:{value:1.6},uDark:{value:0},uBg:{value:new THREE.Color(.86,.77,.65)}},
  vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}',
- fragmentShader:`varying vec2 vUv;uniform sampler2D tDiffuse;uniform float uTime,uVignette,uGrain,uLift,uIris,uStars,uAspect,uDark;uniform vec3 uBg;
+ fragmentShader:`
+ #ifdef WORKSHOP_OUTPUT
+ #include <tonemapping_pars_fragment>
+ #include <colorspace_pars_fragment>
+ #ifdef WORKSHOP_BLOOM
+ uniform sampler2D glow;uniform float strength;
+ #endif
+ #endif
+ varying vec2 vUv;uniform sampler2D tDiffuse;uniform float uTime,uVignette,uGrain,uLift,uIris,uStars,uAspect,uDark;uniform vec3 uBg;
  float hash(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453);}
  void main(){vec3 c=texture2D(tDiffuse,vUv).rgb;
+  #ifdef WORKSHOP_OUTPUT
+  #ifdef WORKSHOP_BLOOM
+  c+=texture2D(glow,vUv).rgb*strength;
+  #endif
+  c=sRGBTransferOETF(vec4(ACESFilmicToneMapping(c),1.)).rgb;
+  #endif
   vec2 d=vUv-.5;c*=1.-uVignette*smoothstep(.28,.95,length(d*vec2(1.08,1.)));
   float l=dot(c,vec3(.3,.59,.11));c=mix(vec3(l),c,1.05);c=mix(c,c*vec3(1.02,1.,.965),.5);
   c+=(hash(vUv*vec2(1731.,977.)+uTime)-.5)*uGrain*(1.-l*.55);
@@ -140,10 +154,11 @@ function contactShadow(rig){
  return plane;
 }
 
-export async function buildScene({renderer,bakes,texScale=1,useDressing=true}){
+export async function buildScene({renderer,bakes,texScale=1,useDressing=true,carRequest}){
  const anisotropy=Math.min(16,renderer.capabilities.getMaxAnisotropy());
  const kit=Workshop.kit(THREE,RoundedBoxGeometry,{anisotropy,texScale});
  const scene=new THREE.Scene();scene.background=new THREE.Color('#efe4d3');
+ const sketchbook=LOAD('img/workshop-sketchbook.webp');
  // The dressed room comes from the Blender source with its light baked in. If it fails to load, the
  // older procedural bench, stool, window and shelving are built instead, so the room stays usable.
  let dress=null;
@@ -151,11 +166,12 @@ export async function buildScene({renderer,bakes,texScale=1,useDressing=true}){
  const room=Workshop.room(THREE,kit,{bakes,dressed:!!dress});scene.add(room.root);
  flatten(room.root);
  if(dress)scene.add(dress.root);
- const car=Workshop.car(THREE,kit),carRig=new THREE.Group();
- try{await installMP44(car,{anisotropy})}catch(error){console.warn('Could not load the MP4/4 model; using the workshop car instead.',error)}
+ let car=new THREE.Group();const carRig=new THREE.Group(),tyres=Workshop.carTyres(THREE,kit);
+ car.userData.parts=tyres;
+ try{await installMP44(car,{anisotropy,request:carRequest})}catch(error){console.warn('Could not load the MP4/4 model; using the workshop car instead.',error);car=Workshop.car(THREE,kit,tyres)}
  car.position.z=1.7;carRig.add(car);carRig.scale.setScalar(CAR.scale);carRig.position.set(...CAR.pos);carRig.rotation.y=CAR.rot;scene.add(carRig);
  const props=Workshop.props(THREE,kit,car.userData.parts,{dressed:!!dress});
- const pages=await LOAD('img/workshop-sketchbook.webp');
+ const pages=await sketchbook;
  if(pages){pages.colorSpace=THREE.SRGBColorSpace;pages.anisotropy=anisotropy}
  const items={};
  for(const [key,make] of Object.entries({...(dress?{}:{workbench:()=>props.workbench(),stool:()=>props.stool(),sillPot:()=>props.sillPot()}),guitar:()=>props.guitar(),tablet:()=>props.tablet(),book:()=>props.sketchbook(pages),pencil:()=>props.pencil(),pick:()=>props.pick(),satellite:()=>props.satellite(),trophy:()=>props.trophy(),tyre:()=>props.tyre(),shelving:()=>props.shelving(),plant:()=>props.plant(),crate:()=>props.crate()})){
@@ -195,8 +211,30 @@ export function reflectionsFrom(renderer,scene,hide,{size=512}={}){
  return env;
 }
 
+/* The baked room needs no AO pass. Resolve the same MSAA scene once, then
+   combine bloom, tone mapping, colour grading and the iris on the way to the screen. */
+export function buildBakedOutput(renderer,scene,camera,w,h,{samples,bloom}){
+ const target=new THREE.WebGLRenderTarget(w,h,{type:THREE.HalfFloatType,samples});
+ const uniforms=THREE.UniformsUtils.clone(Grade.uniforms);
+ uniforms.tDiffuse.value=target.texture;
+ uniforms.toneMappingExposure={value:1};
+ const glow=bloom?{uniforms:{glow:{value:bloom.texture},strength:{value:0}}}:null;
+ const defines={WORKSHOP_OUTPUT:1};
+ if(glow){defines.WORKSHOP_BLOOM=1;Object.assign(uniforms,glow.uniforms)}
+ const material=new THREE.RawShaderMaterial({uniforms,defines,depthTest:false,depthWrite:false,
+  vertexShader:'precision highp float;attribute vec3 position;attribute vec2 uv;'+Grade.vertexShader,
+  fragmentShader:'precision highp float;\n'+Grade.fragmentShader});
+ const quad=new FullScreenQuad(material);
+ return {w,h,grade:{uniforms},glow,render(){
+  uniforms.toneMappingExposure.value=renderer.toneMappingExposure;
+  const previous=renderer.getRenderTarget();
+  try{renderer.setRenderTarget(target);renderer.render(scene,camera);renderer.setRenderTarget(null);quad.render(renderer)}
+  finally{renderer.setRenderTarget(previous)}
+ },dispose(){target.dispose();material.dispose();quad.dispose()}};
+}
+
 /* Two sets of the same chain: a light one while the camera moves, and a full one for the frame it stops on. */
-export function buildComposer(renderer,scene,camera,w,h,{ao=true,samples=4,aoDiv=2,aoSamples=12,denoise=8,smaa=false,bloom=null}={}){
+export function buildComposer(renderer,scene,camera,w,h,{ao=true,samples=4,aoDiv=2,aoSamples=12,denoise=8,smaa=false}={}){
  const rt=new THREE.WebGLRenderTarget(w,h,{type:THREE.HalfFloatType,samples});
  // w and h are already physical pixels; applying the renderer's pixel ratio a
  // second time misaligns the reflection and makes moving frames unnecessarily large.
@@ -218,10 +256,8 @@ export function buildComposer(renderer,scene,camera,w,h,{ao=true,samples=4,aoDiv
    finally{skip.forEach(o=>o.visible=true)}
   };
  }
- const glow=bloom?new ShaderPass(bloomComposite()):null;
- if(glow){glow.uniforms.glow.value=bloom.texture;composer.addPass(glow)}
  composer.addPass(new OutputPass());
  if(smaa)composer.addPass(new SMAAPass(w,h));
  const grade=new ShaderPass(Grade);composer.addPass(grade);
- return {composer,gtao,grade,glow,w,h,dispose(){for(const p of composer.passes)p.dispose?.();composer.renderTarget1.dispose();composer.renderTarget2.dispose()}};
+ return {render:()=>composer.render(),gtao,grade,w,h,dispose(){composer.dispose();for(const p of composer.passes)p.dispose?.()}};
 }

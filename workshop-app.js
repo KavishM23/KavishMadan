@@ -1,11 +1,12 @@
 /* Runs the workshop: the home screen, what each model does when touched, and the walk into each page. */
 import * as THREE from 'three';
-import {buildScene,lightScene,reflectionsFrom,buildComposer,createMirror,TARGETS,TOYS,CAR} from './workshop.js';
+import {buildScene,lightScene,reflectionsFrom,buildComposer,buildBakedOutput,createMirror,TARGETS,TOYS,CAR} from './workshop.js';
 import {LIGHT} from './workshop-dress.js';
+import {loadMP44} from './workshop-mp44.js';
 import {workshopBloom} from './workshop-bloom.js';
 import {workshopDust} from './workshop-atmosphere.js';
 /* Overall brightness of the room in each theme: lower is darker. */
-const EXPOSURE={day:.6,night:.46};
+const EXPOSURE={day:.68,night:.55};
 
 const R=document.documentElement,hero=document.getElementById('hero'),canvas=document.getElementById('workshop3d');
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -61,6 +62,7 @@ async function start(){
  let renderer;
  try{renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:'high-performance',stencil:false})}catch(e){fail();return}
  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=EXPOSURE.day;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.shadowMap.autoUpdate=false;
+ const carRequest=loadMP44();
  await Promise.race([Promise.all(['800 100px "League Spartan"','700 100px "League Spartan"','500 20px "IBM Plex Mono"'].map(f=>document.fonts.load(f))),new Promise(r=>setTimeout(r,1800))]);
  progress('Loading room lighting and textures…');
  const names=['floor','back','left','right'];
@@ -71,7 +73,7 @@ async function start(){
  const bakes=await bakeSet('day');
  await frame();
  progress('Building workshop objects…');
- const {scene,room,items,dress,propLights}=await buildScene({renderer,bakes,texScale:phone?.5:1,
+ const {scene,room,items,dress,propLights}=await buildScene({renderer,bakes,carRequest,texScale:phone?.5:1,
   useDressing:names.every(n=>bakes[n])});
  if(!dress)await Promise.all(names.map(async n=>{bakes[n]=await loadLight(`img/workshop-light-${n}.webp`)}));
  // With the Blender dressing, the room planes carry its baked light at the level the manifest records.
@@ -90,7 +92,7 @@ async function start(){
  await frame();
 
  /* ---- sizing ---- */
- let W=1,H=1,best=null,fast=null,chainKey='',fastScale=.9,ratio=1;
+ let W=1,H=1,best=null,fast=null,chainKey='',viewportKey='',fastScale=.9,ratio=1;
  const ao=!dress&&!phone&&!params.has('noao');
  let fastAO=ao,settleAt=0;
  function disposeChains(){
@@ -102,15 +104,16 @@ async function start(){
   // Post-processing uses several full-size buffers. Cap their combined cost
   // without lowering normal-density screens below their native resolution.
   ratio=Math.min(devicePixelRatio||1,phone?1.5:2,Math.max(1,Math.sqrt((phone?2000000:4200000)/(W*H))));
-  renderer.setPixelRatio(ratio);renderer.setSize(W,H,false);camera.aspect=W/H;camera.updateProjectionMatrix();
+  const viewport=[W,H,ratio].join();
+  if(viewport!==viewportKey){viewportKey=viewport;if(renderer.getPixelRatio()!==ratio)renderer.setPixelRatio(ratio);renderer.setSize(W,H,false);camera.aspect=W/H;camera.updateProjectionMatrix()}
   const pw=Math.round(W*ratio),ph=Math.round(H*ratio);
   const fw=Math.round(pw*fastScale),fh=Math.round(ph*fastScale),key=[pw,ph,fw,fh,fastAO].join();
   if(key!==chainKey){
    chainKey=key;disposeChains();
-   best=buildComposer(renderer,scene,camera,pw,ph,{ao,samples:phone?2:4,aoDiv:2,aoSamples:16,denoise:12,bloom});
+   best=dress?buildBakedOutput(renderer,scene,camera,pw,ph,{samples:phone?2:4,bloom}):buildComposer(renderer,scene,camera,pw,ph,{ao,samples:phone?2:4,aoDiv:2,aoSamples:16,denoise:12});
    // The dressed room already has contact shading in its bake. Keep one image
    // pipeline for the room so outlines and shading don't pop when motion ends.
-   fast=dress?best:buildComposer(renderer,scene,camera,fw,fh,{ao:fastAO,samples:0,aoDiv:2.6,aoSamples:6,denoise:4,smaa:true,bloom});
+   fast=dress?best:buildComposer(renderer,scene,camera,fw,fh,{ao:fastAO,samples:0,aoDiv:2.6,aoSamples:6,denoise:4,smaa:true});
    mirrorGate.reset();
   }
   mirror?.size(pw,ph);dirty=true;
@@ -431,8 +434,8 @@ async function start(){
   const [iris,stars]=stage?.m.iris?stage.m.iris(smooth(stage.v)):[3,0];
   g.uIris.value=iris;g.uStars.value=stars;g.uAspect.value=W/H;g.uDark.value=stage?.m.dark?1:0;
   if(mirror&&!ambientOnly&&mirrorGate.due(performance.now(),!settleAt&&chain===best))mirror.render();
-  if(chain.glow){bloom.render(chain.w,chain.h);chain.glow.uniforms.strength.value=night?.48:.22}
-  chain.composer.render();
+  if(chain.glow&&!ambientOnly){bloom.render(chain.w,chain.h);chain.glow.uniforms.strength.value=night?.48:.22}
+  chain.render();
  }
  let freeTimer=0;
  function freeChains(){
@@ -441,12 +444,12 @@ async function start(){
  }
  function scheduleAmbient(){
   clearTimeout(ambientTimer);
-  if(!dust||!home()||document.hidden)return;
+  if(!dust||!home()||document.hidden||R.dataset.theme==='dark')return;
   ambientTimer=setTimeout(()=>{
    if(!home()||document.hidden)return;
    ambientDue=true;
    if(!running){running=true;last=performance.now();requestAnimationFrame(tick)}
-  },phone?300:145);
+  },phone?360:230);
  }
  function wake(){
   clearTimeout(ambientTimer);clearTimeout(freeTimer);
@@ -527,8 +530,8 @@ async function start(){
   room.view.material.uniforms.uSky.value.setRGB(dark?.05:1,dark?.08:1,dark?.2:1);
   room.lining.material.uniforms.uNight.value=dark?1:0;
   lights.sun.intensity=dark?0:1.7;
-  lights.sky.intensity=dark?.22:1.08;
-  lights.fill.intensity=dark?.25:1.12;
+ lights.sky.intensity=dark?.25:1.08;
+ lights.fill.intensity=dark?.31:1.12;
   lights.lamp.intensity=dark?17:4;
   envBase.forEach((v,m)=>{m.envMapIntensity=v*(dark?.82:1.14)});
   dust?.hide();

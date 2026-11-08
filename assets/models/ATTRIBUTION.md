@@ -4,6 +4,8 @@
 
 The body wordmarks are sharpened using the wordmark paths extracted from [Marlboro Logo.svg on Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Marlboro_Logo.svg), identified there as a public-domain text logo.
 
+The browser asset uses lossless Meshopt geometry compression and a 1536 px WebP tyre normal map. The colour textures, UVs and wheel geometry retain their original data.
+
 ## Project machine models (assets/models/vending)
 Original work for this site. Strata uses the team's own CAD. Globe coastlines come from Natural Earth 1:50m (public domain) through the world-atlas package (ISC). Plaque lettering uses Blender's built-in font. See the README in that folder for what is real and what is inferred.
 

@@ -39,11 +39,3 @@ export function workshopBloom(renderer,scene,camera){
   free(){input.dispose();targets.forEach(t=>t.dispose())}
  };
 }
-
-export function bloomComposite(){
- return {
-  uniforms:{tDiffuse:{value:null},glow:{value:null},strength:{value:.36}},vertexShader,
-  fragmentShader:`varying vec2 vUv;uniform sampler2D tDiffuse,glow;uniform float strength;
-    void main(){gl_FragColor=vec4(texture2D(tDiffuse,vUv).rgb+texture2D(glow,vUv).rgb*strength,1.);}`
- };
-}

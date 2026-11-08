@@ -5,11 +5,18 @@ const path=require('node:path');
 
 test('MP4/4 rig leaves shared chassis geometry still and assigns all four tyres',async()=>{
  const {wheelForTriangle}=await import('../workshop-mp44-rig.mjs');
+ const {MeshoptDecoder}=await import('../assets/vendor/meshopt-decoder.mjs');await MeshoptDecoder.ready;
  const b=fs.readFileSync(path.join(__dirname,'../assets/models/mp44-flamestroke.glb'));
  const n=b.readUInt32LE(12),doc=JSON.parse(b.subarray(20,20+n)),bin=28+n;
  const sizes={5121:1,5123:2,5125:4,5126:4},components={SCALAR:1,VEC2:2,VEC3:3};
- function attribute(i){const a=doc.accessors[i],v=doc.bufferViews[a.bufferView],size=sizes[a.componentType],num=components[a.type],start=bin+(v.byteOffset||0)+(a.byteOffset||0),stride=v.byteStride||size*num;
-  return {count:a.count,get(index,component=0){const at=start+index*stride+component*size;return a.componentType===5126?b.readFloatLE(at):a.componentType===5125?b.readUInt32LE(at):a.componentType===5123?b.readUInt16LE(at):b.readUInt8(at)}}}
+ const decoded=new Map();
+ function bytes(i){if(decoded.has(i))return decoded.get(i);const v=doc.bufferViews[i],e=v.extensions?.EXT_meshopt_compression;
+  if(!e)return b.subarray(bin+(v.byteOffset||0),bin+(v.byteOffset||0)+v.byteLength);
+  const out=Buffer.alloc(v.byteLength),at=bin+(e.byteOffset||0);
+  MeshoptDecoder.decodeGltfBuffer(out,e.count,e.byteStride,b.subarray(at,at+e.byteLength),e.mode,e.filter);
+  decoded.set(i,out);return out}
+ function attribute(i){const a=doc.accessors[i],v=doc.bufferViews[a.bufferView],size=sizes[a.componentType],num=components[a.type],data=bytes(a.bufferView),start=a.byteOffset||0,stride=v.byteStride||size*num;
+  return {count:a.count,get(index,component=0){const at=start+index*stride+component*size;return a.componentType===5126?data.readFloatLE(at):a.componentType===5125?data.readUInt32LE(at):a.componentType===5123?data.readUInt16LE(at):data.readUInt8(at)}}}
  function triangles(mat){const mesh=doc.meshes.find(m=>doc.materials[m.primitives[0].material].name===mat),p=mesh.primitives[0],pos=attribute(p.attributes.POSITION),ix=attribute(p.indices),result=[];
   for(let i=0;i<ix.count;i+=3)result.push([0,1,2].map(j=>{const v=ix.get(i+j);return{x:pos.get(v,0),y:pos.get(v,1),z:pos.get(v,2)}}));return result}
  const tyres=triangles('blinn7'),bounds=Array.from({length:4},()=>({min:{x:Infinity,y:Infinity,z:Infinity},max:{x:-Infinity,y:-Infinity,z:-Infinity}}));

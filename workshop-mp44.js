@@ -1,6 +1,7 @@
 /* MP4/4 by Flamestroke, CC BY 4.0. See assets/models/ATTRIBUTION.md. */
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from './assets/vendor/meshopt-decoder.mjs';
 import { wheelForTriangle } from './workshop-mp44-rig.mjs';
 
 // Preserve the original paint atlas and replace its two small, baked-in body
@@ -56,8 +57,12 @@ function cockpitDetails(model){
  wheel.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});originalWheel.visible=false;originalWheel.parent.add(wheel);return wheel;
 }
 
-export async function installMP44(car,{anisotropy=1}={}){
- const [gltf,wordmark]=await Promise.all([new GLTFLoader().loadAsync('assets/models/mp44-flamestroke.glb'),new THREE.ImageLoader().loadAsync('assets/models/decals/marlboro-wordmark.svg').catch(()=>null)]);const model=gltf.scene;
+export function loadMP44(){
+ return Promise.all([new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync(new URL('./assets/models/mp44-flamestroke.glb',import.meta.url).href),new THREE.ImageLoader().loadAsync(new URL('./assets/models/decals/marlboro-wordmark.svg',import.meta.url).href).catch(()=>null)]).catch(error=>({error}));
+}
+export async function installMP44(car,{anisotropy=1,request=loadMP44()}={}){
+ const result=await request;if(result.error)throw result.error;
+ const [gltf,wordmark]=result,model=gltf.scene;
  const sharpened=new Set();model.traverse(o=>{if(!o.isMesh)return;o.castShadow=true;o.receiveShadow=true;const materials=Array.isArray(o.material)?o.material:[o.material];for(const material of materials){for(const key of ['map','normalMap','roughnessMap','metalnessMap'])if(material[key])material[key].anisotropy=anisotropy;if(material.name==='blinn2'&&!sharpened.has(material)){sharpened.add(material);material.color.lerp(new THREE.Color('#d3ccc0'),.18);material.roughness=Math.max(.24,material.roughness);sharpenBodyDecals(material,wordmark,anisotropy)}}});
  const wheels=rigWheels(model);if(!wheels)throw new Error('MP4/4 wheel geometry is missing');const yoke=cockpitDetails(model);
  model.updateMatrixWorld(true);const box=new THREE.Box3().setFromObject(model),center=box.getCenter(new THREE.Vector3()),size=box.getSize(new THREE.Vector3()),scale=4.4/size.z;

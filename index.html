@@ -1836,9 +1836,11 @@ html.intro-hold .obj-labs{visibility:hidden}
     const thumb=document.querySelector('.tab-thumb'),on=document.querySelector('.tabs a[aria-current]');if(thumb){thumb.style.opacity=on?1:0;if(on){thumb.style.setProperty('--x',on.offsetLeft+'px');thumb.style.setProperty('--w',on.offsetWidth+'px')}}}
   document.fonts?.ready.then(()=>markTabs());addEventListener('resize',()=>markTabs());
   function afterShow(target){
-    const go=()=>{const y=target&&target!==curView?target.getBoundingClientRect().top-curView.getBoundingClientRect().top:0;if(window.resetPortfolioScroll)resetPortfolioScroll(y);else{scrollTo({top:y,behavior:'instant'});window.lenis&&lenis.scrollTo(y,{immediate:true,force:true})}
+    const view=curView;let done=false;
+    window.hero3d?.prepare?.(view);
+    const go=()=>{if(done||curView!==view)return;done=true;const y=target&&target!==view?target.getBoundingClientRect().top-view.getBoundingClientRect().top:0;if(window.resetPortfolioScroll)resetPortfolioScroll(y);else{scrollTo({top:y,behavior:'instant'});window.lenis&&lenis.scrollTo(y,{immediate:true,force:true})}
       if(curView.id==='home'){fitName();placeHead()}
-      onScroll();updateTears();cutAll();if(window.ScrollTrigger)ScrollTrigger.refresh();markTabs();window.hero3d?.prepare?.(curView);curView.querySelectorAll('img[loading="lazy"]').forEach(i=>{i.loading='eager'})};
+      onScroll();updateTears();cutAll();if(window.ScrollTrigger)ScrollTrigger.refresh();markTabs()};
     requestAnimationFrame(()=>requestAnimationFrame(go));setTimeout(go,120);
   }
   // long labels shrink to fit: the workshop draws the same word at the same size on its screens
@@ -1923,7 +1925,7 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
-(async function(){
+async function initPortfolioScenes(){
   const hero=document.getElementById('hero'), canvas=document.getElementById('hero3d'), head=document.querySelector('.head');
   if(!hero||!canvas||!head)return;
   const workshopHero=hero.classList.contains('workshop-hero'); // the workshop has its own renderer; this one keeps drawing the rest of the page
@@ -1940,8 +1942,9 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
   renderer.autoClear=false;canvas.classList.add('scene-shared');document.body.appendChild(canvas);
 
   const scene=new THREE.Scene();
-  const pm=new THREE.PMREMGenerator(renderer);
-  scene.environment=pm.fromScene(new RoomEnvironment(renderer),0.035).texture;
+  const pm=new THREE.PMREMGenerator(renderer),studio=new RoomEnvironment(renderer);
+  scene.environment=pm.fromScene(studio,0.035).texture;
+  studio.dispose();pm.dispose();
   const camera=new THREE.PerspectiveCamera(24,1,0.1,120);camera.position.set(0,0,22);
   scene.add(new THREE.HemisphereLight(0xb7ab98,0x141312,0.34));
   const key=new THREE.DirectionalLight(0xfff0dc,2.5);key.castShadow=true;
@@ -1953,7 +1956,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
   const cluster=new THREE.Group();scene.add(cluster);
 
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-  try{await Promise.race([Promise.all([document.fonts.load('800 100px "League Spartan"'),document.fonts.load('700 100px "Caveat"'),document.fonts.load('600 40px "IBM Plex Mono"')]),sleep(1800)])}catch(e){}
+  if(!workshopHero)try{await Promise.race([Promise.all([document.fonts.load('800 100px "League Spartan"'),document.fonts.load('700 100px "Caveat"'),document.fonts.load('600 40px "IBM Plex Mono"')]),sleep(1800)])}catch(e){}
 
   const damp=(a,b,l,dt)=>a+(b-a)*(1-Math.exp(-l*dt));
   const ANISO=renderer.capabilities.getMaxAnisotropy();
@@ -2317,17 +2320,21 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
     }
   }
   const loop=PortfolioRender.createLoop(frame);
+  let interactiveUntil=0;
+  function activity(){interactiveUntil=performance.now()+700;nextPaint=Math.min(nextPaint,performance.now());if(visible&&!loop.running)start()}
   function frame(now){
-    if(now<nextPaint-1)return;const interval=now-last,dt=Math.min(.05,interval/1000);last=now;const budget=1000/60;nextPaint=now+budget-(Math.max(0,now-nextPaint)%budget);
+    if(now<nextPaint-1)return;const interval=now-last,dt=Math.min(.05,interval/1000);last=now;const fullSpeed=heroVisible||now<interactiveUntil,budget=1000/(fullSpeed?60:30);nextPaint=now+budget-(Math.max(0,now-nextPaint)%budget);
     const begin=probe?performance.now():0,draws=measureScenes(),heroDraw=draws.find(d=>d.el===hero);
     if(heroDraw)update(dt,heroDraw.rect);else t+=dt;flight?.tick(dt);atelier.update(dt,t);const updated=probe?performance.now():0;renderPortfolios(draws);if(probe)probe.record(now,updated-begin,performance.now()-updated);
-    const density=quality?.sample(interval,now);if(density!==null&&density!==undefined)renderer.setPixelRatio(density);
+    const density=fullSpeed?quality?.sample(interval,now):null;if(density!==null&&density!==undefined)renderer.setPixelRatio(density);
   }
   function start(){if(loop.running||!visible||document.hidden||document.documentElement.style.overflow==='hidden')return;last=performance.now();nextPaint=last;probe?.resume();loop.start()}
   function stop(){loop.stop();renderer.setScissorTest(false);renderer.clear()}
   const sceneObserver=new IntersectionObserver(entries=>{for(const entry of entries){if(entry.target===hero)heroVisible=!workshopHero&&entry.isIntersecting;else{if(entry.isIntersecting)atelier.build(entry.target);const slot=atelier.slots.find(s=>s.el===entry.target);if(slot)slot.visible=entry.isIntersecting}}visible=heroVisible||atelier.slots.some(s=>s.visible);visible?start():stop()});
-  sceneObserver.observe(hero);atelier.slots.forEach(s=>sceneObserver.observe(s.el));
-  addEventListener('scroll',()=>{if(visible&&!loop.running)start()},{passive:true});
+  if(!workshopHero)sceneObserver.observe(hero);
+  atelier.slots.forEach(s=>{sceneObserver.observe(s.el);s.el.closest('.view')?.addEventListener('pointerdown',activity,{passive:true});s.el.addEventListener('pointermove',activity,{passive:true})});
+  addEventListener('scroll',()=>{if(visible)activity()},{passive:true});
+  addEventListener('keydown',()=>{if(visible)activity()});
   document.addEventListener('visibilitychange',()=>{document.hidden?loop.stop():start()});
   new MutationObserver(()=>{document.documentElement.style.overflow==='hidden'?loop.stop():start()}).observe(document.documentElement,{attributes:true,attributeFilter:['style']});
   // Prepare shaders between interactions, using the driver's non-blocking compiler when available.
@@ -2337,7 +2344,22 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
     setTimeout(()=>idle(warm),4500);
   }
   layout();if(!workshopHero)update(0);renderPortfolios();start();
-})();
+}
+
+// The Workshop and vending machine have their own renderers. Only start the
+// shared one when a model or a narrative 3D page needs it.
+if(!document.querySelector('#hero.workshop-hero'))initPortfolioScenes();
+else {
+  let started=false;
+  const observer=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting))start()},{rootMargin:'160px'});
+  const start=()=>{if(started)return;started=true;observer.disconnect();initPortfolioScenes().catch(console.error)};
+  const prepare=view=>{if((view?.id==='code'&&innerHeight>=620||view?.id==='awards'&&innerHeight>=560)&&!matchMedia('(prefers-reduced-motion: reduce)').matches)start()};
+  window.hero3d={prepare,openBook(){window.openResearch?.(innerWidth/2,innerHeight/2)},closeBook(){window.workshopApi?.back()}};
+  document.querySelectorAll('[data-scene]:not([data-scene="staircase"]):not([data-scene="cabinet"])').forEach(el=>observer.observe(el));
+  const current=()=>prepare(document.querySelector('.view:not([hidden])'));
+  addEventListener('resize',()=>{if(!started)current()},{passive:true});
+  current();
+}
 </script>
 <aside class="np" id="np" hidden aria-label="Music">
   <div class="np-player"><div id="spotp"></div></div>

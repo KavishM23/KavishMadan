@@ -3,12 +3,12 @@
    room's reflections. If anything here fails to load, workshop.js builds the older procedural room. */
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { MeshoptDecoder } from './assets/vendor/meshopt-decoder.mjs';
 import {installPropLight,readPropLight} from './workshop-prop-light.js';
 
 const BASE='assets/models/workshop/workshop/';
 /* Overall level for baked light, and how much ambient the painted room planes keep on top of it. */
-export const LIGHT={dress:.92,surface:.9,night:.85,amb:[.05,.048,.044]};
+export const LIGHT={dress:.92,surface:.92,night:.91,amb:[.05,.048,.044]};
 
 // Baked surfaces take no direct or ambient light from the scene: only the lightmap, plus reflections.
 const quiet=s=>{s.fragmentShader=s.fragmentShader

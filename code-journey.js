@@ -72,7 +72,7 @@ window.createCodeStaircase=function({THREE,Round,environment,makeDrone,reduced,e
  // If a set cannot load, the project still gets its plain screen.
  function plainScreen(project){const screen=new THREE.Group();screen.position.y=1.65;project.set.add(screen);add(new Round(4.1,2.62,.14,3,.06),metal,screen);const t=screenTexture(screenSources[project.key]);add(new THREE.PlaneGeometry(3.91,3.91/project.ratio),new THREE.MeshBasicMaterial({map:t,color:0xbdb8ae,toneMapped:false}),screen,new THREE.Vector3(0,0,.08));for(const x of [-1.6,1.6])add(new THREE.CylinderGeometry(.027,.027,.35,8),metal,screen,new THREE.Vector3(x,-1.46,0))}
  (async()=>{
-  const [{GLTFLoader},{MeshoptDecoder}]=await Promise.all([import('three/addons/loaders/GLTFLoader.js'),import('three/addons/libs/meshopt_decoder.module.js')]);
+  const [{GLTFLoader},{MeshoptDecoder}]=await Promise.all([import('three/addons/loaders/GLTFLoader.js'),import('./assets/vendor/meshopt-decoder.mjs')]);
   const gltf=new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
   await Promise.all(projects.map(async project=>{
    try{const model=(await gltf.loadAsync(`assets/models/code/set-${project.key}.glb`)).scene;

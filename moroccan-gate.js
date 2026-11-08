@@ -52,7 +52,7 @@ window.preloadMoroccanGate=function(){
   const [response,{GLTFLoader},{MeshoptDecoder}]=await Promise.all([
    fetch('assets/models/code/moroccan-gate.glb',{signal:controller.signal}),
    import('three/addons/loaders/GLTFLoader.js'),
-   import('three/addons/libs/meshopt_decoder.module.js')
+   import('./assets/vendor/meshopt-decoder.mjs')
   ]);
   if(!response.ok)throw new Error('Gate asset unavailable');
   const loader=new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);

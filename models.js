@@ -70,15 +70,15 @@ window.createPortfolioAtelier=function({THREE,Round,environment,reduced,anisotro
   el.addEventListener('keydown',e=>{if(e.target!==el)return;if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();slot.targetRotation+=e.key==='ArrowLeft'?-.22:.22}else if(e.key==='Home'){e.preventDefault();slot.targetRotation=slot.targetPitch=0}});
   return slot;
  };
- const slots=[...document.querySelectorAll('[data-scene]')].map(el=>{
-  if(el.dataset.scene==='staircase')document.documentElement.classList.add('spiral-ready');
-  if(el.dataset.scene==='cabinet')document.documentElement.classList.add('cabinet-ready');
-  return {el,visible:false,pending:true};
- });
+ const layouts={staircase:['spiral-ready',620],cabinet:['cabinet-ready',560]};
+ const slots=[...document.querySelectorAll('[data-scene]')].map(el=>({el,visible:false,pending:true}));
+ function prepareLayout(){for(const {el,pending} of slots){const layout=layouts[el.dataset.scene];if(pending&&layout)document.documentElement.classList.toggle(layout[0],!reduced&&innerHeight>=layout[1])}}
+ prepareLayout();addEventListener('resize',prepareLayout,{passive:true});
  function build(el){
   const i=slots.findIndex(s=>s.el===el),slot=slots[i];
   if(!slot?.pending)return slot;
-  if(el.dataset.scene==='staircase'&&!reduced&&innerHeight>=620){
+  const layout=layouts[el.dataset.scene];if(layout&&(reduced||innerHeight<layout[1]))return slot;
+  if(el.dataset.scene==='staircase'){
    slot.loading??=window.preloadMoroccanGate().then(()=>{
     slots[i]=makeSlot(el);
     slots[i].visible=slot.visible;

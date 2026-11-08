@@ -39,7 +39,7 @@ async function init(){
  const bay=new THREE.PointLight('#ffe9c8',9,6,2);bay.position.set(.65,5.2,1.55);scene.add(bay);
  const showKey=new THREE.PointLight('#fff1dc',0,9,2),showRim=new THREE.PointLight('#a9d7e6',0,9,2);camera.add(showKey,showRim);showKey.position.set(-1.5,2.6,-1.4);showRim.position.set(2.8,1.4,-6.4);
  const veil=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({color:'#0b161d',transparent:true,opacity:0,depthWrite:false,toneMapped:false}));veil.position.z=-7.4;veil.visible=false;veil.layers.set(1);camera.add(veil);
- const [{GLTFLoader},{MeshoptDecoder}]=await Promise.all([import('three/addons/loaders/GLTFLoader.js'),import('three/addons/libs/meshopt_decoder.module.js')]);
+ const [{GLTFLoader},{MeshoptDecoder}]=await Promise.all([import('three/addons/loaders/GLTFLoader.js'),import('./assets/vendor/meshopt-decoder.mjs')]);
  const gltfLoader=new GLTFLoader().setMeshoptDecoder(MeshoptDecoder),texLoader=new THREE.TextureLoader(),maxAniso=Math.min(narrow?4:8,renderer.capabilities.getMaxAnisotropy());
  const texture=(file,srgb)=>new Promise((res,rej)=>texLoader.load(file,t=>{t.flipY=false;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=maxAniso;if(srgb)t.colorSpace=THREE.SRGBColorSpace;res(t)},undefined,rej));
  let manifest,room,tex={},maps={};
@@ -50,7 +50,7 @@ async function init(){
    ...Object.entries(manifest.lightmaps).map(async ([g,l])=>{const t=await texture(`${BASE}workshop/lm-${g}${suffix}.webp`,true);t.wrapS=t.wrapT=THREE.ClampToEdgeWrapping;t.channel=1;maps[g]={t,scale:l.scale};step()}),
    Promise.all([gltfLoader.loadAsync(BASE+'workshop/workshop.glb'),gltfLoader.loadAsync(BASE+'workshop/movers.glb')]).then(([a,b])=>{room=a.scene;room.add(b.scene);step()})]);
  }catch(e){console.warn('Workshop scene unavailable',e);renderer.dispose();return noScene()}
- const reflect={rt:new THREE.WebGLRenderTarget(narrow?320:640,narrow?200:400,{depthBuffer:true,type:THREE.HalfFloatType}),matrix:new THREE.Matrix4(),on:!narrow,dirty:true,cam:new THREE.PerspectiveCamera()};
+ const reflect={rt:new THREE.WebGLRenderTarget(narrow?320:640,narrow?200:400,{type:THREE.HalfFloatType,generateMipmaps:true,minFilter:THREE.LinearMipmapLinearFilter}),matrix:new THREE.Matrix4(),on:!narrow,dirty:true,last:-Infinity,cam:new THREE.PerspectiveCamera()};
  const quiet=s=>{s.fragmentShader=s.fragmentShader.replace('#include <lights_fragment_maps>','irradiance=vec3(0.);\n#include <lights_fragment_maps>').replace('#include <lights_fragment_end>','iblIrradiance=vec3(0.);\n#include <lights_fragment_end>\nreflectedLight.directDiffuse=vec3(0.);reflectedLight.directSpecular=vec3(0.);')};
  const mats={},bakedMats=[];
  function material(name,group){
@@ -71,7 +71,7 @@ async function init(){
  function floorShader(s){quiet(s);Object.assign(s.uniforms,floorU);
   s.vertexShader=s.vertexShader.replace('#include <common>','#include <common>\nuniform mat4 uMirror;varying vec4 vMirror;varying vec3 vFloorW;').replace('#include <begin_vertex>','#include <begin_vertex>\nvec4 fw=modelMatrix*vec4(position,1.);vMirror=uMirror*fw;vFloorW=fw.xyz;');
   s.fragmentShader=s.fragmentShader.replace('#include <common>','#include <common>\nuniform sampler2D tReflect;uniform float uAmount;varying vec4 vMirror;varying vec3 vFloorW;')
-  .replace('#include <opaque_fragment>',`if(uAmount>0.){vec2 uvR=vMirror.xy/vMirror.w;vec3 sum=vec3(0.);float w=0.;float gloss=clamp(1.15-roughnessFactor*1.2,0.,1.);for(int i=-2;i<=2;i++)for(int j=-2;j<=2;j++){float k=exp(-float(i*i+j*j)*.35);sum+=texture2D(tReflect,uvR+vec2(float(i)*.0028,float(j)*.0052)).rgb*k;w+=k;}sum/=w;vec3 toCam=normalize(cameraPosition-vFloorW);float fres=pow(1.-clamp(toCam.y,0.,1.),2.6);outgoingLight+=sum*(.05+.5*fres)*gloss*uAmount;}\n#include <opaque_fragment>`)}
+  .replace('#include <opaque_fragment>',`if(uAmount>0.){vec2 uvR=vMirror.xy/vMirror.w;float gloss=clamp(1.15-roughnessFactor*1.2,0.,1.);vec3 reflected=textureLod(tReflect,uvR,1.35+roughnessFactor*1.7).rgb;vec3 toCam=normalize(cameraPosition-vFloorW);float fres=pow(1.-clamp(toCam.y,0.,1.),2.6);outgoingLight+=reflected*(.05+.5*fres)*gloss*uAmount;}\n#include <opaque_fragment>`)}
  const named={};
  room.traverse(o=>{if(!o.isMesh)return;const [group,name]=o.name.includes('__')?o.name.split('__'):[null,o.material?.name];o.material=material(name||o.material.name,group);o.matrixAutoUpdate=!!o.name.startsWith('mover');named[o.name]=o;if(!o.name.startsWith('mover')){o.updateMatrix()}});
  scene.add(room);room.updateMatrixWorld(true);
@@ -116,8 +116,9 @@ async function init(){
  const baseCam={pos:new THREE.Vector3(1.9,3.9,14.4),look:new THREE.Vector3(-.9,3.15,.6)},watchCam={pos:new THREE.Vector3(1.5,3.7,11.8),look:new THREE.Vector3(.75,2.85,1.1)},phoneBase={pos:new THREE.Vector3(2,4.9,20.5),look:new THREE.Vector3(1.15,4.05,.6)},phoneWatch={pos:new THREE.Vector3(1.8,3.6,17.5),look:new THREE.Vector3(.95,3.05,1)};
  const desired=baseCam.pos.clone(),look=baseCam.look.clone(),desiredLook=look.clone(),ray=new THREE.Raycaster(),pointer=new THREE.Vector2(),drift=new THREE.Vector2(),driftNow=new THREE.Vector2();ray.layers.set(1);camera.position.copy(desired);camera.lookAt(look);
  let labFreeze=false,raf=0,last=0,lastRender=0,dirty=true,hover=null,focusNow=0,focusGoal=0,active=null,restock=null,waiting=null,slow=0,frames=0,sum=0;
+ let viewportKey='';
  function aim(view){const tall=camera.aspect<1,v=tall?(view===baseCam?phoneBase:phoneWatch):view,fit=tall?1:Math.max(1,1.45/camera.aspect);desired.copy(v.pos).sub(v.look).multiplyScalar(fit).add(v.look);desiredLook.copy(v.look)}
- function size(){const r=stage.getBoundingClientRect();if(!r.width||!r.height)return;renderer.setSize(r.width,r.height,false);camera.aspect=r.width/r.height;camera.updateProjectionMatrix();aim(selected?watchCam:baseCam);reflect.dirty=true;renderer.shadowMap.needsUpdate=true;dirty=true;wake()}
+ function size(){const r=stage.getBoundingClientRect(),w=Math.round(r.width),h=Math.round(r.height);if(!w||!h)return;const key=[w,h,ratio].join();if(key===viewportKey)return;viewportKey=key;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();aim(selected?watchCam:baseCam);reflect.dirty=true;dirty=true;wake()}
  const pose={pos:new THREE.Vector3(),scale:1};
  const setShadow=(name,on)=>{objects[name]?.traverse(o=>{if(o.isMesh)o.castShadow=on});renderer.shadowMap.needsUpdate=true};
  function settle(name){if(waiting&&waiting.name===name){const w=waiting;waiting=null;start(w.name,w.done)}}
@@ -142,8 +143,8 @@ async function init(){
   const floor=named.shell__floor,prev=renderer.getRenderTarget();floor.visible=false;renderer.shadowMap.autoUpdate=false;renderer.setRenderTarget(reflect.rt);renderer.clear();renderer.render(scene,c);renderer.setRenderTarget(prev);floor.visible=true;reflect.dirty=false}
  function adapt(dt){if(active?.phase!=='run'||slow>1)return;sum+=dt;if(++frames<36)return;const ms=sum/frames*1000;frames=0;sum=0;if(ms>30){slow++;if(reflect.on){reflect.on=false;floorU.uAmount.value=0}else{ratio=Math.max(1,ratio*.8);renderer.setPixelRatio(ratio);size()}}}
  function frame(now){raf=0;if(!visible||document.hidden||labFreeze)return;const dt=Math.min(.05,(now-(last||now))/1000);adapt((now-(last||now))/1000);last=now;const f=reduce?1:1-Math.exp(-4*dt);
-  driftNow.lerp(selected||reduce?pos0:drift,1-Math.exp(-5*dt));const before=camera.position.clone();camera.position.lerp(desired,f);look.lerp(desiredLook,f);camera.position.x+=0;
-  const shown=camera.position.clone();shown.x+=driftNow.x*.32;shown.y+=driftNow.y*.14;const hold=camera.position.clone();camera.position.copy(shown);camera.lookAt(look);
+  driftNow.lerp(selected||reduce?pos0:drift,1-Math.exp(-5*dt));camera.position.lerp(desired,f);look.lerp(desiredLook,f);
+  hold.copy(camera.position);camera.position.x+=driftNow.x*.32;camera.position.y+=driftNow.y*.14;camera.lookAt(look);
   let moving=hold.distanceTo(desired)>.008||look.distanceTo(desiredLook)>.008||driftNow.distanceTo(selected||reduce?pos0:drift)>.004;
   if(moving)reflect.dirty=true;
   if(Math.abs(focusGoal-focusNow)>.002){focusNow+=(focusGoal-focusNow)*(reduce?1:1-Math.exp(-3*dt));moving=true}else focusNow=focusGoal;
@@ -152,11 +153,12 @@ async function init(){
   if(active&&active.phase==='show'){const h=holders[active.name];focusPose(active.name,pose);h.position.copy(pose.pos);h.scale.setScalar(pose.scale);if(!reduce){h.rotation.y+=dt*.42;for(const p of objects[active.name].userData.props||[])p.rotation.y+=dt*3.2;dirty=true}}
   if(restock){const u=Math.min(1,(now-restock.begin)/700),e=G.ease(u),n=restock.name;holders[n].position.z=G.back+G.startZ-.5*(1-e);coils[n].forEach(c=>c.rotation.z=c.userData.side*(1-e)*-.5/G.pitch*Math.PI*2);dirty=true;if(u>=1){const r=n;restock=null;park(r);idle()}}
   const running=moving||(active&&active.phase==='run')||restock||(active&&active.phase==='show'&&!reduce);
-  if((moving||dirty)&&(!(active&&active.phase==='show')||moving||now-lastRender>=33)){if(reflect.on&&reflect.dirty&&focusNow<.6)mirror();renderer.render(scene,camera);lastRender=now;dirty=false}
+  const reflectDue=reflect.on&&reflect.dirty&&focusNow<.6&&(!moving||now-reflect.last>=42);
+  if((moving||dirty||reflectDue)&&(!(active&&active.phase==='show')||moving||now-lastRender>=33)){if(reflectDue){mirror();reflect.last=now}renderer.render(scene,camera);lastRender=now;dirty=false}
   camera.position.copy(hold);
   if(running)raf=requestAnimationFrame(frame);
  }
- const pos0=new THREE.Vector2();
+ const pos0=new THREE.Vector2(),hold=new THREE.Vector3();
  wake=()=>{if(visible&&!document.hidden&&!raf){last=0;raf=requestAnimationFrame(frame)}};
  const tapTarget=e=>{const r=canvas.getBoundingClientRect();pointer.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(pointer,camera);return ray.intersectObjects(targets)[0]?.object.userData.key||null};
  canvas.addEventListener('pointermove',e=>{const k=tapTarget(e);canvas.style.cursor=k&&!selected?'pointer':'default';if(!narrow&&!reduce)drift.set(pointer.x,pointer.y);if(k!==hover)hoverScene(k);wake()});
@@ -165,7 +167,7 @@ async function init(){
  // Gentle attract: the keys take turns glowing, about once a second, only while the scene is on screen.
  if(!reduce)setInterval(()=>{if(visible&&!document.hidden&&!selected&&!hover){tick++;paintKeys();wake()}},1100);
  // GPU copies are dropped after a while off-screen; three re-uploads them on the next frame.
- releaseGPU=()=>{scene.traverse(o=>{if(!o.isMesh)return;o.geometry.dispose();const mt=o.material;for(const t of [mt.map,mt.aoMap,mt.normalMap,mt.roughnessMap,mt.lightMap])t?.dispose()});key.shadow.map?.dispose();key.shadow.map=null;renderer.renderLists.dispose();renderer.shadowMap.needsUpdate=true;reflect.dirty=true};
+ releaseGPU=()=>{const geometry=new Set(),textures=new Set();scene.traverse(o=>{if(!o.isMesh)return;geometry.add(o.geometry);const mt=o.material;for(const t of [mt.map,mt.aoMap,mt.normalMap,mt.roughnessMap,mt.lightMap])if(t)textures.add(t)});geometry.forEach(g=>g.dispose());textures.forEach(t=>t.dispose());reflect.rt.dispose();key.shadow.map?.dispose();key.shadow.map=null;renderer.renderLists.dispose();renderer.shadowMap.needsUpdate=true;reflect.dirty=true};
  window.addEventListener('resize',size,{passive:true});document.addEventListener('visibilitychange',()=>{if(!document.hidden){dirty=true;wake()}});new ResizeObserver(size).observe(stage);size();
  const loaded={};
  async function loadModels(){
