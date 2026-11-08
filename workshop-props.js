@@ -235,7 +235,7 @@ Workshop.props=function(THREE,kit,carParts,{dressed=false}={}){
   const scr=mesh(new THREE.PlaneGeometry(W-.016,H-.016),new THREE.MeshBasicMaterial({map:screen,toneMapped:true,color:'#f2f2f2'}),[0,H/2,.0042]);add(pivot,scr);scr.layers.enable(1);
   const cursor=mesh(new THREE.PlaneGeometry(.002,.008),new THREE.MeshBasicMaterial({color:'#a3c2b9',toneMapped:true}),[-.057,H*.21,.0045]);
   add(pivot,cursor);cursor.visible=false;
-  root.userData.ambient=(time,active)=>{cursor.visible=!active&&Math.sin(time*3.1)>.12};
+  root.userData.ambient=active=>{cursor.visible=!active};
   const smudge=canvasTexture(512,384,(g,w,h)=>{const R=rng(13);g.fillStyle='#fff';g.fillRect(0,0,w,h);for(let i=0;i<46;i++){g.fillStyle=`rgba(90,90,90,${.04+R()*.1})`;g.beginPath();g.ellipse(R()*w,R()*h,16+R()*20,20+R()*26,R()*3,0,7);g.fill()}},{srgb:false});
   const glass=mesh(new THREE.PlaneGeometry(W-.004,H-.004),new THREE.MeshPhysicalMaterial({color:'#000',roughness:.09,roughnessMap:smudge,metalness:0,transparent:true,opacity:.22,clearcoat:1,clearcoatRoughness:.06,envMapIntensity:1.5}),[0,H/2,.0048]);add(pivot,glass);
   root.userData.parts={pivot,W,H};
@@ -509,7 +509,7 @@ Workshop.props=function(THREE,kit,carParts,{dressed=false}={}){
   for(const s of [-1,1])add(root,tube([[s*(w/2+.014),.5,-.11],[s*(w/2+.05),.46,-.05],[s*(w/2+.05),.46,.05],[s*(w/2+.014),.5,.11]],.011,std('#a58c62',.9),{segments:20,sides:8}));
   // stencil
   const stencil=canvasTexture(512,256,(g,W,H)=>{g.clearRect(0,0,W,H);g.fillStyle='rgba(232,224,206,.92)';g.font='700 82px "League Spartan",Arial,sans-serif';g.textAlign='center';g.fillText('CONTACT',W/2,110);g.font='500 34px "IBM Plex Mono",Menlo,monospace';g.fillText('KM / THIS WAY UP',W/2,170);g.globalCompositeOperation='destination-out';const R=rng(29);for(let i=0;i<1300;i++){g.fillStyle=`rgba(0,0,0,${R()*.7})`;g.fillRect(R()*W,R()*H,1+R()*5,1+R()*3)}});
-  add(root,mesh(new THREE.PlaneGeometry(.64,.32),new THREE.MeshStandardMaterial({map:stencil,transparent:true,roughness:.8}),[.0,.3,d/2+.0125]));
+  add(root,mesh(new THREE.PlaneGeometry(.64,.32),new THREE.MeshStandardMaterial({map:stencil,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-2,roughness:.8}),[.0,.3,d/2+.0125]));
   return shadow(root);
  }
  /* ---------- the bench against the wall: what makes it a place where things get made ---------- */

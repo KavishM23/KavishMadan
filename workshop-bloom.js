@@ -4,7 +4,7 @@ import {FullScreenQuad} from 'three/addons/postprocessing/Pass.js';
 const vertexShader='varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}';
 export function workshopBloom(renderer,scene,camera){
  const targets=[0,1].map(()=>new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType,depthBuffer:false}));
- const input=new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType});
+ const input=new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType,samples:4});
  const blur=new THREE.ShaderMaterial({depthTest:false,depthWrite:false,vertexShader,
   uniforms:{source:{value:null},stepUV:{value:new THREE.Vector2()}},
   fragmentShader:`varying vec2 vUv;uniform sampler2D source;uniform vec2 stepUV;

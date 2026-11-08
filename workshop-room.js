@@ -127,11 +127,11 @@ Workshop.room=function(THREE,kit,{bakes=null,dressed=false}={}){
  function baked(map,bump,name,floor=false){
   const mat=new THREE.ShaderMaterial({
    defines:floor?{FLOOR:1}:{},
-   uniforms:{tMap:{value:map},tLight:{value:(bakes&&bakes[name])||white},tBump:{value:bump},tRough:{value:floor?floorRough:null},tMirror:{value:null},uMirror:{value:0},uRes:{value:new THREE.Vector2(1,1)},uGain:{value:bakes&&bakes[name]?1/.4*.8:1},uTexel:{value:floor?.0016:.0022},uTint:shared.tint,uLamp:shared.lamp,uAmb:shared.amb,uName:{value:0}},
+   uniforms:{tMap:{value:map},tLight:{value:(bakes&&bakes[name])||white},tBump:{value:bump},tRough:{value:floor?floorRough:null},tMirror:{value:null},uMirror:{value:0},uMirrorProjection:{value:new THREE.Matrix4()},uGain:{value:bakes&&bakes[name]?1/.4*.8:1},uTexel:{value:floor?.0016:.0022},uTint:shared.tint,uLamp:shared.lamp,uAmb:shared.amb,uName:{value:0}},
    vertexShader:'varying vec2 vUv;varying vec3 vW;void main(){vUv=uv;vec4 w=modelMatrix*vec4(position,1.);vW=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}',
    fragmentShader:`varying vec2 vUv;varying vec3 vW;uniform sampler2D tMap,tLight,tBump;uniform float uGain,uTexel,uName,uLamp;uniform vec3 uTint,uAmb;
    #ifdef FLOOR
-   uniform sampler2D tRough,tMirror;uniform float uMirror;uniform vec2 uRes;
+   uniform sampler2D tRough,tMirror;uniform float uMirror;uniform mat4 uMirrorProjection;
    #endif
    void main(){
     vec3 c=texture2D(tMap,vUv).rgb,alb=c;
@@ -144,7 +144,9 @@ Workshop.room=function(THREE,kit,{bakes=null,dressed=false}={}){
     if(uMirror>0.){
      vec3 V=normalize(cameraPosition-vW);float f=.05+.95*pow(1.-max(V.y,0.),5.);
      float rough=texture2D(tRough,vUv).r;
-     vec2 s=gl_FragCoord.xy/uRes;s.y=1.-s.y;s+=vec2(bx-b,by-b)*.05;
+     vec4 projected=uMirrorProjection*vec4(vW,1.);
+     vec2 s=projected.xy/max(.0001,projected.w)*.5+.5;
+     s+=vec2(bx-b,by-b)*.03;
      float edge=smoothstep(0.,.018,s.x)*smoothstep(0.,.018,s.y)*smoothstep(0.,.018,1.-s.x)*smoothstep(0.,.018,1.-s.y);
      vec3 m=textureLod(tMirror,clamp(s,vec2(.001),vec2(.999)),1.2+rough*3.2).rgb;
      float k=clamp(f*(1.25-rough)*uMirror*edge,0.,.6);c=c*(1.-k*.45)+m*k;
@@ -200,7 +202,7 @@ Workshop.room=function(THREE,kit,{bakes=null,dressed=false}={}){
   for(let i=0;i<=nz;i++)edgeBox(.05,WY1-WY0,i%nz?.04:.07,frame,[wx,(WY0+WY1)/2,WZ0+i*zs]);
   for(let j=0;j<=ny;j++)edgeBox(.05,j%ny?.04:.07,WZ1-WZ0,frame,[wx,WY0+j*ys,(WZ0+WZ1)/2]);
  }
- const glass=mesh(new THREE.PlaneGeometry(WZ1-WZ0,WY1-WY0),new THREE.MeshPhysicalMaterial({color:'#dfe9e6',roughness:.12,transparent:true,opacity:.1,envMapIntensity:.9}),[wx-.01,(WY0+WY1)/2,(WZ0+WZ1)/2],[0,Math.PI/2,0]);add(root,glass);
+ const glass=mesh(new THREE.PlaneGeometry(WZ1-WZ0,WY1-WY0),new THREE.MeshPhysicalMaterial({color:'#dfe9e6',roughness:.12,transparent:true,opacity:.1,depthWrite:false,envMapIntensity:.9}),[wx-.01,(WY0+WY1)/2,(WZ0+WZ1)/2],[0,Math.PI/2,0]);add(root,glass);
  const outside=canvasTexture(1400,1100,(g,w,h)=>{
   const R=rng(66),sky=g.createLinearGradient(0,0,0,h);sky.addColorStop(0,'#f6fbf7');sky.addColorStop(.6,'#e7f0e0');sky.addColorStop(1,'#b9c79a');g.fillStyle=sky;g.fillRect(0,0,w,h);
   for(let i=0;i<620;i++){const x=R()*w,y=h*(.08+R()*R()*.96),r=26+R()*104,l=R(),c=l>.6?'142,172,86':l>.3?'98,132,62':'186,202,126',a=.07+R()*.17;const gr=g.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,`rgba(${c},${a})`);gr.addColorStop(1,`rgba(${c},0)`);g.fillStyle=gr;g.fillRect(x-r,y-r,r*2,r*2)}

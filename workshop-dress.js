@@ -66,9 +66,9 @@ export async function loadDressing(renderer,{phone=false}={}){
   emitters.push([o,source]);
  });
  for(const [o,source] of emitters)o.add(source);
- function glow(dark,phase=1,strip=1){
+ function glow(dark){
   for(const m of glowMats){
-   m.emissiveIntensity=m.name==='neon_tube'?(dark?1.65*phase:.24):(dark?1.75*(m.name==='strip_diffuser'?strip:1):0);
+   m.emissiveIntensity=m.name==='neon_tube'?(dark?1.65:.24):(dark?1.75:0);
   }
   for(const [o,source] of emitters){
    source.visible=o.material.emissiveIntensity>0;
@@ -91,7 +91,7 @@ export async function loadDressing(renderer,{phone=false}={}){
   return valid;
  }
  glow(false);
- return {root,manifest,setTheme,glow,materials:mats,
+ return {root,manifest,setTheme,materials:mats,
   attachProps(items){
    if(!dayProps)return null;
    const mounts={mounted_crate:items.crate.userData.parts.lid,mounted_trophy:items.trophy.userData.parts.cup,

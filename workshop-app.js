@@ -14,7 +14,8 @@ const params=new URLSearchParams(location.search);
 const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2,damp=(a,b,k,dt)=>a+(b-a)*(1-Math.exp(-k*dt)),smooth=t=>t*t*(3-2*t);
 const V=a=>new THREE.Vector3(...a),frame=()=>new Promise(r=>requestAnimationFrame(r)),home=()=>R.classList.contains('on-home');
 const fail=()=>{hero.classList.add('ws-failed');hero.classList.remove('ws-loading');if(wantContact)hero.classList.add('ws-contact');dispatchEvent(new Event('hero3d-failed'));dispatchEvent(new Event('workshop-failed'))};
-const BASE={rest:{p:[.65,4.58,15.8],t:[0,1.46,-.25]},far:{p:[1.1,7.2,23.5],t:[0,1.45,0]}};
+const BASE={rest:{p:[.48,3.45,12.55],t:[0,1.35,-.35]},far:{p:[1.1,5.8,18.4],t:[0,1.4,0]}};
+const ROOM_NEAR=.22, TRANSITION_NEAR=.05;
 
 /* ---- small sounds, made on the spot; they only ever follow a click ---- */
 const Sound=(()=>{
@@ -79,7 +80,7 @@ async function start(){
  await frame();
  const lights=lightScene(scene,{shadowSize:phone?1024:2048});
  progress('Preparing the first frame…');
- const camera=new THREE.PerspectiveCamera(31,1,.05,90);
+ const camera=new THREE.PerspectiveCamera(31,1,ROOM_NEAR,90);
  renderer.shadowMap.needsUpdate=true;renderer.setSize(8,8,false);renderer.render(scene,camera);
  room.ceiling.visible=false;
  const environments={};
@@ -89,7 +90,13 @@ async function start(){
  await frame();
 
  /* ---- sizing ---- */
- let W=1,H=1,best=null,fast=null,chainKey='',fastScale=.9,ratio=1,ao=!phone&&!params.has('noao'),fastAO=ao&&!dress,settleAt=0;
+ let W=1,H=1,best=null,fast=null,chainKey='',fastScale=.9,ratio=1;
+ const ao=!dress&&!phone&&!params.has('noao');
+ let fastAO=ao,settleAt=0;
+ function disposeChains(){
+  best?.dispose();
+  if(fast!==best)fast?.dispose();
+ }
  function size(){
   const r=hero.getBoundingClientRect();W=Math.max(1,Math.round(r.width));H=Math.max(1,Math.round(r.height));
   // Post-processing uses several full-size buffers. Cap their combined cost
@@ -99,9 +106,11 @@ async function start(){
   const pw=Math.round(W*ratio),ph=Math.round(H*ratio);
   const fw=Math.round(pw*fastScale),fh=Math.round(ph*fastScale),key=[pw,ph,fw,fh,fastAO].join();
   if(key!==chainKey){
-   chainKey=key;best?.dispose();fast?.dispose();
+   chainKey=key;disposeChains();
    best=buildComposer(renderer,scene,camera,pw,ph,{ao,samples:phone?2:4,aoDiv:2,aoSamples:16,denoise:12,bloom});
-   fast=buildComposer(renderer,scene,camera,fw,fh,{ao:fastAO,samples:0,aoDiv:2.6,aoSamples:6,denoise:4,smaa:true,bloom});
+   // The dressed room already has contact shading in its bake. Keep one image
+   // pipeline for the room so outlines and shading don't pop when motion ends.
+   fast=dress?best:buildComposer(renderer,scene,camera,fw,fh,{ao:fastAO,samples:0,aoDiv:2.6,aoSamples:6,denoise:4,smaa:true,bloom});
    mirrorGate.reset();
   }
   mirror?.size(pw,ph);dirty=true;
@@ -159,16 +168,18 @@ async function start(){
  /* ---- camera ---- */
  const pose={p:new THREE.Vector3(),t:new THREE.Vector3()},rest={p:V(BASE.rest.p),t:V(BASE.rest.t)},far={p:V(BASE.far.p),t:V(BASE.far.t)},Y=new THREE.Vector3(0,1,0),tmpP=new THREE.Vector3(),tmpT=new THREE.Vector3(),tmpFollow=new THREE.Vector3(),tmpChase=new THREE.Vector3(),tmpOff=new THREE.Vector3();
  function frameFor(aspect){
-  // narrower than the picture: stand further back, so the whole set stays in view
-  const need=clamp(1.72/aspect,1,3.6),k=1+(need-1)*.43;
+  // Allow the side walls to run out of frame while keeping the name and car in view.
+  const need=clamp(1.6/aspect,1,3.6),k=1+(need-1)*.36;
   rest.t.copy(V(BASE.rest.t));rest.p.copy(rest.t).add(V(BASE.rest.p).sub(rest.t).multiplyScalar(k));
-  if(aspect<1){const d=rest.p.distanceTo(rest.t);rest.t.y=1.21;rest.p.copy(rest.t).add(new THREE.Vector3(.035,.24,1).normalize().multiplyScalar(d))}
+  if(aspect<1){const d=rest.p.distanceTo(rest.t);rest.t.y=1.35;rest.p.copy(rest.t).add(new THREE.Vector3(.035,.18,1).normalize().multiplyScalar(d))}
   far.p.copy(V(BASE.far.t)).add(V(BASE.far.p).sub(V(BASE.far.t)).multiplyScalar(Math.max(1,k*.78)));
  }
  let dirty=true,running=false,last=0,intro=(reduce||!firstHome)?1:0,stage=null,hoverKey=null,focusKey=null,pendingKey=null,pending=null,time=0;
  let leanX=0,leanY=0,px=0,py=0,yaw=0,pitch=0,yawGoal=0,pitchGoal=0,dragging=false;const lean=new THREE.Vector3(),leanGoal=new THREE.Vector3(),offset=new THREE.Vector3();
 
  function camUpdate(dt){
+  const near=stage?TRANSITION_NEAR:ROOM_NEAR;
+  if(camera.near!==near){camera.near=near;camera.updateProjectionMatrix()}
   pose.p.lerpVectors(far.p,rest.p,reduce?1:ease(clamp(intro)));pose.t.lerpVectors(far.t,rest.t,reduce?1:ease(clamp(intro)));
   yaw=damp(yaw,yawGoal,dragging?10:2.1,dt);pitch=damp(pitch,pitchGoal,dragging?10:2.1,dt);
   if(!dragging){yawGoal=damp(yawGoal,0,1.3,dt);pitchGoal=damp(pitchGoal,0,1.3,dt)}
@@ -415,14 +426,13 @@ async function start(){
   g.uBg.value.setRGB(night?.003:.014,night?.006:.022,night?.01:.032);
   const [iris,stars]=stage?.m.iris?stage.m.iris(smooth(stage.v)):[3,0];
   g.uIris.value=iris;g.uStars.value=stars;g.uAspect.value=W/H;g.uDark.value=stage?.m.dark?1:0;
-  if(mirror&&!ambientOnly&&mirrorGate.due(performance.now(),chain===best))mirror.render(chain.w,chain.h);
+  if(mirror&&!ambientOnly&&mirrorGate.due(performance.now(),!settleAt&&chain===best))mirror.render();
   if(chain.glow){bloom.render(chain.w,chain.h);chain.glow.uniforms.strength.value=night?.48:.22}
-  if(chain.gtao)chain.gtao.reuseAO=ambientOnly;
   chain.composer.render();
  }
  let freeTimer=0;
  function freeChains(){
-  best?.dispose();fast?.dispose();best=fast=null;chainKey='';
+  disposeChains();best=fast=null;chainKey='';
   mirror?.free();bloom?.free();mirrorGate.reset();renderer.renderLists.dispose();
  }
  function scheduleAmbient(){
@@ -446,8 +456,7 @@ async function start(){
    ambientTime+=ambientMark?Math.min(.32,(now-ambientMark)*.001):0;
    ambientMark=now;
    dust.update(ambientTime,dark,ratio);
-   dress.glow(dark,1+.055*Math.sin(ambientTime*1.25),1-.05*Math.pow(Math.max(0,Math.sin(ambientTime*.83)),16));
-   items.tablet.userData.ambient(ambientTime,models.tablet.h>.05||stage?.key==='tablet');
+   items.tablet.userData.ambient(models.tablet.h>.05||stage?.key==='tablet');
    items.plant.userData.air=Math.sin(ambientTime*.68)*.007;
   }
   const dt=Math.min(.05,(now-last)/1000);last=now;time+=dt;
@@ -473,8 +482,11 @@ async function start(){
    camUpdate(dt);if(hoverKey)place(hoverKey);if(focusKey)place(focusKey);
    draw(fast);dirty=false;settleAt=now+170;
    // keep it smooth on slower machines: shed detail from the moving frames, never from the still one
-   if(++samples>30){samples=0;slow=frameTime/30>30?slow+1:0;frameTime=0;if(slow>=2&&(fastAO||fastScale>.68)){slow=0;if(fastAO)fastAO=false;else fastScale=Math.max(.68,fastScale-.11);size()}}
-   frameTime+=(now-lastDraw);lastDraw=now;
+   if(!dress){
+    if(++samples>30){samples=0;slow=frameTime/30>30?slow+1:0;frameTime=0;if(slow>=2&&(fastAO||fastScale>.68)){slow=0;if(fastAO)fastAO=false;else fastScale=Math.max(.68,fastScale-.11);size()}}
+    frameTime+=(now-lastDraw);
+   }
+   lastDraw=now;
   }else if(settleAt&&now>=settleAt){settleAt=0;lastDraw=now;draw(best)}
   else if(ambientDue&&!settleAt)draw(best,true);
   ambientDue=false;

@@ -22,7 +22,8 @@ export function workshopDust(scene,phone){
     vec4 v=modelViewMatrix*vec4(p,1.);
     gl_Position=projectionMatrix*v;
     gl_PointSize=clamp(36.*density/-v.z,1.4,5.);
-    opacity=.16*exp(-pow((p.y-2.18+(p.x+5.1)*.23)/.7,2.))*(.68+.32*sin(p.z*4.+phase*.35));
+    float distanceFromLight=(p.y-2.18+(p.x+5.1)*.23)/.7;
+    opacity=.13*exp(-distanceFromLight*distanceFromLight)*(.8+.2*sin(p.z*4.+phase*.35));
    }`,
   fragmentShader:`varying float opacity;
    void main(){float d=length(gl_PointCoord-.5);gl_FragColor=vec4(1.,.91,.73,(1.-smoothstep(.03,.5,d))*opacity);}`

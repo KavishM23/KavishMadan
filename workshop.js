@@ -22,9 +22,9 @@ const Grade={
   float l=dot(c,vec3(.3,.59,.11));c=mix(vec3(l),c,1.05);c=mix(c,c*vec3(1.02,1.,.965),.5);
   c+=(hash(vUv*vec2(1731.,977.)+uTime)-.5)*uGrain*(1.-l*.55);
   if(uIris<2.5){
-   float r=length((vUv-.5)*vec2(uAspect,1.)),m=smoothstep(uIris,uIris*.42,r);
+   float r=length((vUv-.5)*vec2(uAspect,1.)),m=1.-smoothstep(uIris*.42,max(.0001,uIris),r);
    vec3 bg=uDark>.5?vec3(.012,.016,.03):uBg;
-   if(uStars>0.){vec2 g=(vUv-.5)*vec2(uAspect,1.)*46.,id=floor(g);float s=step(.93,hash(id)),d=length(fract(g)-.5-(vec2(hash(id+3.),hash(id+7.))-.5)*.6);bg+=uStars*s*smoothstep(.1,.0,d)*(.5+hash(id+1.)*.8)*vec3(.9,.92,1.);}
+   if(uStars>0.){vec2 g=(vUv-.5)*vec2(uAspect,1.)*46.,id=floor(g);float s=step(.93,hash(id)),d=length(fract(g)-.5-(vec2(hash(id+3.),hash(id+7.))-.5)*.6);bg+=uStars*s*(1.-smoothstep(0.,.1,d))*(.5+hash(id+1.)*.8)*vec3(.9,.92,1.);}
    c=mix(bg,c,m);
   }
   gl_FragColor=vec4(c*uLift,1.);}`
@@ -103,10 +103,10 @@ export function createMirror(renderer,scene,room,camera){
  return {
   size(w,h){rt.setSize(Math.round(w/2.4),Math.round(h/2.4))},
   free(){rt.dispose()},
-  render(w,h){
-   u.uRes.value.set(w,h);
+  render(){
    cam.fov=camera.fov;cam.aspect=camera.aspect;cam.projectionMatrix.copy(camera.projectionMatrix);cam.projectionMatrixInverse.copy(camera.projectionMatrixInverse);
    camera.getWorldDirection(dir);cam.position.set(camera.position.x,-camera.position.y,camera.position.z);cam.up.set(0,1,0);cam.lookAt(cam.position.x+dir.x,cam.position.y-dir.y,cam.position.z+dir.z);cam.updateMatrixWorld();
+   u.uMirrorProjection.value.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse);
    room.surfaces.floor.visible=room.slab.visible=false;
    const before=renderer.getRenderTarget();renderer.setRenderTarget(rt);renderer.clear();renderer.render(scene,cam);renderer.setRenderTarget(before);
    room.surfaces.floor.visible=room.slab.visible=true;
@@ -208,21 +208,13 @@ export function buildComposer(renderer,scene,camera,w,h,{ao=true,samples=4,aoDiv
   const full=gtao.setSize.bind(gtao);gtao.setSize=(a,b)=>full(Math.round(a/aoDiv),Math.round(b/aoDiv)); // soft contact shadows don't need every pixel
   gtao.updateGtaoMaterial({radius:.34,distanceExponent:1.5,thickness:.7,scale:1.25,samples:aoSamples,distanceFallOff:1,screenSpaceRadius:false});
   gtao.updatePdMaterial({lumaPhi:10,depthPhi:2,normalPhi:3,radius:3,radiusExponent:1.1,rings:2,samples:denoise});
-  gtao.blendIntensity=bloom?.48:.7;composer.addPass(gtao);
+  gtao.blendIntensity=.7;composer.addPass(gtao);
   // Soft transparent cards (the car's contact shadow, lamp glows) must not enter the AO normal pass, or they leave a dark rectangle.
   const aoRender=gtao.render.bind(gtao);
-  let hasAO=false;
-  gtao.render=(renderer,write,read,...args)=>{
-   if(gtao.reuseAO&&hasAO){
-    // Ambient-only frames keep the same camera and geometry. Reuse the last contact shading.
-    gtao.copyMaterial.uniforms.tDiffuse.value=read.texture;
-    gtao.renderPass(renderer,gtao.copyMaterial,write);
-    gtao.renderPass(renderer,gtao.blendMaterial,write);
-    return;
-   }
+  gtao.render=(...args)=>{
    const skip=[];
    scene.traverse(o=>{if(o.visible&&(o.userData.noAO||o.isSprite)){o.visible=false;skip.push(o)}});
-   try{aoRender(renderer,write,read,...args);hasAO=true}
+   try{aoRender(...args)}
    finally{skip.forEach(o=>o.visible=true)}
   };
  }
