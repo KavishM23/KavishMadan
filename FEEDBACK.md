@@ -280,7 +280,7 @@ Quiet ambient music now plays behind the site. It is made in the browser rather 
 - The guitar stand, crate hinge hardware, laptop ports, trophy collars and tyre liner have Blender geometry. Dust, a laptop caret and the practical lights add subtle motion with reduced-motion, visibility and route checks.
 
 ## Inside the Workshop
-- Keep the wide opening reveal, then settle into the room with the F1 car in front, the workbench still in view and the whole painted name readable. The continuous concrete covers the front edge. Keep the top open so the Kessler flight clears the Workshop without a roof popping away. The overhead work light still lights the car bay in both themes.
+- Keep the wide opening reveal, then settle into the room with the F1 car in front, the workbench still in view and the whole painted name readable. The continuous concrete covers the front edge. Keep the top open and free of hanging fixtures so the Kessler flight clears the Workshop. Keep the soft light over the car bay in both themes.
 
 ## Lighter to run and brighter to look at
 - Lifted the exposure in both Workshop themes and added a little fill to the night shadows. The Workshop combines its final render effects, leaves the night scene still when untouched, and defers the renderer for About, Code and Awards until needed. The MP4/4 downloads in parallel at 7 MB with its geometry and colour textures preserved.

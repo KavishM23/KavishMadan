@@ -25,15 +25,6 @@ def build(W):
     R('sign supply conduit', (.18, 2.213, -3.762), (.18, 1.94, -3.762), .008, steel, g)
     B('sign junction box', (.084, .085, .05), (.18, 1.905, -3.77), steel, g)
 
-    # An actual luminaire at the source of the night pool over the car.
-    diffuser = M('strip_diffuser', '#eee4cb', .42, emit='#ffe5b4', emit_str=0, glow=True)
-    P = frame('strip lamp', (.2, 4.045, -.1))
-    B('strip housing', (1.78, .1, .24), (0, 0, 0), steel, g, parent=P, bevel=.025)
-    B('strip diffuser', (1.63, .028, .16), (0, -.06, 0), diffuser, g, parent=P, bevel=.013)
-    for x in (-.67, .67):
-        R('strip hanger', (x, .05, 0), (x, .255, 0), .009, steel, g, parent=P)
-        B('strip mounting plate', (.09, .018, .07), (x, .249, 0), steel, g, parent=P)
-
     # Fixed pieces belong to the scene. They line up with the live hinge/stand/props.
     Q = frame('crate fixed hardware', (4.3, 0, .42), (0, -1.28, 0))
     for x in (-.31, .31):
