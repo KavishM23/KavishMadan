@@ -14,7 +14,7 @@ const params=new URLSearchParams(location.search);
 const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2,damp=(a,b,k,dt)=>a+(b-a)*(1-Math.exp(-k*dt)),smooth=t=>t*t*(3-2*t);
 const V=a=>new THREE.Vector3(...a),frame=()=>new Promise(r=>requestAnimationFrame(r)),home=()=>R.classList.contains('on-home');
 const fail=()=>{hero.classList.add('ws-failed');hero.classList.remove('ws-loading');if(wantContact)hero.classList.add('ws-contact');dispatchEvent(new Event('hero3d-failed'));dispatchEvent(new Event('workshop-failed'))};
-const BASE={rest:{p:[.48,3.45,12.55],t:[0,1.35,-.35]},far:{p:[1.1,5.8,18.4],t:[0,1.4,0]}};
+const BASE={rest:{p:[1.46,2.67,9.48],t:[.25,1.23,-.42]},far:{p:[1.1,5.8,18.4],t:[0,1.4,0]}};
 const ROOM_NEAR=.22, TRANSITION_NEAR=.05;
 
 /* ---- small sounds, made on the spot; they only ever follow a click ---- */
@@ -168,10 +168,12 @@ async function start(){
  /* ---- camera ---- */
  const pose={p:new THREE.Vector3(),t:new THREE.Vector3()},rest={p:V(BASE.rest.p),t:V(BASE.rest.t)},far={p:V(BASE.far.p),t:V(BASE.far.t)},Y=new THREE.Vector3(0,1,0),tmpP=new THREE.Vector3(),tmpT=new THREE.Vector3(),tmpFollow=new THREE.Vector3(),tmpChase=new THREE.Vector3(),tmpOff=new THREE.Vector3();
  function frameFor(aspect){
-  // Allow the side walls to run out of frame while keeping the name and car in view.
-  const need=clamp(1.6/aspect,1,3.6),k=1+(need-1)*.36;
+  // The reveal shows the whole set; the resting view puts the car and bench in the room with you.
+  const need=clamp(1.72/aspect,1,3.6),k=1+(need-1)*.42;
   rest.t.copy(V(BASE.rest.t));rest.p.copy(rest.t).add(V(BASE.rest.p).sub(rest.t).multiplyScalar(k));
-  if(aspect<1){const d=rest.p.distanceTo(rest.t);rest.t.y=1.35;rest.p.copy(rest.t).add(new THREE.Vector3(.035,.18,1).normalize().multiplyScalar(d))}
+  // On tall panes, straighten the angle rather than clipping the name at the right edge.
+  const narrow=clamp((1.35-aspect)/.48);
+  rest.p.x-=narrow*1.06;rest.t.x-=narrow*.21;
   far.p.copy(V(BASE.far.t)).add(V(BASE.far.p).sub(V(BASE.far.t)).multiplyScalar(Math.max(1,k*.78)));
  }
  let dirty=true,running=false,last=0,intro=(reduce||!firstHome)?1:0,stage=null,hoverKey=null,focusKey=null,pendingKey=null,pending=null,time=0;
@@ -180,6 +182,8 @@ async function start(){
  function camUpdate(dt){
   const near=stage?TRANSITION_NEAR:ROOM_NEAR;
   if(camera.near!==near){camera.near=near;camera.updateProjectionMatrix()}
+  // Keep the ceiling through the room shot, then clear it once the flight sky has come in.
+  room.lining.visible=stage?.key!=='satellite'||smooth(stage.v)<.22;
   pose.p.lerpVectors(far.p,rest.p,reduce?1:ease(clamp(intro)));pose.t.lerpVectors(far.t,rest.t,reduce?1:ease(clamp(intro)));
   yaw=damp(yaw,yawGoal,dragging?10:2.1,dt);pitch=damp(pitch,pitchGoal,dragging?10:2.1,dt);
   if(!dragging){yawGoal=damp(yawGoal,0,1.3,dt);pitchGoal=damp(pitchGoal,0,1.3,dt)}
@@ -515,14 +519,17 @@ async function start(){
   renderer.toneMappingExposure=dark?EXPOSURE.night:EXPOSURE.day;
   applyLightmaps(bakedNight?surfaces:bakes);surfaceLight(bakedNight?'night':'day');
   scene.background.set(stageColor(dark));
+  room.shared.stage.value.copy(scene.background);
   room.shared.tint.value.setRGB(dark&&!bakedNight?.13:1,dark&&!bakedNight?.17:1,dark&&!bakedNight?.26:1);
   room.shared.lamp.value=dark&&!bakedNight?.34:0;
+  room.shared.worklight.value=dark?.11:.08;
   room.surfaces.back.material.uniforms.uName.value=dark?.67:0;
   room.view.material.uniforms.uSky.value.setRGB(dark?.05:1,dark?.08:1,dark?.2:1);
+  room.lining.material.uniforms.uNight.value=dark?1:0;
   lights.sun.intensity=dark?0:1.7;
   lights.sky.intensity=dark?.22:1.08;
   lights.fill.intensity=dark?.25:1.12;
-  lights.lamp.intensity=dark?15:0;
+  lights.lamp.intensity=dark?17:4;
   envBase.forEach((v,m)=>{m.envMapIntensity=v*(dark?.82:1.14)});
   dust?.hide();
   scene.environment=environments[theme]||=reflectionsFrom(renderer,scene,Object.values(items),{size:phone?256:512});

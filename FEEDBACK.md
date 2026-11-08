@@ -278,3 +278,6 @@ Quiet ambient music now plays behind the site. It is made in the browser rather 
 - The home scene has a visible slab edge and dark surroundings. The overhead work light sits above the painted name, and the KM sign adds a small teal pool at night.
 - The day and night Cycles rigs now light the interactive props as well as the room. Moving parts keep their existing pivots and blend toward the live rig as they move. The MP4/4 stays live with a room reflection for each theme.
 - The guitar stand, crate hinge hardware, laptop ports, trophy collars and tyre liner have Blender geometry. Dust, a laptop caret and the practical lights add subtle motion with reduced-motion, visibility and route checks.
+
+## Inside the Workshop
+- Keep the wide opening reveal, then settle into the room with the F1 car in front, the workbench still in view and the whole painted name readable. The ceiling and continuous concrete replace the exposed top and front edges of the cutaway. The overhead work light gives the car bay its own pool in both themes.

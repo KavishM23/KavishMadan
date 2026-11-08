@@ -1,4 +1,4 @@
-/* The room: a set with a floor and three walls, standing in the dark like a stage model.
+/* The room opens as a cutaway and fills the frame as the camera moves closer.
    Floor and walls take their light from baked maps, so their shadows stay soft at any camera angle. */
 Workshop.room=function(THREE,kit,{bakes=null,dressed=false}={}){
  const {mesh,box,add,canvasTexture,rng,bar}=kit;
@@ -122,35 +122,47 @@ Workshop.room=function(THREE,kit,{bakes=null,dressed=false}={}){
  },{srgb:false});
 
 
- const shared={tint:{value:new THREE.Color(1,1,1)},lamp:{value:0},amb:{value:new THREE.Color(.38,.355,.31)}};
+ const shared={tint:{value:new THREE.Color(1,1,1)},lamp:{value:0},amb:{value:new THREE.Color(.38,.355,.31)},stage:{value:new THREE.Color('#1b2630')},worklight:{value:0}};
  const white=new THREE.DataTexture(new Uint8Array([255,255,255,255]),1,1);white.needsUpdate=true;
  function baked(map,bump,name,floor=false){
   const mat=new THREE.ShaderMaterial({
    defines:floor?{FLOOR:1}:{},
-   uniforms:{tMap:{value:map},tLight:{value:(bakes&&bakes[name])||white},tBump:{value:bump},tRough:{value:floor?floorRough:null},tMirror:{value:null},uMirror:{value:0},uMirrorProjection:{value:new THREE.Matrix4()},uGain:{value:bakes&&bakes[name]?1/.4*.8:1},uTexel:{value:floor?.0016:.0022},uTint:shared.tint,uLamp:shared.lamp,uAmb:shared.amb,uName:{value:0}},
+   uniforms:{tMap:{value:map},tLight:{value:(bakes&&bakes[name])||white},tBump:{value:bump},tRough:{value:floor?floorRough:null},tMirror:{value:null},uMirror:{value:0},uMirrorProjection:{value:new THREE.Matrix4()},uGain:{value:bakes&&bakes[name]?1/.4*.8:1},uTexel:{value:floor?.0016:.0022},uTint:shared.tint,uLamp:shared.lamp,uAmb:shared.amb,uStage:shared.stage,uWorklight:shared.worklight,uName:{value:0}},
    vertexShader:'varying vec2 vUv;varying vec3 vW;void main(){vUv=uv;vec4 w=modelMatrix*vec4(position,1.);vW=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}',
    fragmentShader:`varying vec2 vUv;varying vec3 vW;uniform sampler2D tMap,tLight,tBump;uniform float uGain,uTexel,uName,uLamp;uniform vec3 uTint,uAmb;
    #ifdef FLOOR
-   uniform sampler2D tRough,tMirror;uniform float uMirror;uniform mat4 uMirrorProjection;
+   uniform sampler2D tRough,tMirror;uniform float uMirror,uWorklight;uniform mat4 uMirrorProjection;uniform vec3 uStage;
    #endif
    void main(){
-    vec3 c=texture2D(tMap,vUv).rgb,alb=c;
-    float b=texture2D(tBump,vUv).r,bx=texture2D(tBump,vUv+vec2(uTexel,0.)).r,by=texture2D(tBump,vUv+vec2(0.,uTexel)).r;
+    vec2 uv=vUv,lightUv=vUv;
+    #ifdef FLOOR
+    // Outside the room, borrow only concrete near its edge. Do not repeat the rug or baked shadows.
+    vec2 outside=max(vec2(0.),max(-uv,uv-1.));
+    float apron=max(outside.x,outside.y);
+    uv=clamp(uv,0.,1.)+sign(.5-uv)*min(outside,.11);
+    lightUv=clamp(lightUv,0.,1.);
+    #endif
+    vec3 c=texture2D(tMap,uv).rgb,alb=c;
+    float b=texture2D(tBump,uv).r,bx=texture2D(tBump,uv+vec2(uTexel,0.)).r,by=texture2D(tBump,uv+vec2(0.,uTexel)).r;
     float relief=1.+(bx-b)*1.5+(b-by)*.9;
-    c*=(texture2D(tLight,vUv).rgb*uGain+uAmb)*relief*uTint;
+    c*=(texture2D(tLight,lightUv).rgb*uGain+uAmb)*relief*uTint;
     if(uLamp>0.){vec3 L=vec3(.2,3.6,.4)-vW;c+=alb*relief*vec3(1.,.8,.56)*uLamp/(1.+dot(L,L)*.1);}
     if(uName>0.){float l=dot(alb,vec3(.3,.59,.11));c=mix(c,vec3(.8,.62,.4),uName*(1.-smoothstep(.05,.22,l)));}
     #ifdef FLOOR
+    // The overhead work light makes a broad pool at the car bay, including the approach to it.
+    vec2 fromLamp=(vW.xz-vec2(.35,-.05))*vec2(.32,.47);
+    c+=alb*vec3(1.,.86,.69)*uWorklight*(1.-smoothstep(.06,1.3,dot(fromLamp,fromLamp)));
     if(uMirror>0.){
      vec3 V=normalize(cameraPosition-vW);float f=.05+.95*pow(1.-max(V.y,0.),5.);
-     float rough=texture2D(tRough,vUv).r;
+     float rough=texture2D(tRough,uv).r;
      vec4 projected=uMirrorProjection*vec4(vW,1.);
      vec2 s=projected.xy/max(.0001,projected.w)*.5+.5;
      s+=vec2(bx-b,by-b)*.03;
      float edge=smoothstep(0.,.018,s.x)*smoothstep(0.,.018,s.y)*smoothstep(0.,.018,1.-s.x)*smoothstep(0.,.018,1.-s.y);
      vec3 m=textureLod(tMirror,clamp(s,vec2(.001),vec2(.999)),1.2+rough*3.2).rgb;
-     float k=clamp(f*(1.25-rough)*uMirror*edge,0.,.6);c=c*(1.-k*.45)+m*k;
+     float k=clamp(f*(1.25-rough)*uMirror*edge,0.,.6)*(1.-smoothstep(0.,.18,apron));c=c*(1.-k*.45)+m*k;
     }
+    c=mix(c,uStage,smoothstep(0.,.61,apron));
     #endif
     gl_FragColor=vec4(c,1.);
    }`});
@@ -159,7 +171,11 @@ Workshop.room=function(THREE,kit,{bakes=null,dressed=false}={}){
 
  const root=new THREE.Group(),surfaces={};
  const floorMat=baked(floorMap,floorBump,'floor',true);
- const floor=mesh(new THREE.PlaneGeometry(RW,RD),floorMat,[0,0,0],[-Math.PI/2,0,0]);floor.receiveShadow=true;add(root,floor);surfaces.floor=floor;
+ // Continue the concrete past the open front. World-space UVs preserve the original bake alignment.
+ const side=3,front=6,floorGeo=new THREE.PlaneGeometry(RW+side*2,RD+front);
+ const floorPos=floorGeo.attributes.position,floorUv=floorGeo.attributes.uv;
+ for(let i=0;i<floorUv.count;i++)floorUv.setXY(i,.5+floorPos.getX(i)/RW,.5+(floorPos.getY(i)-front/2)/RD);
+ const floor=mesh(floorGeo,floorMat,[0,0,front/2],[-Math.PI/2,0,0]);floor.receiveShadow=true;add(root,floor);surfaces.floor=floor;
  const wall=(name,map,w,p,r,geo)=>{const m=mesh(geo||new THREE.PlaneGeometry(w,RH),baked(map,plasterBump,name),p,r);m.receiveShadow=true;add(root,m);surfaces[name]=m;return m};
  wall('back',backMap,RW,[0,RH/2,-HZ],[0,0,0]);
  wall('right',sideMap,RD,[HX,RH/2,0],[0,-Math.PI/2,0]);
@@ -169,6 +185,20 @@ Workshop.room=function(THREE,kit,{bakes=null,dressed=false}={}){
  const hole=new THREE.Path();hole.moveTo(-WZ1,WY0-RH/2);hole.lineTo(-WZ1,WY1-RH/2);hole.lineTo(-WZ0,WY1-RH/2);hole.lineTo(-WZ0,WY0-RH/2);hole.closePath();sheet.holes.push(hole);
  const leftGeo=new THREE.ShapeGeometry(sheet,1);{const p=leftGeo.attributes.position,uv=leftGeo.attributes.uv;for(let i=0;i<p.count;i++)uv.setXY(i,(p.getX(i)+HZ)/RD,(p.getY(i)+RH/2)/RH)}
  wall('left',sideMap,RD,[-HX,RH/2,0],[0,Math.PI/2,0],leftGeo);
+
+ // Only the underside is visible. From the high opening shot the set is still a cutaway.
+ const roofDepth=RD+4;
+ const lining=mesh(new THREE.PlaneGeometry(RW,roofDepth),new THREE.ShaderMaterial({
+  uniforms:{tPlaster:{value:sideMap},uNight:{value:0}},
+  vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+  fragmentShader:`varying vec2 vUv;uniform sampler2D tPlaster;uniform float uNight;
+   void main(){
+    float shade=1.-.28*smoothstep(0.,.65,vUv.y)-.13*smoothstep(.35,1.,vUv.x);
+    float grain=texture2D(tPlaster,vec2(vUv.x,.12+vUv.y*.46)).r;
+    vec3 light=mix(vec3(.41,.36,.29),vec3(.095,.077,.062),uNight);
+    gl_FragColor=vec4(light*shade*(.83+grain*.32),1.);
+   }`}),[0,RH,2],[Math.PI/2,0,0]);
+ add(root,lining);
 
  /* ---- the outside of the set: walls with thickness, on a concrete slab ---- */
  const shell=new THREE.MeshStandardMaterial({color:'#c9b49a',roughness:.92,side:THREE.BackSide});
@@ -219,5 +249,5 @@ Workshop.room=function(THREE,kit,{bakes=null,dressed=false}={}){
  /* a ceiling that nobody sees: it only keeps the sun and the sky out while the shadows are made */
  const ceiling=mesh(new THREE.BoxGeometry(RW+4,.1,RD+4),new THREE.MeshBasicMaterial({colorWrite:false,depthWrite:false}),[0,RH+.08,0]);ceiling.castShadow=true;add(root,ceiling);
 
- return {root,surfaces,ceiling,view,slab,shared,dims:{RW,RD,RH,HX,HZ,WZ0,WZ1,WY0,WY1}};
+ return {root,surfaces,ceiling,lining,view,slab,shared,dims:{RW,RD,RH,HX,HZ,WZ0,WZ1,WY0,WY1}};
 };
