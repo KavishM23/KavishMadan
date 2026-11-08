@@ -186,20 +186,6 @@ Workshop.room=function(THREE,kit,{bakes=null,dressed=false}={}){
  const leftGeo=new THREE.ShapeGeometry(sheet,1);{const p=leftGeo.attributes.position,uv=leftGeo.attributes.uv;for(let i=0;i<p.count;i++)uv.setXY(i,(p.getX(i)+HZ)/RD,(p.getY(i)+RH/2)/RH)}
  wall('left',sideMap,RD,[-HX,RH/2,0],[0,Math.PI/2,0],leftGeo);
 
- // Only the underside is visible. From the high opening shot the set is still a cutaway.
- const roofDepth=RD+4;
- const lining=mesh(new THREE.PlaneGeometry(RW,roofDepth),new THREE.ShaderMaterial({
-  uniforms:{tPlaster:{value:sideMap},uNight:{value:0}},
-  vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-  fragmentShader:`varying vec2 vUv;uniform sampler2D tPlaster;uniform float uNight;
-   void main(){
-    float shade=1.-.28*smoothstep(0.,.65,vUv.y)-.13*smoothstep(.35,1.,vUv.x);
-    float grain=texture2D(tPlaster,vec2(vUv.x,.12+vUv.y*.46)).r;
-    vec3 light=mix(vec3(.41,.36,.29),vec3(.095,.077,.062),uNight);
-    gl_FragColor=vec4(light*shade*(.83+grain*.32),1.);
-   }`}),[0,RH,2],[Math.PI/2,0,0]);
- add(root,lining);
-
  /* ---- the outside of the set: walls with thickness, on a concrete slab ---- */
  const shell=new THREE.MeshStandardMaterial({color:'#c9b49a',roughness:.92,side:THREE.BackSide});
  // These broad faces must stay separate when merged room hardware is batched;
@@ -249,5 +235,5 @@ Workshop.room=function(THREE,kit,{bakes=null,dressed=false}={}){
  /* a ceiling that nobody sees: it only keeps the sun and the sky out while the shadows are made */
  const ceiling=mesh(new THREE.BoxGeometry(RW+4,.1,RD+4),new THREE.MeshBasicMaterial({colorWrite:false,depthWrite:false}),[0,RH+.08,0]);ceiling.castShadow=true;add(root,ceiling);
 
- return {root,surfaces,ceiling,lining,view,slab,shared,dims:{RW,RD,RH,HX,HZ,WZ0,WZ1,WY0,WY1}};
+ return {root,surfaces,ceiling,view,slab,shared,dims:{RW,RD,RH,HX,HZ,WZ0,WZ1,WY0,WY1}};
 };

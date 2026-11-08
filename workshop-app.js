@@ -185,8 +185,6 @@ async function start(){
  function camUpdate(dt){
   const near=stage?TRANSITION_NEAR:ROOM_NEAR;
   if(camera.near!==near){camera.near=near;camera.updateProjectionMatrix()}
-  // Keep the ceiling through the room shot, then clear it once the flight sky has come in.
-  room.lining.visible=stage?.key!=='satellite'||smooth(stage.v)<.22;
   pose.p.lerpVectors(far.p,rest.p,reduce?1:ease(clamp(intro)));pose.t.lerpVectors(far.t,rest.t,reduce?1:ease(clamp(intro)));
   yaw=damp(yaw,yawGoal,dragging?10:2.1,dt);pitch=damp(pitch,pitchGoal,dragging?10:2.1,dt);
   if(!dragging){yawGoal=damp(yawGoal,0,1.3,dt);pitchGoal=damp(pitchGoal,0,1.3,dt)}
@@ -528,7 +526,6 @@ async function start(){
   room.shared.worklight.value=dark?.11:.08;
   room.surfaces.back.material.uniforms.uName.value=dark?.67:0;
   room.view.material.uniforms.uSky.value.setRGB(dark?.05:1,dark?.08:1,dark?.2:1);
-  room.lining.material.uniforms.uNight.value=dark?1:0;
   lights.sun.intensity=dark?0:1.7;
  lights.sky.intensity=dark?.25:1.08;
  lights.fill.intensity=dark?.31:1.12;
