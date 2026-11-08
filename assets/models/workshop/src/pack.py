@@ -3,7 +3,7 @@ python pack.py WORK OUT
 
 Each lightmap is stored as sRGB WebP scaled to its own 99.7th percentile; the scale goes in the
 manifest so the page restores real light levels. Phones get half-size maps."""
-import sys, os, json, glob
+import sys, os, json, glob, zlib
 import numpy as np
 from PIL import Image
 WORK, OUT = sys.argv[1], sys.argv[2]; os.makedirs(OUT, exist_ok=True)
@@ -31,7 +31,22 @@ for n, size in sizes.items():
     if n == 'prints': im.resize((1024, 1024), Image.LANCZOS).save(os.path.join(OUT, 'prints-mobile.webp'), quality=86, method=6)
 table = json.load(open(os.path.join(WORK, 'materials.json')))
 used = {k: v for k, v in table.items() if not k.startswith(('room_', 'proxy_'))}
-json.dump({'materials': used, 'textures': list(sizes), 'lightmaps': scales,
-           'glows': [[-3.59, 1.39, -3.4, .5, '#ffc27a'], [4.5, 2.62, -.76, .4, '#ffcb88']]},
+def pack_prop_light():
+    receivers = os.path.join(WORK, 'prop-receivers.json')
+    if not os.path.exists(receivers):
+        return None
+    with open(receivers) as file:
+        spec = dict(receivers=json.load(file), scales={})
+    for theme in ('day', 'night'):
+        light = np.nan_to_num(np.load(os.path.join(WORK, f'props-{theme}.npy')))
+        scale = max(.02, float(np.percentile(light.max(axis=1), 99.8)))
+        rgb = np.power(np.clip(light / scale, 0, 1), 1 / 2.2)
+        with open(os.path.join(OUT, f'props-{theme}.bin'), 'wb') as file:
+            file.write(zlib.compress(np.uint8(rgb * 255 + .5).tobytes(), 9))
+        spec['scales'][theme] = round(scale, 5)
+    return spec
+
+
+json.dump({'materials': used, 'textures': list(sizes), 'lightmaps': scales, 'propLight': pack_prop_light()},
           open(os.path.join(OUT, 'manifest.json'), 'w'))
 print(sum(os.path.getsize(os.path.join(OUT, x)) for x in os.listdir(OUT)) // 1024, 'KB in', OUT)

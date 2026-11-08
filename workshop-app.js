@@ -2,6 +2,8 @@
 import * as THREE from 'three';
 import {buildScene,lightScene,reflectionsFrom,buildComposer,createMirror,TARGETS,TOYS,CAR} from './workshop.js';
 import {LIGHT} from './workshop-dress.js';
+import {workshopBloom} from './workshop-bloom.js';
+import {workshopDust} from './workshop-atmosphere.js';
 /* Overall brightness of the room in each theme: lower is darker. */
 const EXPOSURE={day:.6,night:.46};
 
@@ -12,7 +14,7 @@ const params=new URLSearchParams(location.search);
 const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2,damp=(a,b,k,dt)=>a+(b-a)*(1-Math.exp(-k*dt)),smooth=t=>t*t*(3-2*t);
 const V=a=>new THREE.Vector3(...a),frame=()=>new Promise(r=>requestAnimationFrame(r)),home=()=>R.classList.contains('on-home');
 const fail=()=>{hero.classList.add('ws-failed');hero.classList.remove('ws-loading');if(wantContact)hero.classList.add('ws-contact');dispatchEvent(new Event('hero3d-failed'));dispatchEvent(new Event('workshop-failed'))};
-const BASE={rest:{p:[.52,2.62,9.35],t:[.15,.95,-.5]},far:{p:[1.1,7.2,19.5],t:[0,1.45,0]}};
+const BASE={rest:{p:[.65,4.58,15.8],t:[0,1.46,-.25]},far:{p:[1.1,7.2,23.5],t:[0,1.45,0]}};
 
 /* ---- small sounds, made on the spot; they only ever follow a click ---- */
 const Sound=(()=>{
@@ -61,14 +63,16 @@ async function start(){
  await Promise.race([Promise.all(['800 100px "League Spartan"','700 100px "League Spartan"','500 20px "IBM Plex Mono"'].map(f=>document.fonts.load(f))),new Promise(r=>setTimeout(r,1800))]);
  progress('Loading room lighting and textures…');
  const names=['floor','back','left','right'];
- const loadBake=(theme,n)=>new Promise(res=>new THREE.TextureLoader().load(
-  `assets/models/workshop/workshop/light-${theme}-${n}${phone?'-mobile':''}.webp`,
+ const loadLight=(url)=>new Promise(res=>new THREE.TextureLoader().load(url,
   t=>{t.colorSpace=THREE.SRGBColorSpace;res(t)},undefined,()=>res(null)));
- const bakes={};
- await Promise.all(names.map(async n=>{bakes[n]=await loadBake('day',n)||await new Promise(res=>new THREE.TextureLoader().load(`img/workshop-light-${n}.webp`,t=>{t.colorSpace=THREE.SRGBColorSpace;res(t)},undefined,()=>res(null)))}));
+ const loadBake=(theme,n)=>loadLight(`assets/models/workshop/workshop/light-${theme}-${n}${phone?'-mobile':''}.webp`);
+ const bakeSet=async(theme)=>Object.fromEntries(await Promise.all(names.map(async n=>[n,await loadBake(theme,n)])));
+ const bakes=await bakeSet('day');
  await frame();
  progress('Building workshop objects…');
- const {scene,room,items,dress}=await buildScene({renderer,bakes,texScale:phone?.5:1});
+ const {scene,room,items,dress,propLights}=await buildScene({renderer,bakes,texScale:phone?.5:1,
+  useDressing:names.every(n=>bakes[n])});
+ if(!dress)await Promise.all(names.map(async n=>{bakes[n]=await loadLight(`img/workshop-light-${n}.webp`)}));
  // With the Blender dressing, the room planes carry its baked light at the level the manifest records.
  const surfaceLight=theme=>{if(!dress)return;for(const n of names)room.surfaces[n].material.uniforms.uGain.value=dress.surfaceGain(theme,n);room.shared.amb.value.setRGB(...LIGHT.amb)};
  surfaceLight('day');
@@ -77,13 +81,15 @@ async function start(){
  progress('Preparing the first frame…');
  const camera=new THREE.PerspectiveCamera(31,1,.05,90);
  renderer.shadowMap.needsUpdate=true;renderer.setSize(8,8,false);renderer.render(scene,camera);
- scene.environment=reflectionsFrom(renderer,scene,Object.values(items));
  room.ceiling.visible=false;
+ const environments={};
  const mirror=phone?null:createMirror(renderer,scene,room,camera);
+ const bloom=dress&&!phone?workshopBloom(renderer,scene,camera):null;
+ const dust=dress&&!reduce?workshopDust(scene,phone):null;
  await frame();
 
  /* ---- sizing ---- */
- let W=1,H=1,best=null,fast=null,chainKey='',fastScale=.9,ratio=1,ao=!phone&&!params.has('noao'),fastAO=ao,settleAt=0;
+ let W=1,H=1,best=null,fast=null,chainKey='',fastScale=.9,ratio=1,ao=!phone&&!params.has('noao'),fastAO=ao&&!dress,settleAt=0;
  function size(){
   const r=hero.getBoundingClientRect();W=Math.max(1,Math.round(r.width));H=Math.max(1,Math.round(r.height));
   // Post-processing uses several full-size buffers. Cap their combined cost
@@ -94,8 +100,8 @@ async function start(){
   const fw=Math.round(pw*fastScale),fh=Math.round(ph*fastScale),key=[pw,ph,fw,fh,fastAO].join();
   if(key!==chainKey){
    chainKey=key;best?.dispose();fast?.dispose();
-   best=buildComposer(renderer,scene,camera,pw,ph,{ao,samples:phone?2:4,aoDiv:2,aoSamples:16,denoise:12});
-   fast=buildComposer(renderer,scene,camera,fw,fh,{ao:fastAO,samples:0,aoDiv:2.6,aoSamples:6,denoise:4,smaa:true});
+   best=buildComposer(renderer,scene,camera,pw,ph,{ao,samples:phone?2:4,aoDiv:2,aoSamples:16,denoise:12,bloom});
+   fast=buildComposer(renderer,scene,camera,fw,fh,{ao:fastAO,samples:0,aoDiv:2.6,aoSamples:6,denoise:4,smaa:true,bloom});
    mirrorGate.reset();
   }
   mirror?.size(pw,ph);dirty=true;
@@ -128,12 +134,23 @@ async function start(){
  for(const key of ['car','guitar','tablet','book','satellite','trophy','tyre','crate','pencil','pick','plant'])models[key]={o:items[key],h:0,goal:0,p:99};
  for(const key in shelfPlays)models[key]={o:shelfPlays[key],h:0,goal:0,p:99};
  function react(key){const m=models[key];if(!m)return;m.p=0;m.o.userData.click?.();if(VOICE[key]){try{Sound[VOICE[key]]()}catch(e){console.warn('Workshop sound unavailable',e)}}wake()}
+ const shelfActivity={research:0,cases:0};
+ function continueShelfLight(key,activity){
+  shelfActivity[key]=activity;
+  propLights?.animate('shelving',1-Math.max(shelfActivity.research,shelfActivity.cases)*.48);
+ }
  function play(dt,time){
   let busy=false;
   for(const key in models){
    const m=models[key],u=m.o.userData,before=m.h;m.h=damp(m.h,m.goal,6.5,dt);if(Math.abs(m.h-m.goal)<.002)m.h=m.goal;m.p+=dt;
-   if(stage?.key===key&&stage.m.own)continue;
+   if(stage?.key===key&&stage.m.own){
+    propLights?.animate(key,1-smooth(clamp(stage.v*2.5)));
+    continue;
+   }
    const running=u.play?.(m.h,m.p,dt,time);
+   const activity=Math.max(m.h,m.p<(u.playFor||0)?.55:0);
+   if(key==='research'||key==='cases')continueShelfLight(key,activity);
+   else propLights?.animate(key,1-activity*.48);
    if(PortfolioRender.modelNeedsFrame({before,after:m.h,goal:m.goal,animated:animatedHover.has(key),elapsed:m.p,duration:u.playFor||0,running}))busy=true;
   }
   return busy;
@@ -143,9 +160,9 @@ async function start(){
  const pose={p:new THREE.Vector3(),t:new THREE.Vector3()},rest={p:V(BASE.rest.p),t:V(BASE.rest.t)},far={p:V(BASE.far.p),t:V(BASE.far.t)},Y=new THREE.Vector3(0,1,0),tmpP=new THREE.Vector3(),tmpT=new THREE.Vector3(),tmpFollow=new THREE.Vector3(),tmpChase=new THREE.Vector3(),tmpOff=new THREE.Vector3();
  function frameFor(aspect){
   // narrower than the picture: stand further back, so the whole set stays in view
-  const need=clamp(1.78/aspect,1,3.3),k=1+(need-1)*.82;
+  const need=clamp(1.72/aspect,1,3.6),k=1+(need-1)*.43;
   rest.t.copy(V(BASE.rest.t));rest.p.copy(rest.t).add(V(BASE.rest.p).sub(rest.t).multiplyScalar(k));
-  if(aspect<1){const d=rest.p.distanceTo(rest.t);rest.t.y=.62;rest.p.copy(rest.t).add(new THREE.Vector3(-.06,.44,1).normalize().multiplyScalar(d*1.06))}
+  if(aspect<1){const d=rest.p.distanceTo(rest.t);rest.t.y=1.21;rest.p.copy(rest.t).add(new THREE.Vector3(.035,.24,1).normalize().multiplyScalar(d))}
   far.p.copy(V(BASE.far.t)).add(V(BASE.far.p).sub(V(BASE.far.t)).multiplyScalar(Math.max(1,k*.78)));
  }
  let dirty=true,running=false,last=0,intro=(reduce||!firstHome)?1:0,stage=null,hoverKey=null,focusKey=null,pendingKey=null,pending=null,time=0;
@@ -391,12 +408,48 @@ async function start(){
  const visible=()=>home()||!!(stage&&stage.dir===1);
  let slow=0,samples=0,frameTime=0,lastDraw=0;
  const mirrorGate=PortfolioRender.createFrameGate(42);
- function draw(chain){if(!chain){size();chain=fast}const night=R.dataset.theme==='dark',g=chain.grade.uniforms;g.uBg.value.setRGB(night?.008:.86,night?.018:.77,night?.022:.65);const [iris,stars]=stage?.m.iris?stage.m.iris(smooth(stage.v)):[3,0];g.uIris.value=iris;g.uStars.value=stars;g.uAspect.value=W/H;g.uDark.value=stage?.m.dark?1:0;if(mirror&&mirrorGate.due(performance.now(),chain===best))mirror.render(chain.w,chain.h);chain.composer.render()}
+ let ambientTimer=0,ambientTime=0,ambientMark=0,ambientDue=false;
+ function draw(chain,ambientOnly=false){
+  if(!chain){size();chain=fast}
+  const night=R.dataset.theme==='dark',g=chain.grade.uniforms;
+  g.uBg.value.setRGB(night?.003:.014,night?.006:.022,night?.01:.032);
+  const [iris,stars]=stage?.m.iris?stage.m.iris(smooth(stage.v)):[3,0];
+  g.uIris.value=iris;g.uStars.value=stars;g.uAspect.value=W/H;g.uDark.value=stage?.m.dark?1:0;
+  if(mirror&&!ambientOnly&&mirrorGate.due(performance.now(),chain===best))mirror.render(chain.w,chain.h);
+  if(chain.glow){bloom.render(chain.w,chain.h);chain.glow.uniforms.strength.value=night?.48:.22}
+  if(chain.gtao)chain.gtao.reuseAO=ambientOnly;
+  chain.composer.render();
+ }
  let freeTimer=0;
- function freeChains(){best?.dispose();fast?.dispose();best=fast=null;chainKey='';mirror?.free();mirrorGate.reset();renderer.renderLists.dispose()}
- function wake(){clearTimeout(freeTimer);if(!best&&visible())size();dirty=true;if(!running&&visible()&&!document.hidden){running=true;last=performance.now();lastDraw=last;samples=0;frameTime=0;requestAnimationFrame(tick)}}
+ function freeChains(){
+  best?.dispose();fast?.dispose();best=fast=null;chainKey='';
+  mirror?.free();bloom?.free();mirrorGate.reset();renderer.renderLists.dispose();
+ }
+ function scheduleAmbient(){
+  clearTimeout(ambientTimer);
+  if(!dust||!home()||document.hidden)return;
+  ambientTimer=setTimeout(()=>{
+   if(!home()||document.hidden)return;
+   ambientDue=true;
+   if(!running){running=true;last=performance.now();requestAnimationFrame(tick)}
+  },phone?300:145);
+ }
+ function wake(){
+  clearTimeout(ambientTimer);clearTimeout(freeTimer);
+  if(!best&&visible())size();dirty=true;
+  if(!running&&visible()&&!document.hidden){running=true;last=performance.now();lastDraw=last;samples=0;frameTime=0;requestAnimationFrame(tick)}
+ }
  function tick(now){
-  if(!visible()||document.hidden){running=false;if(!home())freeTimer=setTimeout(freeChains,1800);return}
+  if(!visible()||document.hidden){ambientMark=0;running=false;if(!home())freeTimer=setTimeout(freeChains,1800);return}
+  const dark=R.dataset.theme==='dark';
+  if(dust&&home()){
+   ambientTime+=ambientMark?Math.min(.32,(now-ambientMark)*.001):0;
+   ambientMark=now;
+   dust.update(ambientTime,dark,ratio);
+   dress.glow(dark,1+.055*Math.sin(ambientTime*1.25),1-.05*Math.pow(Math.max(0,Math.sin(ambientTime*.83)),16));
+   items.tablet.userData.ambient(ambientTime,models.tablet.h>.05||stage?.key==='tablet');
+   items.plant.userData.air=Math.sin(ambientTime*.68)*.007;
+  }
   const dt=Math.min(.05,(now-last)/1000);last=now;time+=dt;
   const before=intro+(stage?stage.v:0);
   if(intro<1)intro=Math.min(1,intro+dt/3.2);
@@ -423,34 +476,55 @@ async function start(){
    if(++samples>30){samples=0;slow=frameTime/30>30?slow+1:0;frameTime=0;if(slow>=2&&(fastAO||fastScale>.68)){slow=0;if(fastAO)fastAO=false;else fastScale=Math.max(.68,fastScale-.11);size()}}
    frameTime+=(now-lastDraw);lastDraw=now;
   }else if(settleAt&&now>=settleAt){settleAt=0;lastDraw=now;draw(best)}
+  else if(ambientDue&&!settleAt)draw(best,true);
+  ambientDue=false;
   hero.classList.toggle('ws-moving',intro<1);
   // A completed transition can remain mounted behind an overlay. Only an
   // actively moving stage needs another frame.
-  if(!settleAt&&!moved&&!dirty&&!pending&&!wantContact&&!contactOn&&!stage?.dir){running=false;return}
+  if(!settleAt&&!moved&&!dirty&&!pending&&!wantContact&&!contactOn&&!stage?.dir){running=false;scheduleAmbient();return}
   requestAnimationFrame(tick);
  }
  /* day and night share one scene: the sun goes down, a lamp comes on, and the name catches it */
  const envBase=new Map();scene.traverse(o=>{if(o.material&&o.material.envMapIntensity!==undefined)envBase.set(o.material,o.material.envMapIntensity)});
- let nightBakes=null,nightPromise=null;
+ let nightPromise=null,themeTicket=0;
+ const complete=maps=>names.every(n=>maps[n]);
  const applyLightmaps=maps=>{for(const n of names)if(maps[n])room.surfaces[n].material.uniforms.tLight.value=maps[n]};
- const loadNight=()=>nightPromise||=(Promise.all(names.map(n=>loadBake('night',n))).then(maps=>{
-  nightBakes=Object.fromEntries(names.map((n,i)=>[n,maps[i]]));
-  if(R.dataset.theme==='dark')setNight(true);
-  return nightBakes;
- }));
- function setNight(dark){
-  if(dark&&!nightBakes)loadNight();
-  const bakedNight=dark&&nightBakes&&names.every(n=>nightBakes[n]);
+ const stageColor=dark=>dress?(dark?'#080e15':'#1b2630'):(dark?'#17272b':'#efe4d3');
+ async function setNight(dark){
+  const ticket=++themeTicket,theme=dark?'night':'day';
+  const maps=dark&&dress?(nightPromise||=bakeSet('night').then(result=>{
+   if(!complete(result))throw new Error('Workshop night surfaces unavailable');
+   return result;
+  })):Promise.resolve(bakes);
+  const dressed=await dress?.setTheme(dark,maps);
+  const surfaces=await maps.catch(()=>bakes);
+  if(ticket!==themeTicket)return;
+  const bakedNight=dark&&dressed;
   renderer.toneMappingExposure=dark?EXPOSURE.night:EXPOSURE.day;
-  applyLightmaps(bakedNight?nightBakes:bakes);surfaceLight(bakedNight?'night':'day');dress?.setTheme(dark).then(wake);
-  scene.background.set(dark?'#17272b':'#efe4d3');room.shared.tint.value.setRGB(dark&&!bakedNight ? .1 : 1,dark&&!bakedNight ? .13 : 1,dark&&!bakedNight ? .2 : 1);room.shared.lamp.value=dark&&!bakedNight ? .4 : 0;room.surfaces.back.material.uniforms.uName.value=dark?.62:0;room.view.material.uniforms.uSky.value.setRGB(dark?.05:1,dark?.08:1,dark?.2:1);
-  lights.sun.intensity=dark?0:1.7;lights.sky.intensity=dark?.28:1.25;lights.fill.intensity=dark?.4:1.3;lights.lamp.intensity=dark?22:0;envBase.forEach((v,m)=>{m.envMapIntensity=v*(dark?.34:1)});wake();
+  applyLightmaps(bakedNight?surfaces:bakes);surfaceLight(bakedNight?'night':'day');
+  scene.background.set(stageColor(dark));
+  room.shared.tint.value.setRGB(dark&&!bakedNight?.13:1,dark&&!bakedNight?.17:1,dark&&!bakedNight?.26:1);
+  room.shared.lamp.value=dark&&!bakedNight?.34:0;
+  room.surfaces.back.material.uniforms.uName.value=dark?.67:0;
+  room.view.material.uniforms.uSky.value.setRGB(dark?.05:1,dark?.08:1,dark?.2:1);
+  lights.sun.intensity=dark?0:1.7;
+  lights.sky.intensity=dark?.22:1.08;
+  lights.fill.intensity=dark?.25:1.12;
+  lights.lamp.intensity=dark?15:0;
+  envBase.forEach((v,m)=>{m.envMapIntensity=v*(dark?.82:1.14)});
+  dust?.hide();
+  scene.environment=environments[theme]||=reflectionsFrom(renderer,scene,Object.values(items),{size:phone?256:512});
+  wake();
  }
  addEventListener('site-theme',e=>setNight(e.detail.dark));
  window.__workshop={renderer,scene,camera,models,chains:()=>({best,fast}),state:()=>({intro,v:stage?stage.v:0,dir:stage?stage.dir:0,key:stage?stage.key:null,hoverKey,yaw,running}),scrub(key,v){if(!stage)begin(key,()=>{});stage.dir=0;stage.v=v;stage.m.act(smooth(v))},clear(){if(stage){stage.m.act(0);if(stage.m.panel)panels[stage.m.panel].rise(0);if(stage.m.hold)models[stage.key].goal=0;stage=null}},set(i){if(i!=null)intro=i;camUpdate(1)},play(dt=.016){time+=dt;play(dt,time)},frame(q='best'){camUpdate(1);draw(q==='best'?best:fast)}};
 
- new ResizeObserver(()=>{if(!visible())return;size();frameFor(W/H);wake()}).observe(hero);size();frameFor(W/H);setNight(R.dataset.theme==='dark');
- document.addEventListener('visibilitychange',wake);
+ new ResizeObserver(()=>{if(!visible())return;size();frameFor(W/H);wake()}).observe(hero);size();frameFor(W/H);await setNight(R.dataset.theme==='dark');
+ document.addEventListener('visibilitychange',()=>{
+  ambientMark=0;
+  if(document.hidden){clearTimeout(ambientTimer);dust?.hide()}
+  else wake();
+ });
  play(.016,0);camUpdate(.016);draw(best);if(!home())freeChains();
  hero.classList.remove('ws-loading','ws-failed');hero.classList.add('ws-ready');api.ready=true;
  if(location.hash==='#contact'){wantContact=true;intro=1}

@@ -7,8 +7,9 @@ import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { SMAAPass } from 'three/addons/postprocessing/SMAAPass.js';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { installMP44 } from './workshop-mp44.js';
+import {bloomComposite} from './workshop-bloom.js';
 import { loadDressing } from './workshop-dress.js';
 
 const Grade={
@@ -82,8 +83,9 @@ export function flatten(root){
   const parts=list.map(o=>{
    const g=o.geometry.clone();for(const name of Object.keys(g.attributes))if(!['position','normal','uv'].includes(name))g.deleteAttribute(name);
    if(!g.attributes.uv)g.setAttribute('uv',new THREE.BufferAttribute(new Float32Array(g.attributes.position.count*2),2));
-   if(!g.index){const n=g.attributes.position.count,ix=new (n>65535?Uint32Array:Uint16Array)(n);for(let i=0;i<n;i++)ix[i]=i;g.setIndex(new THREE.BufferAttribute(ix,1))}
-   g.applyMatrix4(new THREE.Matrix4().multiplyMatrices(inverse,o.matrixWorld));return g;
+   g.applyMatrix4(new THREE.Matrix4().multiplyMatrices(inverse,o.matrixWorld));
+   if(g.index)return g;
+   const indexed=mergeVertices(g,1e-6);g.dispose();return indexed;
   });
   const merged=mergeGeometries(parts,false);if(!merged)continue;parts.forEach(p=>p.dispose());
   const first=list[0],m=new THREE.Mesh(merged,first.material);m.castShadow=first.castShadow;m.receiveShadow=first.receiveShadow;root.add(m);
@@ -138,14 +140,14 @@ function contactShadow(rig){
  return plane;
 }
 
-export async function buildScene({renderer,bakes,texScale=1}){
+export async function buildScene({renderer,bakes,texScale=1,useDressing=true}){
  const anisotropy=Math.min(16,renderer.capabilities.getMaxAnisotropy());
  const kit=Workshop.kit(THREE,RoundedBoxGeometry,{anisotropy,texScale});
  const scene=new THREE.Scene();scene.background=new THREE.Color('#efe4d3');
  // The dressed room comes from the Blender source with its light baked in. If it fails to load, the
  // older procedural bench, stool, window and shelving are built instead, so the room stays usable.
  let dress=null;
- try{dress=await loadDressing(renderer,{phone:texScale<1})}catch(error){console.warn('Could not load the Workshop dressing; using the procedural room.',error)}
+ try{if(useDressing)dress=await loadDressing(renderer,{phone:texScale<1})}catch(error){console.warn('Could not load the Workshop dressing; using the procedural room.',error)}
  const room=Workshop.room(THREE,kit,{bakes,dressed:!!dress});scene.add(room.root);
  flatten(room.root);
  if(dress)scene.add(dress.root);
@@ -160,11 +162,16 @@ export async function buildScene({renderer,bakes,texScale=1}){
   const o=make(),L=PLACES[key];o.position.set(...L.p);o.rotation.set(...L.r);o.scale.setScalar(L.s);scene.add(o);items[key]=o;
  }
  for(const o of Object.values(items))flatten(o);
+ let propLights=null;
+ try{propLights=dress?.attachProps(items)}catch(error){
+  console.warn('Workshop prop bake unavailable; using the procedural room.',error);
+  return buildScene({renderer,bakes,texScale,useDressing:false});
+ }
  flatten(car);
  carRig.userData.play=car.userData.play;carRig.userData.playFor=car.userData.playFor;
  carRig.add(contactShadow(carRig));
  items.car=carRig;
- return {scene,room,items,kit,dress};
+ return {scene,room,items,kit,dress,propLights};
 }
 
 /* light the objects: a soft key from the window and a tighter shaft of sun */
@@ -175,21 +182,21 @@ export function lightScene(scene,{shadowSize=2048}={}){
   l.castShadow=true;l.shadow.mapSize.set(size,size);Object.assign(l.shadow.camera,{left:-ext,right:ext,top:ext,bottom:-ext,near:.5,far:26});l.shadow.camera.updateProjectionMatrix();l.shadow.bias=-.00025;l.shadow.normalBias=.012;l.shadow.radius=5;l.shadow.blurSamples=16;scene.add(l,l.target);
  }
  const fill=new THREE.HemisphereLight('#f4ecdd','#8a7f6e',1.3);scene.add(fill);
- const lamp=new THREE.PointLight('#ffd9a8',0,16,1.4);lamp.position.set(.2,3.6,.4);scene.add(lamp);
+ const lamp=new THREE.PointLight('#ffd9a8',0,16,1.4);lamp.position.set(.2,3.97,-.1);scene.add(lamp);
  return {sun,sky,fill,lamp};
 }
 
 /* photograph the empty room from the car, so reflections show the real window */
-export function reflectionsFrom(renderer,scene,hide,p=[.2,1.1,-.2]){
- const target=new THREE.WebGLCubeRenderTarget(512,{type:THREE.HalfFloatType,generateMipmaps:true,minFilter:THREE.LinearMipmapLinearFilter});
- const cam=new THREE.CubeCamera(.1,40,target);cam.position.set(...p);hide.forEach(o=>o.visible=false);
+export function reflectionsFrom(renderer,scene,hide,{size=512}={}){
+ const target=new THREE.WebGLCubeRenderTarget(size,{type:THREE.HalfFloatType,generateMipmaps:true,minFilter:THREE.LinearMipmapLinearFilter});
+ const cam=new THREE.CubeCamera(.1,40,target);cam.position.set(.2,1.1,-.2);hide.forEach(o=>o.visible=false);
  const tone=renderer.toneMapping;renderer.toneMapping=THREE.NoToneMapping;cam.update(renderer,scene);renderer.toneMapping=tone;hide.forEach(o=>o.visible=true);
  const pm=new THREE.PMREMGenerator(renderer),env=pm.fromCubemap(target.texture).texture;pm.dispose();target.dispose();
- scene.traverse(o=>{const materials=Array.isArray(o.material)?o.material:[o.material];for(const m of materials){if(!m||m.userData.bake||m.userData.lifted||m.envMapIntensity===undefined)continue;m.userData.lifted=true;m.envMapIntensity*=1.7}});return env;
+ return env;
 }
 
 /* Two sets of the same chain: a light one while the camera moves, and a full one for the frame it stops on. */
-export function buildComposer(renderer,scene,camera,w,h,{ao=true,samples=4,aoDiv=2,aoSamples=12,denoise=8,smaa=false}={}){
+export function buildComposer(renderer,scene,camera,w,h,{ao=true,samples=4,aoDiv=2,aoSamples=12,denoise=8,smaa=false,bloom=null}={}){
  const rt=new THREE.WebGLRenderTarget(w,h,{type:THREE.HalfFloatType,samples});
  // w and h are already physical pixels; applying the renderer's pixel ratio a
  // second time misaligns the reflection and makes moving frames unnecessarily large.
@@ -201,13 +208,28 @@ export function buildComposer(renderer,scene,camera,w,h,{ao=true,samples=4,aoDiv
   const full=gtao.setSize.bind(gtao);gtao.setSize=(a,b)=>full(Math.round(a/aoDiv),Math.round(b/aoDiv)); // soft contact shadows don't need every pixel
   gtao.updateGtaoMaterial({radius:.34,distanceExponent:1.5,thickness:.7,scale:1.25,samples:aoSamples,distanceFallOff:1,screenSpaceRadius:false});
   gtao.updatePdMaterial({lumaPhi:10,depthPhi:2,normalPhi:3,radius:3,radiusExponent:1.1,rings:2,samples:denoise});
-  gtao.blendIntensity=.7;composer.addPass(gtao);
+  gtao.blendIntensity=bloom?.48:.7;composer.addPass(gtao);
   // Soft transparent cards (the car's contact shadow, lamp glows) must not enter the AO normal pass, or they leave a dark rectangle.
   const aoRender=gtao.render.bind(gtao);
-  gtao.render=(...args)=>{const skip=[];scene.traverse(o=>{if(o.visible&&(o.userData.noAO||o.isSprite)){o.visible=false;skip.push(o)}});aoRender(...args);skip.forEach(o=>o.visible=true)};
+  let hasAO=false;
+  gtao.render=(renderer,write,read,...args)=>{
+   if(gtao.reuseAO&&hasAO){
+    // Ambient-only frames keep the same camera and geometry. Reuse the last contact shading.
+    gtao.copyMaterial.uniforms.tDiffuse.value=read.texture;
+    gtao.renderPass(renderer,gtao.copyMaterial,write);
+    gtao.renderPass(renderer,gtao.blendMaterial,write);
+    return;
+   }
+   const skip=[];
+   scene.traverse(o=>{if(o.visible&&(o.userData.noAO||o.isSprite)){o.visible=false;skip.push(o)}});
+   try{aoRender(renderer,write,read,...args);hasAO=true}
+   finally{skip.forEach(o=>o.visible=true)}
+  };
  }
+ const glow=bloom?new ShaderPass(bloomComposite()):null;
+ if(glow){glow.uniforms.glow.value=bloom.texture;composer.addPass(glow)}
  composer.addPass(new OutputPass());
  if(smaa)composer.addPass(new SMAAPass(w,h));
  const grade=new ShaderPass(Grade);composer.addPass(grade);
- return {composer,gtao,grade,w,h,dispose(){for(const p of composer.passes)p.dispose?.();composer.renderTarget1.dispose();composer.renderTarget2.dispose()}};
+ return {composer,gtao,grade,glow,w,h,dispose(){for(const p of composer.passes)p.dispose?.();composer.renderTarget1.dispose();composer.renderTarget2.dispose()}};
 }

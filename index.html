@@ -1910,7 +1910,7 @@ html.intro-hold .obj-labs{visibility:hidden}
   gsap.utils.toArray('.aw-grid .drop').forEach((el,i)=>gsap.from(el,{y:70,rotation:((i*37)%20)-10,ease:'power2.out',scrollTrigger:{trigger:el,start:'top 100%',end:'top 70%',scrub:.6}}));
   gsap.from('.mb-grid .drop',{y:110,rotation:i=>((i*37)%24)-12,ease:'power2.out',stagger:.06,scrollTrigger:{trigger:'.mb-grid',start:'top 95%',end:'top 30%',scrub:.8}});
   gsap.from('.tl li',{y:26,opacity:.2,ease:'power2.out',stagger:.06,scrollTrigger:{trigger:'.tl',start:'top 90%',end:'bottom 70%',scrub:.8}});
-  gsap.from('.talk',{scale:.82,yPercent:20,ease:'power2.out',scrollTrigger:{trigger:'.contact',start:'top 95%',end:'top 45%',scrub:.8}});
+  if(document.querySelector('.contact .talk'))gsap.from('.talk',{scale:.82,yPercent:20,ease:'power2.out',scrollTrigger:{trigger:'.contact',start:'top 95%',end:'top 45%',scrub:.8}});
   gsap.from('.peek .sk-s',{x:-260,rotation:-30,ease:'power2.out',scrollTrigger:{trigger:'.foot',start:'top 100%',end:'top 50%',scrub:.8}});
 })();
 </script>

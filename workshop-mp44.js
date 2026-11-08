@@ -58,12 +58,12 @@ function cockpitDetails(model){
 
 export async function installMP44(car,{anisotropy=1}={}){
  const [gltf,wordmark]=await Promise.all([new GLTFLoader().loadAsync('assets/models/mp44-flamestroke.glb'),new THREE.ImageLoader().loadAsync('assets/models/decals/marlboro-wordmark.svg').catch(()=>null)]);const model=gltf.scene;
- const sharpened=new Set();model.traverse(o=>{if(!o.isMesh)return;o.castShadow=true;o.receiveShadow=true;const materials=Array.isArray(o.material)?o.material:[o.material];for(const material of materials){for(const key of ['map','normalMap','roughnessMap','metalnessMap'])if(material[key])material[key].anisotropy=anisotropy;if(material.name==='blinn2'&&!sharpened.has(material)){sharpened.add(material);sharpenBodyDecals(material,wordmark,anisotropy)}}});
+ const sharpened=new Set();model.traverse(o=>{if(!o.isMesh)return;o.castShadow=true;o.receiveShadow=true;const materials=Array.isArray(o.material)?o.material:[o.material];for(const material of materials){for(const key of ['map','normalMap','roughnessMap','metalnessMap'])if(material[key])material[key].anisotropy=anisotropy;if(material.name==='blinn2'&&!sharpened.has(material)){sharpened.add(material);material.color.lerp(new THREE.Color('#d3ccc0'),.18);material.roughness=Math.max(.24,material.roughness);sharpenBodyDecals(material,wordmark,anisotropy)}}});
  const wheels=rigWheels(model);if(!wheels)throw new Error('MP4/4 wheel geometry is missing');const yoke=cockpitDetails(model);
  model.updateMatrixWorld(true);const box=new THREE.Box3().setFromObject(model),center=box.getCenter(new THREE.Vector3()),size=box.getSize(new THREE.Vector3()),scale=4.4/size.z;
  model.scale.setScalar(scale);model.position.set(-center.x*scale,-box.min.y*scale,-center.z*scale);
  const orientation=new THREE.Group();orientation.rotation.y=Math.PI;orientation.position.z=-1.15;orientation.add(model);
- const {tyreGeometry,rubber}=car.userData.parts,flap=new THREE.Group();
- car.clear();car.add(orientation);car.userData.parts={tyreGeometry,rubber,...wheels,flap,yoke};
+ const {tyreGeometry,rubber,letteredRubber}=car.userData.parts,flap=new THREE.Group();
+ car.clear();car.add(orientation);car.userData.parts={tyreGeometry,rubber,letteredRubber,...wheels,flap,yoke};
  car.userData.playFor=2.6;car.userData.play=(h,p,dt)=>{wheels.fronts.forEach(w=>{w.rotation.y=h*.08});yoke.rotation.z=-h*.14;const speed=p<2.6?26*Math.max(0,1-p/2.6):0;wheels.spins.forEach(w=>{w.rotation.x-=speed*dt})};
 }

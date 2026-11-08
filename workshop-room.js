@@ -175,7 +175,9 @@ Workshop.room=function(THREE,kit,{bakes=null,dressed=false}={}){
  shell.userData.noMerge=true;
  const cap=new THREE.MeshStandardMaterial({color:'#f1e6d2',roughness:.9});
  const edgeBox=(w,h,d,m,p)=>{const b=mesh(new THREE.BoxGeometry(w,h,d),m,p);b.castShadow=true;b.receiveShadow=true;add(root,b);return b};
- const slab=edgeBox(RW+T*2,.42,RD+T,new THREE.MeshStandardMaterial({color:'#c9b49a',roughness:.92}),[0,-.21-.002,-T/2]);
+ const slab=edgeBox(RW+T*2,.42,RD+T,new THREE.MeshStandardMaterial({color:'#34454d',roughness:.86}),[0,-.21-.002,-T/2]);
+ const plinthTrim=new THREE.MeshStandardMaterial({color:'#806b50',roughness:.56,metalness:.53});
+ edgeBox(RW+T*2,.027,.016,plinthTrim,[0,-.125,HZ+.008]);
  edgeBox(RW+T*2,RH,T,shell,[0,RH/2,-HZ-T/2-.002]);
  edgeBox(T,RH,RD,shell,[HX+T/2+.002,RH/2,0]);
  edgeBox(RW+T*2,.012,T,cap,[0,RH+.006,-HZ-T/2]);edgeBox(T,.012,RD,cap,[HX+T/2,RH+.006,0]);edgeBox(T,.012,RD,cap,[-HX-T/2,RH+.006,0]);

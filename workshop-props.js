@@ -113,19 +113,21 @@ Workshop.props=function(THREE,kit,carParts,{dressed=false}={}){
   const pickShape=new THREE.Shape();pickShape.moveTo(0,.018);pickShape.bezierCurveTo(.018,.02,.023,.009,.017,-.003);pickShape.quadraticCurveTo(.008,-.017,0,-.023);pickShape.quadraticCurveTo(-.008,-.017,-.017,-.003);pickShape.bezierCurveTo(-.023,.009,-.018,.02,0,.018);
   const pick=mesh(new THREE.ExtrudeGeometry(pickShape,{depth:.002,bevelEnabled:true,bevelSize:.001,bevelThickness:.001,bevelSegments:2,curveSegments:16}),std('#ad5a40',.32,0,{clearcoat:.65}),[-.08,PY+.076,.063]);pick.userData.moving=true;pick.visible=false;add(inst,pick);
   inst.position.set(0,.115,.035);inst.rotation.x=-.145;
-  // stand
-  const steel=std('#101114',.42,.5),foam=std('#191919',.9);
-  add(root,bar([0,.09,-.1],[0,.62,-.05],.011,steel));
-  add(root,bar([0,.3,-.13],[0,.3,-.04],.009,steel));
-  add(root,bar([0,.1,-.1],[0,.098,-.04],.011,steel));
-  add(root,bar([-.03,.625,-.047],[.03,.625,-.047],.008,foam));
-  for(const s of [-1,1]){
-   add(root,bar([0,.1,-.1],[s*.21,.012,.11],.011,steel));
-   add(root,bar([0,.1,-.1],[s*.04,.012,-.33],.011,steel));
-   add(root,bar([0,.098,-.04],[s*.12,.098,.04],.011,steel));
-   add(root,bar([s*.12,.098,.04],[s*.13,.125,.09],.011,foam));
-   add(root,bar([s*.024,.625,-.047],[s*.03,.69,-.032],.008,foam));
-   add(root,mesh(new THREE.SphereGeometry(.018,16,12),rubberFoot,[s*.21,.012,.11]));
+  // The Blender stand is used when the baked room is available.
+  if(!dressed){
+   const steel=std('#101114',.42,.5),foam=std('#191919',.9);
+   add(root,bar([0,.09,-.1],[0,.62,-.05],.011,steel));
+   add(root,bar([0,.3,-.13],[0,.3,-.04],.009,steel));
+   add(root,bar([0,.1,-.1],[0,.098,-.04],.011,steel));
+   add(root,bar([-.03,.625,-.047],[.03,.625,-.047],.008,foam));
+   for(const s of [-1,1]){
+    add(root,bar([0,.1,-.1],[s*.21,.012,.11],.011,steel));
+    add(root,bar([0,.1,-.1],[s*.04,.012,-.33],.011,steel));
+    add(root,bar([0,.098,-.04],[s*.12,.098,.04],.011,steel));
+    add(root,bar([s*.12,.098,.04],[s*.13,.125,.09],.011,foam));
+    add(root,bar([s*.024,.625,-.047],[s*.03,.69,-.032],.008,foam));
+    add(root,mesh(new THREE.SphereGeometry(.018,16,12),rubberFoot,[s*.21,.012,.11]));
+   }
   }
   // leans forward when you reach for it; a strum rocks it on the stand and blurs the strings
   root.userData.playFor=3.2;
@@ -230,7 +232,10 @@ Workshop.props=function(THREE,kit,carParts,{dressed=false}={}){
   add(root,box(.205,.008,.009,deckMetal,[0,.014,.07],.003));
   add(pivot,mesh(new THREE.CylinderGeometry(.0018,.0018,.002,10),keyMat,[0,H-.007,.005],[Math.PI/2,0,0]));
   for(const x of [-.132,.132])for(const z of [.09,.21])add(root,box(.014,.002,.012,rubberFoot,[x,.001,z],.002));
-  const scr=mesh(new THREE.PlaneGeometry(W-.016,H-.016),new THREE.MeshBasicMaterial({map:screen,toneMapped:true,color:'#f2f2f2'}),[0,H/2,.0042]);add(pivot,scr);
+  const scr=mesh(new THREE.PlaneGeometry(W-.016,H-.016),new THREE.MeshBasicMaterial({map:screen,toneMapped:true,color:'#f2f2f2'}),[0,H/2,.0042]);add(pivot,scr);scr.layers.enable(1);
+  const cursor=mesh(new THREE.PlaneGeometry(.002,.008),new THREE.MeshBasicMaterial({color:'#a3c2b9',toneMapped:true}),[-.057,H*.21,.0045]);
+  add(pivot,cursor);cursor.visible=false;
+  root.userData.ambient=(time,active)=>{cursor.visible=!active&&Math.sin(time*3.1)>.12};
   const smudge=canvasTexture(512,384,(g,w,h)=>{const R=rng(13);g.fillStyle='#fff';g.fillRect(0,0,w,h);for(let i=0;i<46;i++){g.fillStyle=`rgba(90,90,90,${.04+R()*.1})`;g.beginPath();g.ellipse(R()*w,R()*h,16+R()*20,20+R()*26,R()*3,0,7);g.fill()}},{srgb:false});
   const glass=mesh(new THREE.PlaneGeometry(W-.004,H-.004),new THREE.MeshPhysicalMaterial({color:'#000',roughness:.09,roughnessMap:smudge,metalness:0,transparent:true,opacity:.22,clearcoat:1,clearcoatRoughness:.06,envMapIntensity:1.5}),[0,H/2,.0048]);add(pivot,glass);
   root.userData.parts={pivot,W,H};
@@ -344,6 +349,7 @@ Workshop.props=function(THREE,kit,carParts,{dressed=false}={}){
    add(cup,tube([[s*.1,.575,0],[s*.165,.585,0],[s*.19,.525,0],[s*.155,.46,0],[s*.1,.44,0],[s*.085,.42,0]],.0075,silver,{segments:64,sides:12}));
   }
   // turns on its base under the pointer; a click gives it a proper spin
+  root.userData.parts={cup};
   root.userData.playFor=1.8;
   root.userData.play=(h,p,dt)=>{const kick=p<1.8?(1-p/1.8):0;cup.rotation.y+=dt*(h*1.1+kick*kick*16);const u=Math.min(1,p/.5);cup.position.y=h*.008+(p<.5?Math.sin(u*Math.PI)*.022:0)};
   return shadow(root);
@@ -353,10 +359,12 @@ Workshop.props=function(THREE,kit,carParts,{dressed=false}={}){
  function tyre(){
   const root=new THREE.Group();
   const body=new THREE.Group();body.userData.moving=true;body.position.y=.2;add(root,body);
-  const t=mesh(carParts.tyreGeometry(.362,.405),carParts.rubber,[0,0,0]);add(body,t);
-  add(body,mesh(new THREE.CylinderGeometry(.228,.228,.012,64),std('#070707',.9,0,{envMapIntensity:.1}),[0,-.14,0]));
-  // the bore, so nobody can see through the carcass
-  add(body,mesh(new THREE.CylinderGeometry(.222,.222,.32,64,1,true),std('#141414',.8,0,{side:THREE.DoubleSide,envMapIntensity:.3}),[0,0,0]));
+  const t=mesh(carParts.tyreGeometry(.362,.405),carParts.letteredRubber(.362,.405),[0,0,0]);add(body,t);
+  if(!dressed){
+   add(body,mesh(new THREE.CylinderGeometry(.228,.228,.012,64),std('#070707',.9,0,{envMapIntensity:.1}),[0,-.14,0]));
+   // the bore, so nobody can see through the carcass
+   add(body,mesh(new THREE.CylinderGeometry(.222,.222,.32,64,1,true),std('#141414',.8,0,{side:THREE.DoubleSide,envMapIntensity:.3}),[0,0,0]));
+  }
   // settles like a dropped coin: a slow rocking circle that dies away
   root.userData.playFor=2.6;
   root.userData.play=(h,p,dt,t2)=>{
@@ -431,7 +439,7 @@ Workshop.props=function(THREE,kit,carParts,{dressed=false}={}){
   const inst=new THREE.InstancedMesh(lg,leafMat,all.length),d=new THREE.Object3D();
   all.forEach(([p,a,sc,col,k],i)=>{d.position.copy(p);d.rotation.set(1.3+k*1.2,a,(k-.5)*1.5);d.scale.setScalar(sc);d.updateMatrix();inst.setMatrixAt(i,d.matrix);inst.setColorAt(i,new THREE.Color(col))});
   add(root,inst);
-  let swing=0;outer.userData.play=(h,p,dt,t)=>{swing+=(h-swing)*(1-Math.exp(-2.4*dt));root.rotation.z=Math.sin(t*1.5)*.045*swing;root.rotation.x=Math.sin(t*1.1+1)*.03*swing};
+  let swing=0;outer.userData.play=(h,p,dt,t)=>{swing+=(h-swing)*(1-Math.exp(-2.4*dt));root.rotation.z=Math.sin(t*1.5)*.045*swing+(outer.userData.air||0);root.rotation.x=Math.sin(t*1.1+1)*.03*swing};
   return shadow(outer);
  }
  function crate(){

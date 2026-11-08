@@ -8,7 +8,7 @@ import sys, os, json, math
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE); sys.path.insert(0, os.path.join(HERE, '..', '..', 'vending', 'src'))
 import bpy, bmesh
-import lights
+import lights, prop_bake
 from lib import srgb
 
 a = sys.argv[sys.argv.index('--') + 1:]
@@ -27,13 +27,23 @@ s.cycles.samples = SAMPLES; s.cycles.use_denoising = False; s.cycles.max_bounces
 s.cycles.glossy_bounces = 1; s.cycles.caustics_reflective = False; s.cycles.caustics_refractive = False
 s.render.bake.margin = 6; s.render.bake.use_clear = True
 
+prop_bake.add_receivers(WORK)
+
 # metals have no diffuse response, so they would bake black: bake everything as a dielectric
 for m in bpy.data.materials:
     b = m.node_tree.nodes.get('Principled BSDF') if m.node_tree else None
     if b: b.inputs['Metallic'].default_value = 0; b.inputs['Coat Weight'].default_value = 0
 
 meshes = [o for o in bpy.data.objects if o.type == 'MESH']
-dress = [o for o in meshes if o.get('g') == 'dress' and not o.get('bakeonly')]
+def exported(o):
+    return not o.get('bakeonly') and (o.get('g') == 'dress' or o.get('g', '').startswith('mounted_'))
+
+
+dress = [o for o in meshes if exported(o)]
+for o in dress:
+    if o.get('g').startswith('mounted_'):
+        o.visible_shadow = False
+        o.visible_diffuse = False
 
 # one lightmap atlas for all the dressing, in a second UV set
 bpy.ops.object.select_all(action='DESELECT')
@@ -49,7 +59,7 @@ bpy.ops.object.mode_set(mode='OBJECT')
 
 
 def bake(group, theme):
-    obs = [o for o in meshes if o.get('g') == group and not o.get('bakeonly')]
+    obs = dress if group == 'dress' else [o for o in meshes if o.get('g') == group and not o.get('bakeonly')]
     if group.startswith('S_'):
         for o in obs: o.data.uv_layers.active = o.data.uv_layers['UVMap']
     img = bpy.data.images.new(f'lm_{theme}_{group}', SIZES[group], SIZES[group], alpha=False, float_buffer=True)
@@ -67,12 +77,13 @@ def bake(group, theme):
 
 for theme in ('day', 'night'):
     lights.rig(theme)
+    prop_bake.bake_receivers(WORK, theme)
     for group in SIZES: bake(group, theme)
 
 # ---- export: drop the bake-only parts, merge plain materials into vertex-coloured classes ----
 for m in bpy.data.materials:
     if m.node_tree and 'BAKE' in m.node_tree.nodes: m.node_tree.nodes.remove(m.node_tree.nodes['BAKE'])
-for o in [o for o in bpy.data.objects if o.type != 'MESH' or o.get('bakeonly') or o.get('g') != 'dress']:
+for o in [o for o in bpy.data.objects if o.type != 'MESH' or not exported(o)]:
     bpy.data.objects.remove(o)
 
 
@@ -102,16 +113,16 @@ for o in [o for o in bpy.data.objects if o.type == 'MESH']:
         col = lin(TABLE[mn]['color']); attr = me.color_attributes['Col']
         for d in attr.data:
             v = d.color; d.color = (v[0] * col[0], v[1] * col[1], v[2] * col[2], 1)
-        me.materials[0] = cls_mats[c]; by_class.setdefault(c, []).append(o)
+        me.materials[0] = cls_mats[c]; by_class.setdefault((o.get('g'), c), []).append(o)
     elif not TABLE.get(mn, {}).get('vc'):
         if 'Col' in me.color_attributes: me.color_attributes.remove(me.color_attributes['Col'])
-for c, obs in by_class.items():
+for (group, c), obs in by_class.items():
     bpy.ops.object.select_all(action='DESELECT')
     for o in obs: o.select_set(True)
     bpy.context.view_layer.objects.active = obs[0]
-    bpy.ops.object.join(); bpy.context.view_layer.objects.active.name = 'dress__' + c
+    bpy.ops.object.join(); bpy.context.view_layer.objects.active.name = group + '__' + c
 for o in bpy.data.objects:
-    o.name = o.data.name = 'dress__' + o.data.materials[0].name
+    o.name = o.data.name = o.get('g') + '__' + o.data.materials[0].name
     o.data.uv_layers.active_index = 0
     for ca in [x for x in o.data.color_attributes if x.name != 'Col']: o.data.color_attributes.remove(ca)
     ca = o.data.color_attributes

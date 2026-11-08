@@ -273,3 +273,8 @@ Quiet ambient music now plays behind the site. It is made in the browser rather 
 - Night bakes its own light: warm lamp pools and a cool window.
 - The guitar's pickguard now sits inside the body, the strings run just above the frets, and the stand's yoke holds the neck.
 - Rebuild with `assets/models/workshop/rebuild.sh`. Details, and what is real and what is set dressing, are in `assets/models/workshop/README.md`.
+
+## The Workshop diorama
+- The home scene has a visible slab edge and dark surroundings. The overhead work light sits above the painted name, and the KM sign adds a small teal pool at night.
+- The day and night Cycles rigs now light the interactive props as well as the room. Moving parts keep their existing pivots and blend toward the live rig as they move. The MP4/4 stays live with a room reflection for each theme.
+- The guitar stand, crate hinge hardware, laptop ports, trophy collars and tyre liner have Blender geometry. Dust, a laptop caret and the practical lights add subtle motion with reduced-motion, visibility and route checks.

@@ -99,7 +99,7 @@ Workshop.kit=function(THREE,Round,opts={}){
   return new THREE.Mesh(new THREE.TubeGeometry(curve,segments,r,sides,closed),material);
  }
  const mesh=(geo,material,p=[0,0,0],r=[0,0,0])=>{const o=new THREE.Mesh(geo,material);o.position.set(...p);o.rotation.set(...r);return o};
- const box=(w,h,d,material,p=[0,0,0],r=.008,rot=[0,0,0])=>mesh(new Round(w,h,d,3,Math.min(r,w/2.01,h/2.01,d/2.01)),material,p,rot);
+ const box=(w,h,d,material,p=[0,0,0],r=.008,rot=[0,0,0])=>mesh(r?new Round(w,h,d,r<=.003?1:r<=.009?2:3,Math.min(r,w/2.01,h/2.01,d/2.01)):new THREE.BoxGeometry(w,h,d),material,p,rot);
  const add=(parent,...objs)=>{objs.forEach(o=>parent.add(o));return objs[0]};
 
  function canvasTexture(w,h,draw,{srgb=true,repeat=false,flipY=true,scale=1,keep=false}={}){

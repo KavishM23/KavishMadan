@@ -196,7 +196,7 @@ Workshop.car=function(THREE,kit){
   add(root,mesh(new THREE.SphereGeometry(.016,10,8),titanium,inner));
  }
  root.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true}});
- root.userData.parts={tyreGeometry,rubber,fronts,spins,yoke,flap};
+ root.userData.parts={tyreGeometry,rubber,letteredRubber,fronts,spins,yoke,flap};
  root.userData.playFor=2.6;
  root.userData.play=(h,p,dt)=>{
   const steer=h*.12;fronts.forEach(w=>{w.rotation.y=steer});yoke.rotation.z=-steer*1.8;
